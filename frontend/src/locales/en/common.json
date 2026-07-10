@@ -16,6 +16,7 @@
     "adminUsers": "Users",
     "adminPsychometrics": "Psychometrics",
     "adminAiQuestions": "AI Questions",
+    "adminQuestionBank": "Bank Stats",
     "login": "Log in",
     "logout": "Log out",
     "adminLogin": "Admin login"

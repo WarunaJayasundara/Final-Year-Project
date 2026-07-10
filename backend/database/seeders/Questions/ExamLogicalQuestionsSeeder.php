@@ -62,7 +62,11 @@ class ExamLogicalQuestionsSeeder extends Seeder
             $this->oddNumberOutQuestions(),
         );
 
-        $this->insertRows('logical_reasoning', $rows);
+        $this->insertRows('logical_reasoning', $rows, [
+            'exam_tags' => ['logical_reasoning', 'gov_aptitude', 'slas_style'],
+            'cognitive_skill' => 'deductive-reasoning',
+            'bloom_level' => 'analyze',
+        ]);
     }
 
     /** @return array<int,array> */
@@ -283,10 +287,11 @@ class ExamLogicalQuestionsSeeder extends Seeder
                 shuffle($values);
                 $key = ['A', 'B', 'C', 'D'][array_search($odd, $values, true)];
                 $labels = array_map('strval', $values);
+                $listStr = implode(', ', $labels);
 
                 $rows[] = [$level, 'mcq_text',
-                    'Which number does not belong with the others?',
-                    'අනෙක් ඒවාට අයත් නොවන සංඛ්‍යාව කුමක්ද?',
+                    "Which number does not belong with the others: {$listStr}?",
+                    "අනෙක් ඒවාට අයත් නොවන සංඛ්‍යාව කුමක්ද: {$listStr}?",
                     $this->options($labels, $labels), $key,
                     "All the other numbers are {$ruleEn}; {$odd} is not.",
                     "අනෙක් සියලුම සංඛ්‍යා {$ruleSi} වේ; {$odd} එසේ නොවේ.", ];

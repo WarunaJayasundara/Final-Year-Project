@@ -143,5 +143,20 @@
     "reject": "Reject",
     "approveSuccess": "Question approved and added to the live question bank.",
     "rejectSuccess": "Draft rejected."
+  },
+  "questionBank": {
+    "title": "Question Bank Stats",
+    "subtitle": "Composition of the active competitive-exam question bank across categories, levels, and archetypes.",
+    "totalActive": "Active questions",
+    "textQuestions": "Text questions",
+    "imageQuestions": "Image questions",
+    "untagged": "Missing exam tags",
+    "byCategoryLevel": "By category and level",
+    "bySubcategory": "By subcategory",
+    "byBloomLevel": "By Bloom's taxonomy level",
+    "table": {
+      "category": "Category",
+      "total": "Total"
+    }
   }
 }

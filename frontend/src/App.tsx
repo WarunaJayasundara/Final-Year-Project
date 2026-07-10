@@ -26,6 +26,7 @@ import { AdminQuestionEditPage } from '@/pages/admin/AdminQuestionEditPage';
 import { AdminCategoriesPage } from '@/pages/admin/AdminCategoriesPage';
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 import { AdminPsychometricsPage } from '@/pages/admin/AdminPsychometricsPage';
+import { AdminQuestionBankPage } from '@/pages/admin/AdminQuestionBankPage';
 import { AdminAiQuestionsPage } from '@/pages/admin/AdminAiQuestionsPage';
 import { BadgesPage } from '@/pages/BadgesPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
@@ -66,6 +67,7 @@ function App() {
             <Route path="admin/categories" element={<AdminCategoriesPage />} />
             <Route path="admin/users" element={<AdminUsersPage />} />
             <Route path="admin/psychometrics" element={<AdminPsychometricsPage />} />
+            <Route path="admin/question-bank" element={<AdminQuestionBankPage />} />
             <Route path="admin/ai-questions" element={<AdminAiQuestionsPage />} />
           </Route>
         </Route>

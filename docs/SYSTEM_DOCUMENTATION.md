@@ -223,7 +223,7 @@ Sanctum's stateful check to key off, so it needs an unconditional session
 | `users` | Accounts, all roles | `role`, `auth_provider`, `google_id`, `current_level_id` (FK), `locale`, `placement_completed_at`, **`theta_estimate`, `theta_se`** (IRT ability + precision) |
 | `categories` | 5 fixed cognitive categories | `code`, `name_en/si`, `description_en/si` |
 | `iq_levels` | 5 levels | `level_number` (1–5), `name_en/si` |
-| `questions` | Question bank | `category_id`, `level_id`, `question_type` (mcq_text/mcq_image), `question_text_en/si`, `options` (JSON), `correct_option_key`, `explanation_en/si`, `difficulty_weight`, **`irt_difficulty`, `irt_discrimination`, `irt_calibrated_at`** |
+| `questions` | Question bank | `category_id`, `level_id`, `question_type` (mcq_text/mcq_image), `question_text_en/si`, `options` (JSON), `correct_option_key`, `explanation_en/si`, `difficulty_weight`, `irt_difficulty`, `irt_discrimination`, `irt_calibrated_at`, **`subcategory`, `solving_time_seconds`, `bloom_level`, `exam_tags` (JSON), `cognitive_skill`, `is_active`** |
 | `test_sessions` | Placement/daily/practice sessions | `session_type`, `category_id` (practice only), `level_id`, `score_percent`, `level_before_id/level_after_id`, **`theta`, `theta_se`** |
 | `session_answers` | Per-question responses within a session | `selected_option_key`, `is_correct`, `ai_feedback_text` (cached Gemini explanation), `ai_feedback_generated_at` |
 | `user_progress_snapshots` | Daily rollups for progress charts | unique on `(user_id, snapshot_date, category_id)`, upserted on session completion |
@@ -306,6 +306,23 @@ student's **full response history** (not just that session) every time one
 completes, so level and IQ estimate stay consistent with the adaptive
 placement test's scoring.
 
+**Weak-area weighted daily sessions** (`WeakAreaWeightingService`, Phase 6):
+daily sessions no longer split evenly across the 5 categories. Per-category
+accuracy is computed from the student's full answer history (a category
+needs ≥5 answered questions before its accuracy is trusted; otherwise it
+defaults to a neutral 50%, so a brand-new student still gets an even
+split), and the category allocation for a session is weighted by
+`1 - accuracy` — a weaker category gets more questions next time. Weights
+are floored at half of an even split so no category is ever starved to
+zero, and rounding drift is reconciled onto the single weakest category so
+the total always matches the requested question count exactly. This is
+**intentionally not applied** to the placement test (which needs even
+category coverage for an unbiased θ estimate) or practice sessions (already
+single-category by the student's own choice). See
+`backend/app/Services/Sessions/WeakAreaWeightingService.php` and
+`backend/tests/Feature/WeakAreaWeightingTest.php`. Exam-type and
+days-to-exam weighting are not yet implemented — see §17.
+
 ---
 
 ## 7. AI Exam Readiness Prediction (ML Module)
@@ -363,7 +380,7 @@ later requires no architecture change, only a real `label` column.
 
 ## 8. Government Exam Profile, Countdown & Smart Study Planner
 
-Phase 2 of the post-supervisor-feedback roadmap (§16). Lets a student tell
+Phase 2 of the post-supervisor-feedback roadmap (§17). Lets a student tell
 the platform which competitive government examination they're preparing
 for, then turns that into a live countdown and a personalized,
 automatically-adapting study plan — deliberately implemented as a
@@ -409,7 +426,7 @@ exam-date data lives.
 
 ## 9. Gamification (XP, Coins, Badges, Missions, Leaderboard)
 
-Phase 4 of the post-supervisor-feedback roadmap (§16). A transparent,
+Phase 4 of the post-supervisor-feedback roadmap (§17). A transparent,
 documented reward economy layered on top of the platform's existing
 activity — deliberately **not** a randomized or hidden reward schedule, since
 the platform's core claim is measuring cognitive ability honestly, and a
@@ -648,7 +665,142 @@ generating content entirely client-side and only reporting a final score.
 
 ---
 
-## 15. API Reference (grouped)
+## 15. Competitive Question Bank (Phase 6)
+
+The original ~2,000-question bank was pitched at primary-school difficulty —
+too simple for the platform's real target audience (20–30 year-old Sri
+Lankan graduates preparing for competitive government/banking/university
+recruitment exams). Phase 6 **completely replaced the active question bank**
+with a **5,375-question, competitive-exam-grade bank** spanning all 5
+categories × 5 levels, without altering the `questions` table's core shape
+or the session/IRT engine that consumes it.
+
+### 15.1 Retire, don't delete
+
+`CompetitiveBankSeeder` (`php artisan db:seed --class=CompetitiveBankSeeder`)
+flips every existing question's `is_active` to `false` — it never deletes
+rows, because `session_answers` history references them (deleting would
+break past students' reports and IRT calibration history). It then reseeds
+the full new bank as active. All session/practice/placement selection logic
+already filtered on `is_active`, so retired questions simply stop being
+served without a single query change.
+
+### 15.2 New metadata columns
+
+Migration `2026_07_10_062508_add_competitive_metadata_to_questions.php`
+added five nullable columns so the bank could carry the richer taxonomy the
+brief asked for without a breaking schema change:
+
+| Column | Purpose |
+|---|---|
+| `subcategory` | Fine-grained archetype, e.g. `matrix_reasoning`, `paper_folding`, `simple_interest`, `syllogisms` (30 distinct values across the bank) |
+| `solving_time_seconds` | Expected time budget, scaled by level |
+| `bloom_level` | Bloom's Taxonomy tag (`remember`/`apply`/`analyze`/`evaluate`) |
+| `exam_tags` (JSON) | Government-exam context tags, e.g. `["gov_aptitude","banking_recruitment"]` |
+| `cognitive_skill` | The underlying ability assessed, e.g. `mental-rotation`, `deductive-reasoning` |
+
+### 15.3 Bank composition
+
+| Category | Active questions | Question types |
+|---|---|---|
+| Logical Reasoning | 1,544 | mcq_text |
+| Numerical Ability | 1,406 | mcq_text |
+| Spatial & Pattern Recognition | 1,428 | 1,400 mcq_image + rest mcq_text |
+| Attention | 500 | mcq_text |
+| Memory | 500 | mcq_text |
+
+New archetypes by subcategory family:
+- **Image-based (spatial/abstract), 1,400 questions, all SVG-rendered:**
+  matrix reasoning (Raven-style 3×3 grids), figure series completion, shape
+  rotation (true rotation vs. mirrored distractors on a 4×4 polyomino grid,
+  with a programmatic **chirality check** — see §15.4), mirror images of
+  glyph strings, paper folding with punched holes (1 or 2 folds, hole
+  positions reflected across the correct axis to compute the true answer),
+  cube nets (opposite-face identification using two hand-verified fold
+  layouts), and embedded-figure grid counting (closed-form square/rectangle
+  counting formulas).
+- **Numerical reasoning, ~1,000 questions:** profit/loss, averages,
+  second-difference and mixed series (squares, cubes, primes, Fibonacci-like,
+  alternating-step, affine recurrences), number matrices, work-and-time,
+  simple interest, age problems, relative speed, percentages.
+- **Logical + verbal reasoning, ~1,300 questions:** shift ciphers,
+  alphabet-position codes, direction-sense walks (Pythagorean triples),
+  categorical syllogisms, number classification (odd-one-out), letter
+  series, number analogies, blood relations, ranking/position puzzles.
+- **Memory + attention, ~1,000 questions:** digit spans up to 9 digits,
+  4–6 item paired associations, target-letter counting in 5–9 word phrases,
+  even/odd scanning of 8–12 number lists, misspelled-word detection.
+
+### 15.4 Correctness-by-construction
+
+Every archetype computes its answer programmatically rather than being
+hand-authored, and several have an explicit self-check:
+- **Shape rotation** — before seeding, each polyomino base is checked that
+  no rotation of its mirror image equals any rotation of the original
+  (`SpatialImageSeeder::rotationQuestions()`); a non-chiral base would make
+  a "mirrored distractor" accidentally valid, so the seeder throws rather
+  than seed an ambiguous question.
+- **Paper folding** — the correct unfolded hole layout is computed by
+  reflecting punched coordinates across the fold axis/axes; distractors are
+  generated by deliberately wrong reflections (wrong axis, one fold instead
+  of two, an extra spurious hole) and checked for distinctness from the
+  answer.
+- **Distractor visual distinctness** (`MatrixSeriesImageSeeder`) — every
+  distractor must differ from the correct tile by at least one visually
+  perceptible attribute, compared **modulo each shape's own rotational
+  symmetry** (e.g. a square repeats every 90°, a circle has no distinct
+  rotations at all) — otherwise a "different rotation" distractor could
+  render pixel-identical to the correct answer.
+- **Cross-seeder duplicate guard** — `NumericalBank2Seeder` and
+  `LogicalVerbalBank2Seeder` load every active question's English text
+  before generating, and silently skip any row whose text collides with
+  the exam/advanced waves seeded just before them (this caught and dropped
+  a real handful of RNG parameter collisions during development).
+
+### 15.5 Sinhala safety
+
+A past incident during Phase 5 (hand-composing novel Sinhala character by
+character introduced garbled Unicode — see the AI Question Generation
+section's design rationale) led to a standing rule: never freehand new
+Sinhala prose. `backend/tools/validate_sinhala.py` enforces this
+mechanically for every new seeder file:
+- **Forbidden-codepoint scan** — flags any character from neighbouring
+  Unicode blocks (Malayalam, Telugu, Kannada) or a replacement character,
+  which is what corruption looks like in practice.
+- **Corpus-membership check** — builds a whitelist of every Sinhala word
+  already used (and rendering-verified) across the existing seeders and
+  frontend locale files, then flags any word in a new file that isn't in
+  that corpus. Three genuinely new words needed by the ranking/position
+  archetype (වම් "left", දකුණු "right", පසින් "from the side") were
+  individually reviewed and added to an explicit approved-list with a
+  comment explaining why.
+
+Run it via `python tools/validate_sinhala.py --all` (validates every
+seeder) or against a single new file before seeding.
+
+### 15.6 Quality gate
+
+`tests/Feature/QuestionBankTest.php` asserts, against the live seeded
+database: ≥5,000 active questions, all 25 category×level cells populated,
+zero duplicate active question texts or image paths, ≥1,000 image-based
+questions, structural validity (exactly 4 unique option keys, correct key
+present) and bilingual completeness on a random sample, every sampled image
+question's SVG file actually exists on disk, and ≥25 distinct subcategories
+with ≥95% of questions carrying exam tags.
+
+### 15.7 Admin Question Bank Stats dashboard
+
+`GET /api/admin/analytics/question-bank` (`QuestionBankStatsService`) feeds
+`frontend/src/pages/admin/AdminQuestionBankPage.tsx`
+(`/admin/question-bank`, linked from the admin nav): total active/retired
+counts, a question-type breakdown, a category × level matrix, a
+subcategory breakdown per category, a Bloom's-level breakdown, and a count
+of questions missing exam tags — a quick sanity check that a reseed landed
+correctly without needing to open tinker.
+
+---
+
+## 16. API Reference (grouped)
 
 ```
 Auth
@@ -679,6 +831,7 @@ Admin — analytics
   GET  /api/admin/analytics/psychometrics
   POST /api/admin/analytics/recalibrate
   GET  /api/admin/analytics/ml-overview
+  GET  /api/admin/analytics/question-bank
 
 Admin — AI question generation (draft -> review -> promote)
   GET  /api/admin/ai-questions
@@ -731,30 +884,39 @@ Gamification: XP/levels, badges, missions, leaderboard
 
 ---
 
-## 16. Known Gaps / Not Yet Done
+## 17. Known Gaps / Not Yet Done
 
 Kept here rather than in memory, since it will change quickly. This project
 follows a phased roadmap agreed after supervisor feedback that the original
 scope lacked novelty — **Phase 1 (AI Exam Readiness Prediction, §7), Phase 2
 (Government Exam Profile + Countdown + Smart Study Planner, §8), Phase 3
-(UI/UX redesign, §13), Phase 4 (Gamification, §9) and Phase 5 (AI Question
-Generation §11 + two new mini-games §14) are all complete.** The full
-originally-agreed roadmap has now shipped; remaining items are smaller
-loose ends:
+(UI/UX redesign, §13), Phase 4 (Gamification, §9), Phase 5 (AI Question
+Generation §11 + two new mini-games §14), and Phase 6 (competitive-grade
+question bank redesign, §15) are all complete.** The full originally-agreed
+roadmap has now shipped; remaining items are smaller loose ends:
 
-- **Exam-style question bank expansion.** Two seeder files exist
-  (`ExamNumericalQuestionsSeeder.php`, `ExamLogicalQuestionsSeeder.php`,
-  modeled on Sri Lankan exam papers) but are **not yet registered** in
-  `database/seeders/QuestionSeeder.php` and **not yet run**.
 - **`GeminiAiQuestionGeneratorService` is unverified against the live
   Gemini API** — no API key has been configured yet (`mock` remains the
   active driver), so it has only been exercised via its fallback path (a
   malformed/failed response falling back to the Mock generator), not a
   real successful generation.
+- **Weak-area weighting (§6) covers category-level bias only.** Daily
+  sessions now weight toward a student's weakest categories by accuracy,
+  but do not yet factor in their `exam_profiles` exam type or the urgency
+  of an approaching exam date — the placement CAT's item selection
+  (`AdaptiveItemSelectionService`) is unaffected by design (needs even
+  category coverage for an unbiased θ estimate).
+- **No bulk question import.** The admin side has per-question CRUD
+  (`/admin/questions`, §16 API reference), the Psychometrics page (§6), and
+  now a **Question Bank Stats dashboard** (`/admin/question-bank`,
+  `QuestionBankStatsService` — active/retired counts, by-type, by-category
+  × level, by-subcategory, by-Bloom's-level, and an untagged-question
+  count), but there is still no bulk CSV/JSON import tool for adding
+  questions in batches outside the seeder system.
 
 ---
 
-## 17. Running the Project Locally
+## 18. Running the Project Locally
 
 1. Start MySQL: XAMPP Control Panel → Start "MySQL", or run its
    `mysqld.exe` directly.

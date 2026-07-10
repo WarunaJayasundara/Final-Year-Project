@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Brain,
   CalendarRange,
+  Database,
   Gamepad2,
   LayoutDashboard,
   LineChart,
@@ -66,6 +67,7 @@ export function Navbar() {
     { to: '/admin/users', icon: <Shield className="h-4 w-4" />, label: t('nav.adminUsers') },
     { to: '/admin/psychometrics', icon: <LineChart className="h-4 w-4" />, label: t('nav.adminPsychometrics') },
     { to: '/admin/ai-questions', icon: <Sparkles className="h-4 w-4" />, label: t('nav.adminAiQuestions') },
+    { to: '/admin/question-bank', icon: <Database className="h-4 w-4" />, label: t('nav.adminQuestionBank') },
   ];
 
   const activeNav = user?.role === 'user' ? studentNav : user?.role === 'admin' || user?.role === 'super_admin' ? adminNav : [];

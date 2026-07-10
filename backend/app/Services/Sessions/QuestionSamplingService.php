@@ -54,20 +54,26 @@ class QuestionSamplingService
     }
 
     /**
-     * Daily session: evenly sampled across all categories at the user's current level,
-     * falling back to level +/- 1, then to repeats, if a category/level cell is short.
+     * Daily session: sampled across all categories at the user's current level,
+     * falling back to level +/- 1, then to repeats, if a category/level cell is
+     * short. $categoryAllocation (from WeakAreaWeightingService) overrides the
+     * default even split per category when provided - see that service's
+     * docblock for why placement/practice never pass one in.
+     *
+     * @param  array<int,int>|null  $categoryAllocation  category_id => question count
      */
-    public function sampleForDaily(int $userId, IqLevel $level, int $totalQuestions = 30): Collection
+    public function sampleForDaily(int $userId, IqLevel $level, int $totalQuestions = 30, ?array $categoryAllocation = null): Collection
     {
         $categories = Category::all();
-        $perCategory = (int) ceil($totalQuestions / max($categories->count(), 1));
+        $evenShare = (int) ceil($totalQuestions / max($categories->count(), 1));
         $excludeIds = $this->seenQuestionIds($userId);
 
         $questions = collect();
 
         foreach ($categories as $category) {
+            $count = $categoryAllocation[$category->id] ?? $evenShare;
             $questions = $questions->merge(
-                $this->pullForCategoryAtLevel($category->id, $level, $perCategory, $excludeIds)
+                $this->pullForCategoryAtLevel($category->id, $level, $count, $excludeIds)
             );
         }
 

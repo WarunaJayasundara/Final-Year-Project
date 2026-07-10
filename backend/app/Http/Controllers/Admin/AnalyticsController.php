@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ExamReadinessPrediction;
 use App\Services\Analytics\ItemAnalysisService;
+use App\Services\Analytics\QuestionBankStatsService;
 use App\Services\Analytics\ResearchExportService;
 use App\Services\Irt\RaschCalibrationService;
 use App\Services\Ml\ReadinessPredictionService;
@@ -17,6 +18,7 @@ class AnalyticsController extends Controller
         private ItemAnalysisService $itemAnalysis,
         private RaschCalibrationService $calibration,
         private ReadinessPredictionService $readiness,
+        private QuestionBankStatsService $bankStats,
     ) {
     }
 
@@ -37,6 +39,11 @@ class AnalyticsController extends Controller
     public function recalibrate()
     {
         return response()->json(['data' => $this->calibration->calibrate()]);
+    }
+
+    public function questionBank()
+    {
+        return response()->json(['data' => $this->bankStats->overview()]);
     }
 
     public function mlOverview()

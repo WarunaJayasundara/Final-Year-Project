@@ -143,5 +143,20 @@
     "reject": "ප්‍රතික්ෂේප කරන්න",
     "approveSuccess": "ප්‍රශ්නය අනුමත කර සජීවී ප්‍රශ්න බැංකුවට එකතු කරන ලදී.",
     "rejectSuccess": "කෙටුම්පත ප්‍රතික්ෂේප කරන ලදී."
+  },
+  "questionBank": {
+    "title": "ප්‍රශ්න බැංකුව: විශ්ලේෂණය",
+    "subtitle": "ප්‍රවර්ග, මට්ටම් සහ වර්ග අනුව සක්‍රීය ප්‍රශ්න බැංකුව.",
+    "totalActive": "සක්‍රීය ප්‍රශ්න",
+    "textQuestions": "පෙළ ප්‍රශ්න",
+    "imageQuestions": "රූප ප්‍රශ්න",
+    "untagged": "ටැග් නොමැති",
+    "byCategoryLevel": "ප්‍රවර්ගය සහ මට්ටම අනුව",
+    "bySubcategory": "වර්ගය අනුව",
+    "byBloomLevel": "Bloom's මට්ටම අනුව",
+    "table": {
+      "category": "ප්‍රවර්ගය",
+      "total": "මුළු"
+    }
   }
 }

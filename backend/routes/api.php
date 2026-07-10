@@ -72,6 +72,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
     Route::get('/analytics/psychometrics', [AnalyticsController::class, 'psychometrics']);
     Route::post('/analytics/recalibrate', [AnalyticsController::class, 'recalibrate']);
     Route::get('/analytics/ml-overview', [AnalyticsController::class, 'mlOverview']);
+    Route::get('/analytics/question-bank', [AnalyticsController::class, 'questionBank']);
 
     // --- Admin: AI question generation (draft -> human review -> promote) ---
     Route::get('/ai-questions', [AiQuestionController::class, 'index']);

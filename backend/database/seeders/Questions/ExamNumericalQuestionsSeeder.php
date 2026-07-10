@@ -24,7 +24,11 @@ class ExamNumericalQuestionsSeeder extends Seeder
             $this->matrixQuestions(),
         );
 
-        $this->insertRows('numerical_ability', $rows);
+        $this->insertRows('numerical_ability', $rows, [
+            'exam_tags' => ['numerical_reasoning', 'gov_aptitude', 'slas_style'],
+            'cognitive_skill' => 'quantitative-reasoning',
+            'bloom_level' => 'apply',
+        ]);
     }
 
     /** @return array<int,array> */

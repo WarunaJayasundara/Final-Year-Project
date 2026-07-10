@@ -23,19 +23,29 @@ class AdvancedSpatialQuestionsSeeder extends Seeder
     {
         $rows = [];
 
+        // One shared shuffled pool consumed by a cursor across ALL levels -
+        // per-level pools could re-draw the same (start, step) combo in two
+        // levels, producing duplicate questions (this actually happened).
+        $combos = $this->buildCombos();
+        $cursor = 0;
+
         foreach (self::PER_LEVEL as $level => $count) {
             $level = (int) $level;
-            $combos = $this->buildCombos((int) $level, $count);
-            foreach ($combos as $combo) {
-                $rows[] = $this->renderRotation($level, $combo);
+            for ($i = 0; $i < $count; $i++) {
+                $rows[] = $this->renderRotation($level, $combos[$cursor++]);
             }
         }
 
-        $this->insertRows('spatial_pattern', $rows);
+        $this->insertRows('spatial_pattern', $rows, [
+            'subcategory' => 'rotation_sequence',
+            'exam_tags' => ['spatial_intelligence', 'gov_aptitude', 'al_common_general'],
+            'cognitive_skill' => 'spatial-visualization',
+            'bloom_level' => 'analyze',
+        ]);
     }
 
-    /** @return array<int,array{0:int,1:int}> [startIdx, stepIdx] unique per level */
-    private function buildCombos(int $level, int $needed): array
+    /** @return array<int,array{0:int,1:int}> [startIdx, stepIdx] - globally unique */
+    private function buildCombos(): array
     {
         $combos = [];
         foreach (range(0, 7) as $start) {
@@ -43,10 +53,10 @@ class AdvancedSpatialQuestionsSeeder extends Seeder
                 $combos[] = [$start, $step];
             }
         }
-        mt_srand(9800 + $level);
+        mt_srand(9800);
         shuffle($combos);
 
-        return array_slice($combos, 0, $needed);
+        return $combos;
     }
 
     private function renderRotation(int $level, array $combo): array

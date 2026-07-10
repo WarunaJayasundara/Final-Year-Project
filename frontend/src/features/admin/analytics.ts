@@ -87,3 +87,22 @@ export function useRecalibrate(options?: {
     },
   });
 }
+
+export interface QuestionBankStats {
+  total_active: number;
+  total_retired: number;
+  by_type: Record<string, number>;
+  by_category: Record<string, { name_en: string; total: number; by_level: Record<string, number> }>;
+  by_subcategory: Record<string, Record<string, number>>;
+  by_bloom_level: Record<string, number>;
+  untagged_count: number;
+}
+
+async function fetchQuestionBankStats(): Promise<QuestionBankStats> {
+  const { data } = await api.get<{ data: QuestionBankStats }>('/admin/analytics/question-bank');
+  return data.data;
+}
+
+export function useQuestionBankStats() {
+  return useQuery({ queryKey: ['admin', 'analytics', 'question-bank'], queryFn: fetchQuestionBankStats });
+}

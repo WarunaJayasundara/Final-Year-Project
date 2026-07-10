@@ -69,17 +69,44 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
             }
         }
 
-        $this->insertRows('numerical_ability', $rows);
+        // Independent per-level RNG streams can occasionally draw identical
+        // parameters at two levels - keep the first occurrence of each text.
+        $seen = [];
+        $rows = array_values(array_filter($rows, function (array $row) use (&$seen) {
+            if (isset($seen[$row[2]])) {
+                return false;
+            }
+            $seen[$row[2]] = true;
+
+            return true;
+        }));
+
+        $this->insertRows('numerical_ability', $rows, [
+            'exam_tags' => ['numerical_reasoning', 'gov_aptitude', 'al_common_general'],
+            'cognitive_skill' => 'quantitative-reasoning',
+            'bloom_level' => 'analyze',
+        ]);
     }
 
     private function distractorsAround(int $answer, int $spread): array
     {
+        // When $spread is small (e.g. 1 for a small integer answer like a
+        // 2-year loan term), answer±1 only yields 2 distinct candidate
+        // values, so the loop could never reach 4 unique entries and would
+        // silently under-fill the option set. Widening the delta range by
+        // $guard once stuck guarantees termination with exactly 4 values.
         $set = [$answer];
         $guard = 0;
         while (count($set) < 4 && $guard < 50) {
             $guard++;
-            $delta = mt_rand(1, max(1, $spread));
+            $delta = mt_rand(1, max(1, $spread) + intdiv($guard, 3));
             $candidate = mt_rand(0, 1) ? $answer + $delta : max(0, $answer - $delta);
+            if (! in_array($candidate, $set, true)) {
+                $set[] = $candidate;
+            }
+        }
+        while (count($set) < 4) {
+            $candidate = $answer + count($set) + 1;
             if (! in_array($candidate, $set, true)) {
                 $set[] = $candidate;
             }

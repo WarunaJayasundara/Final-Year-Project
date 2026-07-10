@@ -98,7 +98,22 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
             }
         }
 
-        $this->insertRows('logical_reasoning', $rows);
+        // Same cross-level RNG-collision guard as the numerical seeder.
+        $seen = [];
+        $rows = array_values(array_filter($rows, function (array $row) use (&$seen) {
+            if (isset($seen[$row[2]])) {
+                return false;
+            }
+            $seen[$row[2]] = true;
+
+            return true;
+        }));
+
+        $this->insertRows('logical_reasoning', $rows, [
+            'exam_tags' => ['logical_reasoning', 'gov_aptitude', 'al_common_general'],
+            'cognitive_skill' => 'deductive-reasoning',
+            'bloom_level' => 'analyze',
+        ]);
     }
 
     private function shiftWord(string $word, int $shift): string

@@ -16,6 +16,7 @@ use App\Services\Irt\AbilityEstimationService;
 use App\Services\Irt\AdaptiveItemSelectionService;
 use App\Services\Leveling\LevelAdjustmentService;
 use App\Services\Sessions\QuestionSamplingService;
+use App\Services\Sessions\WeakAreaWeightingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,7 @@ class TestSessionController extends Controller
         private AdaptiveItemSelectionService $itemSelector,
         private GamificationService $gamification,
         private BadgeService $badges,
+        private WeakAreaWeightingService $weakAreaWeighting,
     ) {
     }
 
@@ -108,7 +110,8 @@ class TestSessionController extends Controller
         $totalQuestions = (int) $request->input('total_questions', 30);
         $totalQuestions = max(25, min(50, $totalQuestions));
 
-        $questions = $this->sampler->sampleForDaily($user->id, $user->currentLevel, $totalQuestions);
+        $allocation = $this->weakAreaWeighting->allocationFor($user->id, $totalQuestions);
+        $questions = $this->sampler->sampleForDaily($user->id, $user->currentLevel, $totalQuestions, $allocation);
 
         if ($questions->isEmpty()) {
             return response()->json(['message' => 'No questions available at your level yet.'], 422);
