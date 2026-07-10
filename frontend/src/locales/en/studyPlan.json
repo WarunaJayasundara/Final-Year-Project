@@ -1,0 +1,30 @@
+{
+  "title": "Study Plan",
+  "subtitle": "A personalized plan based on your exam date, weak areas, and daily availability.",
+  "recommendedDailyQuestions": "Recommended daily questions",
+  "recommendedWeeklyMockTests": "Weekly mock tests",
+  "weeksRemaining": "Weeks remaining",
+  "phaseTimeline": "Preparation timeline",
+  "currentPhase": "Current phase",
+  "phaseRange": "{{from}}-{{to}} days before the exam",
+  "weeklySchedule": "This week's schedule",
+  "todaysPlan": "Today's plan",
+  "minutes": "{{count}} min",
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday"
+  },
+  "focus": {
+    "weak_1": "Weakest area",
+    "weak_2": "Second weakest area",
+    "mixed": "Mixed practice",
+    "mock": "Mock test",
+    "rest": "Rest day",
+    "rest_light": "Light review"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "title": "MindRise Coach",
+  "openLabel": "Open coach chat",
+  "closeLabel": "Close chat",
+  "greeting": "Hi! Ask me about your progress, what to practice next, which game to play, or your IQ score.",
+  "placeholder": "Ask about your progress, practice, or IQ score...",
+  "error": "Sorry, I couldn't respond right now. Please try again."
+}

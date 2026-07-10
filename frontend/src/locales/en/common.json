@@ -1,0 +1,95 @@
+{
+  "appName": "MindRise",
+  "tagline": "Sri Lanka's cognitive training platform for IQ development",
+  "nav": {
+    "dashboard": "Dashboard",
+    "dailyPractice": "Daily Practice",
+    "practice": "Practice",
+    "studyPlan": "Study Plan",
+    "games": "Games",
+    "badges": "Badges",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "admin": "Admin",
+    "adminQuestions": "Questions",
+    "adminCategories": "Categories",
+    "adminUsers": "Users",
+    "adminPsychometrics": "Psychometrics",
+    "adminAiQuestions": "AI Questions",
+    "login": "Log in",
+    "logout": "Log out",
+    "adminLogin": "Admin login"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "continue": "Continue",
+    "back": "Back",
+    "submit": "Submit",
+    "next": "Next",
+    "finish": "Finish",
+    "retry": "Try again",
+    "loading": "Loading...",
+    "viewAll": "View all"
+  },
+  "language": {
+    "en": "English",
+    "si": "Sinhala",
+    "switch": "Language"
+  },
+  "levels": {
+    "1": "Level 1 - Foundation",
+    "2": "Level 2 - Developing",
+    "3": "Level 3 - Proficient",
+    "4": "Level 4 - Advanced",
+    "5": "Level 5 - Expert"
+  },
+  "categories": {
+    "memory": "Memory",
+    "logical_reasoning": "Logical Reasoning",
+    "numerical_ability": "Numerical Ability",
+    "attention": "Attention",
+    "spatial_pattern": "Spatial & Pattern Recognition"
+  },
+  "roles": {
+    "super_admin": "Super Admin",
+    "admin": "Admin",
+    "user": "Student"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "unauthorized": "You need to log in to view this page."
+  },
+  "footer": {
+    "copyright": "© 2026 Waruna Jayasundara. All rights reserved.",
+    "project": "Final Year Project · University of Kelaniya",
+    "poweredBy": "AI feedback powered by Google Gemini"
+  },
+  "landing": {
+    "badge": "Built for Sri Lankan students & exam candidates",
+    "heroTitle1": "Train your mind. ",
+    "heroTitle2": "Measure your growth.",
+    "getStarted": "Get started free",
+    "features": {
+      "adaptive": {
+        "title": "5-level adaptive IQ engine",
+        "description": "A placement test measures your starting level across memory, logic, numbers, attention and pattern recognition, then adapts as you improve."
+      },
+      "ai": {
+        "title": "AI-explained answers",
+        "description": "Every wrong answer gets a clear, friendly explanation so mistakes turn into understanding."
+      },
+      "games": {
+        "title": "3 brain-training games",
+        "description": "Memory Match, Sequence Puzzle and Mental Math Rush keep practice fun between full sessions."
+      },
+      "progress": {
+        "title": "Progress you can see",
+        "description": "Track your level history, category strengths and streaks on a single dashboard."
+      }
+    }
+  }
+}

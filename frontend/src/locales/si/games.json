@@ -1,0 +1,43 @@
+{
+  "hub": {
+    "subtitle": "ඔබේ පුවරුවේ අඛණ්ඩතාවට එකතු වන කෙටි මොළ පුහුණු ක්‍රීඩා."
+  },
+  "result": {
+    "points": "ලකුණු {{score}}",
+    "newBest": "නව පෞද්ගලික වාර්තාව!",
+    "best": "වාර්තාව: ලකුණු {{score}}",
+    "playAgain": "නැවත ක්‍රීඩා කරන්න",
+    "backToGames": "ක්‍රීඩා වෙතට ආපසු"
+  },
+  "common": {
+    "backToGames": "ක්‍රීඩා වෙතට ආපසු"
+  },
+  "memoryMatch": {
+    "title": "මතක ගැලපීම",
+    "moves": "පියවර: {{count}}",
+    "matched": "ගැලපුණු: {{matched}} / {{total}}"
+  },
+  "sequencePuzzle": {
+    "title": "අනුක්‍රම ප්‍රහේලිකාව",
+    "round": "වටය {{current}} / {{total}}",
+    "correct": "නිවැරදි: {{count}}",
+    "prompt": "අනුක්‍රමයේ ඊළඟට එන්නේ කුමක්ද?"
+  },
+  "mathRush": {
+    "title": "මානසික ගණිත වේගය",
+    "timeLeft": "ඉතිරි කාලය: තත්පර {{seconds}}",
+    "score": "ලකුණු: {{score}}"
+  },
+  "mentalRotation": {
+    "title": "මානසික භ්‍රමණ අභියෝගය",
+    "round": "වටය {{current}} / {{total}}",
+    "correct": "නිවැරදි: {{count}}",
+    "prompt": "මෙම හැඩයේ සැබෑ භ්‍රමණය වන්නේ කුමන විකල්පයද, දර්පණ රූපය නොවේ?"
+  },
+  "selectiveAttention": {
+    "title": "තෝරාගත් අවධාන අභියෝගය",
+    "round": "වටය {{current}} / {{total}}",
+    "correct": "නිවැරදි: {{count}}",
+    "prompt": "වෙනස් දිශාවකට යොමු වූ එකම ඊතලය ක්ලික් කරන්න."
+  }
+}

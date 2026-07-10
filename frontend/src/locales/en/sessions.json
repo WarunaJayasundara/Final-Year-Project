@@ -1,0 +1,36 @@
+{
+  "types": {
+    "placement": "Placement Test",
+    "daily": "Daily Practice",
+    "practice": "Practice Session"
+  },
+  "placement": {
+    "title": "Let's measure your starting level",
+    "description": "This is an adaptive test: it picks each next question to match your ability as you go, covering memory, logical reasoning, numbers, attention and pattern recognition. It usually takes 15-25 questions and ends automatically once your level is measured precisely enough.",
+    "start": "Start placement test",
+    "startError": "Could not start the placement test. Please try again shortly.",
+    "backToDashboard": "Back to dashboard",
+    "progress": "Question {{current}} (adaptive, up to {{max}})",
+    "adaptiveNote": "This test adapts to your answers - the number of questions may vary."
+  },
+  "daily": {
+    "startError": "Could not start your daily session.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "practice": {
+    "subtitle": "Pick a category to drill on its own, at your current level.",
+    "startError": "Could not start a practice session for this category yet - the question bank may still be empty at your level."
+  },
+  "report": {
+    "title": "Session complete",
+    "scoreFraction": "{{correct}} / {{total}} correct",
+    "levelUpdated": "Level updated",
+    "backToDashboard": "Back to dashboard",
+    "practiceWeakAreas": "Practice weak areas",
+    "reviewMistakes": "Review your mistakes",
+    "yourAnswer": "Your answer: {{value}}",
+    "correctAnswer": "Correct: {{value}}",
+    "thinking": "Thinking...",
+    "explain": "Explain this answer"
+  }
+}

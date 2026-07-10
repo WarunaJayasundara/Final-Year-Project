@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+vendor/
+venv/
+.venv/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Build & cache
+dist/
+__pycache__/
+*.pyc
+.phpunit.result.cache
+/public/build
+/public/hot
+
+# Logs
+*.log
+logs/
+
+# IDE & tooling
+.claude/
+.idea/
+.vscode/
+.fleet/
+.DS_Store

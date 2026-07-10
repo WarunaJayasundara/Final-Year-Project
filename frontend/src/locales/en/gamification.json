@@ -1,0 +1,43 @@
+{
+  "reward": {
+    "earned": "+{{xp}} XP, +{{coins}} coins earned!",
+    "badgeUnlocked": "Badge unlocked: {{name}}"
+  },
+  "widget": {
+    "title": "Your Progress",
+    "level": "Level {{level}}",
+    "xpToNext": "{{current}}/{{target}} XP to next level",
+    "coins": "Coins",
+    "streak": "Day streak",
+    "badgesEarned": "{{earned}}/{{total}} badges"
+  },
+  "badges": {
+    "title": "Badges",
+    "subtitle": "Unlock achievements as you train, play games, and prepare for your exam.",
+    "locked": "Locked",
+    "earnedOn": "Earned {{date}}"
+  },
+  "missions": {
+    "title": "Missions",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "claimSuccess": "Mission reward claimed!",
+    "codes": {
+      "daily_practice": "Complete 1 practice session today",
+      "daily_questions": "Answer 15 questions today",
+      "daily_game": "Play a mini-game today",
+      "weekly_sessions": "Complete 5 sessions this week",
+      "weekly_average": "Average 80%+ this week",
+      "weekly_streak": "Maintain a 7-day streak"
+    }
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Top students by XP across the platform.",
+    "rank": "Rank",
+    "student": "Student",
+    "yourRank": "Your rank: #{{rank}}"
+  }
+}

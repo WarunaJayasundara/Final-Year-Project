@@ -1,0 +1,70 @@
+{
+  "subtitle": "Here's how your training is going.",
+  "currentLevel": "Current level",
+  "practiceStreak": "Practice streak",
+  "streakDays": "{{count}} day",
+  "streakDays_other": "{{count}} days",
+  "gamesPlayed": "Games played",
+  "levelHistory": "Level history",
+  "categoryStrengths": "Category strengths",
+  "recentSessions": "Recent sessions",
+  "gameHighScores": "Game high scores",
+  "noSessionsYet": "No sessions yet - start your daily practice!",
+  "noGamesYet": "No games played yet.",
+  "tryOne": "Try one",
+  "notEnoughData": "Not enough data yet - complete a few sessions to see this chart.",
+  "iqScore": {
+    "label": "Estimated IQ Score",
+    "methodIrt": "Deviation IQ (mean 100, SD 15) computed from your Item Response Theory ability estimate (±{{se}} standard error) - refined with every session you complete.",
+    "methodIrtNoSe": "Deviation IQ (mean 100, SD 15) computed from your Item Response Theory ability estimate - refined with every session you complete."
+  },
+  "readiness": {
+    "title": "AI Exam Readiness",
+    "refresh": "Run prediction",
+    "noPredictionYet": "No prediction yet - click \"Run prediction\" to get your first AI-powered exam readiness estimate.",
+    "predictionUpdated": "Exam readiness prediction updated.",
+    "predictionFailed": "Could not reach the prediction service. Please try again shortly.",
+    "reasonsTitle": "Why this estimate",
+    "labels": {
+      "ready": "Ready",
+      "almost_ready": "Almost Ready",
+      "needs_improvement": "Needs Improvement",
+      "high_risk": "High Risk"
+    },
+    "checkinButton": "Daily check-in",
+    "checkinTitle": "Today's check-in",
+    "studyHours": "Study hours today",
+    "motivation": "Motivation (1-10)",
+    "attendedToday": "I studied/attended today",
+    "saveCheckin": "Save",
+    "checkinSaved": "Check-in saved."
+  },
+  "examProfile": {
+    "title": "Exam profile",
+    "noProfileYet": "Set up your exam profile to get a countdown and a personalized study plan.",
+    "noDateSet": "No exam date set yet.",
+    "setup": "Set up exam profile",
+    "edit": "Edit exam profile",
+    "save": "Save",
+    "saved": "Exam profile saved.",
+    "examCategory": "Which examination are you preparing for?",
+    "selectExam": "Select an exam",
+    "examName": "Exam name (optional)",
+    "examNamePlaceholder": "e.g. 2026 SLAS Limited Competitive Exam",
+    "examDate": "Exam date",
+    "dailyHours": "Daily study hours available",
+    "targetScore": "Target score (optional)",
+    "daysLeft": "days left",
+    "countdown": "{{days}}d {{hours}}h {{minutes}}m remaining",
+    "todaysGoal": "Today's goal: {{count}} practice questions",
+    "firstFocus": "First focus",
+    "activity": {
+      "weak_category_practice": "Weak-area practice",
+      "timed_mock_practice": "Timed mock practice",
+      "cognitive_game_warmup": "Cognitive game warm-up",
+      "strong_category_maintenance": "Strong-area maintenance",
+      "confidence_review": "Confidence review",
+      "rest": "Rest"
+    }
+  }
+}

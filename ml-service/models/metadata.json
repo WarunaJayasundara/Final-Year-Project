@@ -1,0 +1,224 @@
+{
+  "version": "20260709143659",
+  "trained_at": "2026-07-09T14:36:59.689265+00:00",
+  "best_model": "xgboost",
+  "feature_order": [
+    "placement_iq",
+    "current_iq",
+    "theta",
+    "avg_test_score",
+    "memory_score",
+    "logical_score",
+    "numerical_score",
+    "attention_score",
+    "spatial_score",
+    "avg_game_score",
+    "daily_practice_count",
+    "weekly_practice_count",
+    "practice_streak",
+    "study_hours",
+    "avg_response_time_sec",
+    "wrong_answer_percent",
+    "avg_difficulty_solved",
+    "improvement_trend",
+    "consistency_score",
+    "attendance_percent",
+    "days_until_exam",
+    "motivation_score",
+    "ai_coach_usage_count",
+    "question_completion_rate"
+  ],
+  "label_order": [
+    "high_risk",
+    "needs_improvement",
+    "almost_ready",
+    "ready"
+  ],
+  "training_rows": 80000,
+  "model_comparison": {
+    "random_forest": {
+      "accuracy": 0.610875,
+      "precision_macro": 0.6483683436006895,
+      "recall_macro": 0.5722036859982749,
+      "f1_macro": 0.5966796140021755,
+      "roc_auc_ovr_macro": 0.8497730872387957
+    },
+    "gradient_boosting": {
+      "accuracy": 0.619125,
+      "precision_macro": 0.644902714371141,
+      "recall_macro": 0.591764328023849,
+      "f1_macro": 0.6115120586141007,
+      "roc_auc_ovr_macro": 0.853936031271234
+    },
+    "xgboost": {
+      "accuracy": 0.621875,
+      "precision_macro": 0.6497397739315773,
+      "recall_macro": 0.5958963435961165,
+      "f1_macro": 0.615908768617697,
+      "roc_auc_ovr_macro": 0.8555186781620041
+    }
+  },
+  "confusion_matrix": [
+    [
+      2271,
+      1274,
+      44,
+      0
+    ],
+    [
+      764,
+      3938,
+      1266,
+      12
+    ],
+    [
+      26,
+      1434,
+      2949,
+      343
+    ],
+    [
+      0,
+      40,
+      847,
+      792
+    ]
+  ],
+  "classification_report": {
+    "high_risk": {
+      "precision": 0.7419144070565175,
+      "recall": 0.6327667874059627,
+      "f1-score": 0.6830075187969925,
+      "support": 3589.0
+    },
+    "needs_improvement": {
+      "precision": 0.588991923422076,
+      "recall": 0.6585284280936455,
+      "f1-score": 0.6218222011684825,
+      "support": 5980.0
+    },
+    "almost_ready": {
+      "precision": 0.5775558166862514,
+      "recall": 0.6205808080808081,
+      "f1-score": 0.5982958003651856,
+      "support": 4752.0
+    },
+    "ready": {
+      "precision": 0.6904969485614647,
+      "recall": 0.47170935080405,
+      "f1-score": 0.5605095541401274,
+      "support": 1679.0
+    },
+    "accuracy": 0.621875,
+    "macro avg": {
+      "precision": 0.6497397739315773,
+      "recall": 0.5958963435961165,
+      "f1-score": 0.615908768617697,
+      "support": 16000.0
+    },
+    "weighted avg": {
+      "precision": 0.6305495079073513,
+      "recall": 0.621875,
+      "f1-score": 0.6221254957929104,
+      "support": 16000.0
+    }
+  },
+  "global_feature_importance": [
+    [
+      "avg_test_score",
+      0.3997613191604614
+    ],
+    [
+      "theta",
+      0.3365451693534851
+    ],
+    [
+      "practice_streak",
+      0.24960869550704956
+    ],
+    [
+      "consistency_score",
+      0.20339177548885345
+    ],
+    [
+      "wrong_answer_percent",
+      0.18113651871681213
+    ],
+    [
+      "weekly_practice_count",
+      0.16862213611602783
+    ],
+    [
+      "study_hours",
+      0.1591002643108368
+    ],
+    [
+      "improvement_trend",
+      0.15257078409194946
+    ],
+    [
+      "question_completion_rate",
+      0.1468147188425064
+    ],
+    [
+      "motivation_score",
+      0.12792426347732544
+    ],
+    [
+      "attendance_percent",
+      0.1265217512845993
+    ],
+    [
+      "days_until_exam",
+      0.09642788767814636
+    ],
+    [
+      "avg_response_time_sec",
+      0.08296231180429459
+    ],
+    [
+      "ai_coach_usage_count",
+      0.07299906760454178
+    ],
+    [
+      "current_iq",
+      0.06848301738500595
+    ],
+    [
+      "attention_score",
+      0.06487788259983063
+    ],
+    [
+      "numerical_score",
+      0.06139548122882843
+    ],
+    [
+      "logical_score",
+      0.05769813433289528
+    ],
+    [
+      "memory_score",
+      0.056529439985752106
+    ],
+    [
+      "spatial_score",
+      0.039774004369974136
+    ],
+    [
+      "avg_difficulty_solved",
+      0.03835637867450714
+    ],
+    [
+      "avg_game_score",
+      0.03683432191610336
+    ],
+    [
+      "placement_iq",
+      0.029847653582692146
+    ],
+    [
+      "daily_practice_count",
+      0.016855822876095772
+    ]
+  ]
+}

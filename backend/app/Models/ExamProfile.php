@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+
+class ExamProfile extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'exam_category',
+        'exam_name',
+        'exam_date',
+        'daily_study_hours_target',
+        'target_score',
+    ];
+
+    protected $casts = [
+        'exam_date' => 'date',
+        'daily_study_hours_target' => 'float',
+        'target_score' => 'integer',
+    ];
+
+    /**
+     * Common Sri Lankan competitive government examinations, shown as fixed
+     * options in the exam-profile setup form. "other" allows a free-text
+     * exam_name for anything not on this list.
+     */
+    public const EXAM_CATEGORIES = [
+        'slas' => 'Sri Lanka Administrative Service (SLAS)',
+        'development_officer' => 'Development Officer',
+        'management_assistant' => 'Management Assistant',
+        'grama_niladhari' => 'Grama Niladhari',
+        'police' => 'Sri Lanka Police',
+        'customs' => 'Sri Lanka Customs',
+        'excise' => 'Excise Department',
+        'railway' => 'Railway Department',
+        'banking' => 'Banking Exams',
+        'teaching_service' => 'Teaching Service',
+        'university_aptitude' => 'University Aptitude Tests',
+        'graduate_recruitment' => 'Graduate Recruitment Exams',
+        'other' => 'Other',
+    ];
+
+    /**
+     * Documented heuristic, not measured data: a rough relative-difficulty
+     * weight per exam category used only to lightly tune how intensive
+     * StudyPlanService's recommendations are (more mock tests / weak-area
+     * drilling for exams generally considered more competitive/rigorous).
+     */
+    public const DIFFICULTY_WEIGHT = [
+        'slas' => 1.2,
+        'university_aptitude' => 1.2,
+        'banking' => 1.15,
+        'graduate_recruitment' => 1.1,
+        'police' => 1.0,
+        'customs' => 1.0,
+        'excise' => 1.0,
+        'railway' => 1.0,
+        'development_officer' => 1.0,
+        'management_assistant' => 1.0,
+        'teaching_service' => 1.0,
+        'grama_niladhari' => 0.95,
+        'other' => 1.0,
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function difficultyWeight(): float
+    {
+        return self::DIFFICULTY_WEIGHT[$this->exam_category] ?? 1.0;
+    }
+
+    public function daysRemaining(): ?int
+    {
+        if (! $this->exam_date) {
+            return null;
+        }
+
+        return max(0, (int) Carbon::now()->startOfDay()->diffInDays($this->exam_date, false));
+    }
+}

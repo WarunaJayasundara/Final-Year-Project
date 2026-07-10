@@ -1,0 +1,30 @@
+{
+  "title": "අධ්‍යයන සැලැස්ම",
+  "subtitle": "ඔබේ විභාග දිනය, දුර්වල අංශ සහ දෛනික ලබා ගත හැකි කාලය මත පදනම් වූ පුද්ගලික සැලැස්මක්.",
+  "recommendedDailyQuestions": "නිර්දේශිත දෛනික ප්‍රශ්න",
+  "recommendedWeeklyMockTests": "සතිපතා මාදිලි විභාග",
+  "weeksRemaining": "ඉතිරි සති ගණන",
+  "phaseTimeline": "සූදානම් කාල රාමුව",
+  "currentPhase": "වත්මන් අවධිය",
+  "phaseRange": "විභාගයට දින {{from}}-{{to}}ට පෙර",
+  "weeklySchedule": "මෙම සතියේ කාලසටහන",
+  "todaysPlan": "අද දින සැලැස්ම",
+  "minutes": "මිනිත්තු {{count}}",
+  "days": {
+    "monday": "සඳුදා",
+    "tuesday": "අඟහරුවාදා",
+    "wednesday": "බදාදා",
+    "thursday": "බ්‍රහස්පතින්දා",
+    "friday": "සිකුරාදා",
+    "saturday": "සෙනසුරාදා",
+    "sunday": "ඉරිදා"
+  },
+  "focus": {
+    "weak_1": "දුර්වලම අංශය",
+    "weak_2": "දෙවන දුර්වලම අංශය",
+    "mixed": "මිශ්‍ර අභ්‍යාසය",
+    "mock": "මාදිලි විභාගය",
+    "rest": "විවේක දිනය",
+    "rest_light": "සැහැල්ලු සමාලෝචනය"
+  }
+}

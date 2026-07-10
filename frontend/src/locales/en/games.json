@@ -1,0 +1,43 @@
+{
+  "hub": {
+    "subtitle": "Quick brain-training games that feed your dashboard streak."
+  },
+  "result": {
+    "points": "{{score}} pts",
+    "newBest": "New personal best!",
+    "best": "Best: {{score}} pts",
+    "playAgain": "Play again",
+    "backToGames": "Back to games"
+  },
+  "common": {
+    "backToGames": "Back to games"
+  },
+  "memoryMatch": {
+    "title": "Memory Match",
+    "moves": "Moves: {{count}}",
+    "matched": "Matched: {{matched}} / {{total}}"
+  },
+  "sequencePuzzle": {
+    "title": "Sequence Puzzle",
+    "round": "Round {{current}} / {{total}}",
+    "correct": "Correct: {{count}}",
+    "prompt": "What comes next in the sequence?"
+  },
+  "mathRush": {
+    "title": "Mental Math Rush",
+    "timeLeft": "Time left: {{seconds}}s",
+    "score": "Score: {{score}}"
+  },
+  "mentalRotation": {
+    "title": "Mental Rotation Challenge",
+    "round": "Round {{current}} / {{total}}",
+    "correct": "Correct: {{count}}",
+    "prompt": "Which option is a true rotation of this shape, not a mirror image?"
+  },
+  "selectiveAttention": {
+    "title": "Selective Attention Challenge",
+    "round": "Round {{current}} / {{total}}",
+    "correct": "Correct: {{count}}",
+    "prompt": "Click the one arrow pointing a different direction."
+  }
+}
