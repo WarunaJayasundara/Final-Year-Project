@@ -17,6 +17,7 @@ class TestSession extends Model
         'category_id',
         'level_id',
         'total_questions',
+        'time_limit_seconds',
         'correct_count',
         'score_percent',
         'started_at',
@@ -33,6 +34,7 @@ class TestSession extends Model
         'score_percent' => 'decimal:2',
         'theta' => 'float',
         'theta_se' => 'float',
+        'time_limit_seconds' => 'integer',
     ];
 
     public function user(): BelongsTo

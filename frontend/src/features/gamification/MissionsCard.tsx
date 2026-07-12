@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Check, CalendarDays, CalendarRange, Loader2, Sparkles } from 'lucide-react';
+import { Check, CalendarDays, CalendarRange, ListChecks, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +27,7 @@ export function MissionsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Sparkles className="h-4 w-4 text-primary" /> {t('missions.title')}
+          <ListChecks className="h-4 w-4 text-primary" /> {t('missions.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">

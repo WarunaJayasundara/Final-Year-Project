@@ -1,0 +1,27 @@
+{
+  "source": "OULAD (Kuzilek et al. 2017), n=32593 real students",
+  "method": "Multinomial logistic regression of final_result on real-measured features; coefficients on the 'ready' (Distinction) class, L1-normalized to the original hand-picked weight mass for the same features.",
+  "calibrated_features": [
+    "avg_test_score",
+    "improvement_trend",
+    "consistency_score",
+    "weekly_practice_count",
+    "attendance_percent"
+  ],
+  "raw_coefficients_ready_class": {
+    "avg_test_score": 6.121997264214558,
+    "improvement_trend": -0.026629741774158586,
+    "consistency_score": -0.80871075278437,
+    "weekly_practice_count": 0.5444330074680607,
+    "attendance_percent": 0.5275651465454775
+  },
+  "positive_weights": {
+    "avg_test_score": 0.30498149937731955,
+    "improvement_trend": 0.0013266223789068798,
+    "consistency_score": 0.04028780270590038,
+    "weekly_practice_count": 0.027122193585203347,
+    "attendance_percent": 0.02628188195266989
+  },
+  "inverted_weights": {},
+  "model_train_accuracy": 0.6398306384806554
+}

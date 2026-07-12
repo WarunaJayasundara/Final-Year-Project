@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FullPageSpinner } from '@/components/auth/RequireAuth';
+import { TestSkeleton } from '@/components/skeletons/TestSkeleton';
+import { HelaIQMark } from '@/components/brand/HelaIQMark';
 import { AdaptivePlacementRunner } from '@/features/sessions/AdaptivePlacementRunner';
 import { useStartPlacement } from '@/features/sessions/useSessions';
 import type { AdaptiveSessionData } from '@/features/sessions/types';
@@ -43,14 +43,12 @@ export function PlacementPage() {
         </div>
       );
     }
-    return <FullPageSpinner />;
+    return <TestSkeleton />;
   }
 
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center gap-6 py-16 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-        <Brain className="h-7 w-7" />
-      </span>
+      <HelaIQMark variant="compact" markClassName="h-12 w-12" />
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">{t('placement.title')}</CardTitle>

@@ -15,12 +15,22 @@ class ExamProfile extends Model
         'exam_date',
         'daily_study_hours_target',
         'target_score',
+        'exam_total_questions',
+        'exam_duration_minutes',
+        'pass_mark',
+        'negative_marking',
+        'exam_sections',
     ];
 
     protected $casts = [
         'exam_date' => 'date',
         'daily_study_hours_target' => 'float',
         'target_score' => 'integer',
+        'exam_total_questions' => 'integer',
+        'exam_duration_minutes' => 'integer',
+        'pass_mark' => 'integer',
+        'negative_marking' => 'boolean',
+        'exam_sections' => 'array',
     ];
 
     /**
@@ -83,5 +93,19 @@ class ExamProfile extends Model
         }
 
         return max(0, (int) Carbon::now()->startOfDay()->diffInDays($this->exam_date, false));
+    }
+
+    /**
+     * The "72 seconds/question" pace target from the real exam's own
+     * structure - null unless the student supplied both duration and
+     * question count (both optional/skippable fields).
+     */
+    public function targetSecondsPerQuestion(): ?float
+    {
+        if (! $this->exam_duration_minutes || ! $this->exam_total_questions) {
+            return null;
+        }
+
+        return round(($this->exam_duration_minutes * 60) / $this->exam_total_questions, 1);
     }
 }

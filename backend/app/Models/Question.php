@@ -18,30 +18,76 @@ class Question extends Model
         'question_text_en',
         'question_text_si',
         'image_path',
+        'generation_rule',
+        'transformation_steps',
+        'visual_complexity_score',
         'options',
         'correct_option_key',
         'explanation_en',
         'explanation_si',
         'difficulty_weight',
         'solving_time_seconds',
+        'learned_expected_time_seconds',
+        'time_sample_count',
+        'time_calibration_status',
         'bloom_level',
         'exam_tags',
         'cognitive_skill',
         'irt_difficulty',
         'irt_discrimination',
         'irt_calibrated_at',
+        'irt_response_count',
+        'irt_calibration_status',
         'is_active',
         'created_by',
+        'source_document_id',
+        'source_type',
+        'generation_method',
+        'learning_objective',
+        'difficulty_reason',
+        'quality_score',
+        'validation_status',
+        'translation_status',
+        'translation_quality_score',
+        'sinhala_review_status',
+        'reviewed_by',
+        'semantic_equivalence_score',
     ];
 
     protected $casts = [
         'options' => 'array',
         'exam_tags' => 'array',
+        'transformation_steps' => 'array',
+        'visual_complexity_score' => 'float',
         'is_active' => 'boolean',
         'irt_difficulty' => 'float',
         'irt_discrimination' => 'float',
         'irt_calibrated_at' => 'datetime',
+        'irt_response_count' => 'integer',
+        'quality_score' => 'float',
+        'learned_expected_time_seconds' => 'float',
+        'time_sample_count' => 'integer',
+        'translation_quality_score' => 'float',
+        'semantic_equivalence_score' => 'float',
     ];
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
+     * Expected solving time for this item: prefers the platform-learned
+     * value once calibrated, falls back to the author/AI-authored baseline,
+     * then a generic default - same fallback order used when scoring a
+     * live answer's time_performance_ratio.
+     */
+    public function expectedTimeSeconds(): float
+    {
+        return $this->learned_expected_time_seconds
+            ?? $this->solving_time_seconds
+            ?? 60.0;
+    }
 
     public function category(): BelongsTo
     {
@@ -58,11 +104,21 @@ class Question extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function sourceDocument(): BelongsTo
+    {
+        return $this->belongsTo(SourceDocument::class);
+    }
+
     /**
-     * Question data safe to send to the client before it's answered
-     * (never includes correct_option_key or explanations).
+     * Question data safe to send to the client before it's answered (never
+     * includes correct_option_key or explanations) - UNLESS $includeExplanation
+     * is explicitly passed true, which only the completed-session report
+     * endpoints do (TestSessionController::reportPayload()). Every other
+     * call site (live placement/daily/practice/mock question payloads)
+     * must keep the default false, or a student could read the explanation
+     * of why an option is correct before answering.
      */
-    public function toClientArray(string $locale = 'en'): array
+    public function toClientArray(string $locale = 'en', bool $includeExplanation = false): array
     {
         $options = collect($this->options)->map(function (array $option) use ($locale) {
             return [
@@ -72,7 +128,7 @@ class Question extends Model
             ];
         })->values()->all();
 
-        return [
+        $data = [
             'id' => $this->id,
             'category_id' => $this->category_id,
             'level_id' => $this->level_id,
@@ -80,6 +136,13 @@ class Question extends Model
             'question_text' => $locale === 'si' ? $this->question_text_si : $this->question_text_en,
             'image_path' => $this->image_path,
             'options' => $options,
+            'expected_time_seconds' => $this->expectedTimeSeconds(),
         ];
+
+        if ($includeExplanation) {
+            $data['explanation'] = $locale === 'si' ? $this->explanation_si : $this->explanation_en;
+        }
+
+        return $data;
     }
 }

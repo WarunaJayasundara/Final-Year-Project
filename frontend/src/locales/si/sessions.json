@@ -2,7 +2,24 @@
   "types": {
     "placement": "ස්ථානගත කිරීමේ පරීක්ෂණය",
     "daily": "දෛනික අභ්‍යාසය",
-    "practice": "පුහුණු සැසිය"
+    "practice": "පුහුණු සැසිය",
+    "mock": "මාදිලි විභාගය"
+  },
+  "keyboardHint": "පිළිතුරු දීමට 1-6, ඉදිරියට යාමට Enter ඔබන්න",
+  "mockExam": {
+    "title": "මාදිලි විභාගය",
+    "subtitle": "පුද්ගලික, කාල නියමිත විභාගයක් සකසන්න.",
+    "setupTitle": "විභාගය",
+    "totalQuestions": "ප්‍රශ්න ගණන",
+    "durationMinutes": "කාලය (මිනිත්තු)",
+    "scope": "ආවරණය",
+    "scopeFull": "සම්පූර්ණ ආවරණය",
+    "scopeSelected": "තෝරාගත් ප්‍රවර්ග",
+    "difficultyMode": "මට්ටම",
+    "difficultyStandard": "වත්මන් මට්ටම",
+    "difficultyAdaptive": "අනුවර්තී මට්ටම",
+    "start": "ආරම්භ කරන්න",
+    "startError": "මාදිලි විභාගය ආරම්භ කළ නොහැකි විය."
   },
   "placement": {
     "title": "අපි ඔබේ ආරම්භක මට්ටම මනිමු",
@@ -30,7 +47,8 @@
     "reviewMistakes": "ඔබේ වැරදි සමාලෝචනය කරන්න",
     "yourAnswer": "ඔබේ පිළිතුර: {{value}}",
     "correctAnswer": "නිවැරදි: {{value}}",
-    "thinking": "සිතමින්...",
-    "explain": "මෙම පිළිතුර පැහැදිලි කරන්න"
+    "thinking": "ඔබේ පැහැදිලි කිරීම සකසමින්...",
+    "explain": "මෙම පිළිතුර පැහැදිලි කරන්න",
+    "explainMore": "වැඩිදුර පැහැදිලි කිරීමක් ලබා ගන්න"
   }
 }

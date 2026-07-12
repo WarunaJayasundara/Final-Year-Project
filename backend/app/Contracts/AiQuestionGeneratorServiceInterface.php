@@ -20,11 +20,18 @@ interface AiQuestionGeneratorServiceInterface
      *   from near-duplicates up front (the actual similarity check still
      *   happens after generation - this is a best-effort prompt hint, not a
      *   guarantee).
+     * @param string|null $sourceContext Optional grounding context from an
+     *   admin-uploaded reference document (SourceDocumentController) - a
+     *   short, bounded summary (title + matched topics), never the
+     *   document's full text, so no copyrighted source material is
+     *   reproduced through the generation prompt. Used to bias topic/style,
+     *   not to copy content.
      */
     public function generate(
         Category $category,
         IqLevel $level,
         ?string $examCategoryLabel,
-        array $avoidQuestionTexts
+        array $avoidQuestionTexts,
+        ?string $sourceContext = null
     ): array;
 }

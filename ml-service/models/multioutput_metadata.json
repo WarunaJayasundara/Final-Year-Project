@@ -1,0 +1,43 @@
+{
+  "trained_at": "2026-07-10T20:20:06.714246+00:00",
+  "features": [
+    "avg_test_score",
+    "weekly_practice_count",
+    "question_completion_rate",
+    "engagement_score",
+    "practice_intensity"
+  ],
+  "targets": {
+    "risk_of_dropping_practice": {
+      "f1": 0.7748015873015873,
+      "roc_auc": 0.9452382994009201,
+      "positive_rate_train": 0.2050148209339618,
+      "positive_rate_test": 0.20505344995140914,
+      "n_train": 20579,
+      "n_test": 5145
+    },
+    "next_assessment_score": {
+      "mae": 12.931652820560688,
+      "rmse": 17.097880594967698,
+      "r2": 0.31473609349561504,
+      "target_mean": 74.07655133412163,
+      "target_std": 20.19252232119145,
+      "n_train": 15560,
+      "n_test": 3891
+    },
+    "score_change": {
+      "mae": 8.759231376734428,
+      "rmse": 12.092178319637894,
+      "r2": 0.28516399404841164,
+      "target_mean": -1.72330132779724,
+      "target_std": 14.45367780531047,
+      "n_train": 15560,
+      "n_test": 3891
+    }
+  },
+  "training_data": "OULAD only, temporally split (first half = features, second half = target) - see process_oulad_temporal.py",
+  "excluded_outputs": {
+    "recommended_daily_study_hours": "No ground truth exists in any dataset for 'optimal' study hours - delivered as a StudyPlanService rule, informed by risk_of_dropping_practice, not an ML prediction.",
+    "most_effective_learning_strategy": "Requires interventional/causal data (same student under strategy A vs B) no observational dataset provides - delivered as a rule-based suggestion."
+  }
+}

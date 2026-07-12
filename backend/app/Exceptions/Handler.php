@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -46,5 +48,18 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * This app is API-only behind the React SPA - there is no server-rendered
+     * login page to redirect an unauthenticated browser navigation to (e.g. a
+     * plain <a href="/api/..."> download link clicked while the session has
+     * expired). Always respond with JSON 401 instead of the framework
+     * default, which would otherwise call route('login') and crash with a
+     * RouteNotFoundException since that route doesn't exist here.
+     */
+    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse
+    {
+        return response()->json(['message' => $exception->getMessage()], 401);
     }
 }

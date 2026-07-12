@@ -1,4 +1,4 @@
-export type SessionType = 'placement' | 'daily' | 'practice';
+export type SessionType = 'placement' | 'daily' | 'practice' | 'mock';
 
 export interface QuestionOption {
   key: string;
@@ -16,6 +16,10 @@ export interface SessionQuestion {
   options: QuestionOption[];
   answer_id: number;
   answered: boolean;
+  expected_time_seconds: number;
+  /** Only ever present on completed-session report answers - live/unanswered
+   * question payloads never include this (see Question::toClientArray()). */
+  explanation?: string | null;
 }
 
 export interface SessionData {
@@ -27,6 +31,17 @@ export interface SessionData {
   total_questions: number;
   completed_at: string | null;
   questions: SessionQuestion[];
+  // Set for mock exams only (a real requested duration) - null/absent for
+  // placement/daily/practice sessions, which have no wall-clock time limit.
+  time_limit_seconds?: number | null;
+}
+
+export interface MockExamRequest {
+  total_questions?: number;
+  duration_minutes?: number;
+  scope?: 'full_syllabus' | 'selected_categories';
+  category_ids?: number[];
+  difficulty_mode?: 'standard' | 'adaptive';
 }
 
 /**

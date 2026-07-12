@@ -2,6 +2,9 @@
   "hub": {
     "subtitle": "Quick brain-training games that feed your dashboard streak."
   },
+  "start": {
+    "button": "Start"
+  },
   "result": {
     "points": "{{score}} pts",
     "newBest": "New personal best!",
@@ -14,30 +17,89 @@
   },
   "memoryMatch": {
     "title": "Memory Match",
+    "instructions": "Flip two cards at a time and find every matching pair.",
     "moves": "Moves: {{count}}",
     "matched": "Matched: {{matched}} / {{total}}"
   },
   "sequencePuzzle": {
     "title": "Sequence Puzzle",
+    "instructions": "What comes next in the sequence?",
     "round": "Round {{current}} / {{total}}",
     "correct": "Correct: {{count}}",
     "prompt": "What comes next in the sequence?"
   },
   "mathRush": {
     "title": "Mental Math Rush",
+    "instructions": "Solve as many quick problems as you can before time runs out.",
     "timeLeft": "Time left: {{seconds}}s",
     "score": "Score: {{score}}"
   },
   "mentalRotation": {
     "title": "Mental Rotation Challenge",
+    "instructions": "Which option is a true rotation of this shape, not a mirror image?",
     "round": "Round {{current}} / {{total}}",
     "correct": "Correct: {{count}}",
     "prompt": "Which option is a true rotation of this shape, not a mirror image?"
   },
   "selectiveAttention": {
     "title": "Selective Attention Challenge",
+    "instructions": "Click the one arrow pointing a different direction.",
     "round": "Round {{current}} / {{total}}",
     "correct": "Correct: {{count}}",
     "prompt": "Click the one arrow pointing a different direction."
+  },
+  "workingMemorySpan": {
+    "title": "Working Memory Challenge",
+    "instructions": "Remember a sequence of digits, then tap them back in order.",
+    "trial": "Trial {{current}} / {{total}}",
+    "span": "Span: {{span}}",
+    "recallForward": "Tap the digits back in the SAME order.",
+    "recallBackward": "Tap the digits back in REVERSE order.",
+    "nbackPrompt": "Press MATCH if this digit is the same as the one shown 2 digits ago.",
+    "matchButton": "MATCH",
+    "correct": "Correct!",
+    "incorrect": "Not quite.",
+    "task": {
+      "forward": "Forward digit span",
+      "backward": "Backward digit span",
+      "nback": "2-back updating",
+      "interference": "Interference recall"
+    }
+  },
+  "visualSpatialMemory": {
+    "title": "Visual & Spatial Memory",
+    "instructions": "Memorize positions and icons, then answer what you saw.",
+    "round": "Round {{current}} / {{total}}",
+    "memorize": "Memorize the positions and icons.",
+    "howMany": "How many icons were shown?",
+    "whichIconWasAt": "Which icon was at the highlighted cell?",
+    "whichNotShown": "Which of these icons was NOT shown?",
+    "watchPath": "Watch the sequence of highlighted cells.",
+    "tapPath": "Tap the cells back in the same order.",
+    "correct": "Correct!",
+    "incorrect": "Not quite."
+  },
+  "cognitiveCommandCenter": {
+    "title": "Cognitive Command Center",
+    "instructions": "Switch quickly between short tasks as the rules change.",
+    "round": "Round {{current}} / {{total}}",
+    "score": "Score: {{score}}",
+    "rule": "Current rule: {{rule}}",
+    "correct": "Correct!",
+    "incorrect": "Not quite.",
+    "task": {
+      "pattern": "Spot the pattern",
+      "recall": "Recall (2 rounds ago)",
+      "sort": "Sorting rule",
+      "inhibition": "Go / No-Go",
+      "dual": "Dual task"
+    },
+    "rules": {
+      "largest": "Pick the LARGEST number",
+      "smallestOdd": "Pick the SMALLEST odd number",
+      "largestEven": "Pick the LARGEST even number"
+    },
+    "goPrompt": "Tap ONLY the green circle. Ignore the red one.",
+    "recallPrompt": "What number was shown 2 rounds ago?"
   }
 }

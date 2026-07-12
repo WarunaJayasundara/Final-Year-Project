@@ -21,6 +21,9 @@ namespace App\Services\QuestionBank;
  *   ['sheet' => 'full'|'half-v'|'half-h'|'quarter',
  *    'holes' => [[fx,fy],...], 'foldLines' => ['v','h']]
  *   ['net' => [[gx,gy,shapeSpec],...]]               -> cube net (cross)
+ *   ['chart' => bar|pie|line, 'series' => [n,...]]    -> data-interpretation chart
+ *   ['bool' => and|or|xor, 'cellsA' => [[r,c],...],
+ *    'cellsB' => [[r,c],...]]                         -> 4x4 boolean shape overlay
  *
  * All rendering is pure geometry - correctness of an answer tile is
  * guaranteed by construction in the seeder (e.g. the "mirror image" option
@@ -96,9 +99,20 @@ class SvgFigureBuilder
         return implode("\n", $svg);
     }
 
+    /**
+     * Every panel's content (shapes, polyominoes, text, ...) is clipped to
+     * its own bounding rect - a defensive safety net against ANY panel type
+     * visually bleeding into a neighbouring tile, on top of renderText()'s
+     * own font-size fix below for the specific bug this caught (a 5-glyph
+     * mirror-text string at a fixed font-size overflowing its 100px option
+     * tile and overlapping the adjacent tiles).
+     */
     private function renderPanel(?array $spec, float $x, float $y, float $size): string
     {
+        $clipId = 'clip-'.str_replace(['.', '-'], '', $x.'-'.$y.'-'.$size);
+
         $out = '<g>';
+        $out .= '<clipPath id="'.$clipId.'"><rect x="'.$x.'" y="'.$y.'" width="'.$size.'" height="'.$size.'"/></clipPath>';
         $out .= '<rect x="'.$x.'" y="'.$y.'" width="'.$size.'" height="'.$size.'" fill="none" stroke="'.self::PANEL_BORDER.'" stroke-width="1.5" rx="6"/>';
 
         if ($spec === null) {
@@ -106,6 +120,8 @@ class SvgFigureBuilder
 
             return $out.'</g>';
         }
+
+        $out .= '<g clip-path="url(#'.$clipId.')">';
 
         if (isset($spec['shape'])) {
             $out .= $this->renderShapes($spec, $x, $y, $size);
@@ -119,7 +135,13 @@ class SvgFigureBuilder
             $out .= $this->renderSheet($spec, $x, $y, $size);
         } elseif (isset($spec['net'])) {
             $out .= $this->renderNet($spec['net'], $x, $y, $size);
+        } elseif (isset($spec['chart'])) {
+            $out .= $this->renderChart($spec, $x, $y, $size);
+        } elseif (isset($spec['bool'])) {
+            $out .= $this->renderBoolOverlay($spec, $x, $y, $size);
         }
+
+        $out .= '</g>';
 
         return $out.'</g>';
     }
@@ -236,10 +258,28 @@ class SvgFigureBuilder
         return $out;
     }
 
+    /**
+     * Font-size scales down with string length so longer glyph strings
+     * (mirror-image questions use 3-5 char strings) reliably fit inside the
+     * fixed-width panel instead of overflowing into the next tile - a fixed
+     * font-size only ever worked for short strings. renderPanel()'s
+     * clip-path is a second, independent safety net for any residual
+     * overflow (e.g. unusually wide glyphs), not a substitute for sizing
+     * text to actually fit and stay readable.
+     */
     private function renderText(array $spec, float $x, float $y, float $size): string
     {
         $cx = $x + $size / 2;
         $cy = $y + $size / 2;
+        $text = $spec['text'];
+        $length = max(1, mb_strlen($text));
+
+        $letterSpacing = 2;
+        $availableWidth = $size * 0.82;
+        $glyphWidthFactor = 0.62; // average bold-Arial glyph width, in em
+        $fittedFontSize = ($availableWidth - $letterSpacing * ($length - 1)) / ($length * $glyphWidthFactor);
+        $fontSize = max($size * 0.14, min($size * 0.34, $fittedFontSize));
+
         $transform = match ($spec['mode'] ?? 'plain') {
             'mirrorH' => 'translate('.round(2 * $cx, 1).' 0) scale(-1 1)',
             'mirrorV' => 'translate(0 '.round(2 * $cy, 1).') scale(1 -1)',
@@ -247,10 +287,9 @@ class SvgFigureBuilder
             default => '',
         };
         $attr = $transform !== '' ? ' transform="'.$transform.'"' : '';
-        $fontSize = $size * 0.34;
 
         return '<text x="'.round($cx, 1).'" y="'.round($cy + $fontSize * 0.35, 1).'" text-anchor="middle" font-size="'.round($fontSize, 1)
-            .'" font-weight="bold" letter-spacing="2" fill="'.self::STROKE.'"'.$attr.'>'.htmlspecialchars($spec['text'], ENT_XML1).'</text>';
+            .'" font-weight="bold" letter-spacing="'.$letterSpacing.'" fill="'.self::STROKE.'"'.$attr.'>'.htmlspecialchars($text, ENT_XML1).'</text>';
     }
 
     /** @param int|array{0:int,1:int} $n side count, or [rows, cols] for a rectangular grid */
@@ -332,5 +371,152 @@ class SvgFigureBuilder
         }
 
         return $out;
+    }
+
+    /** @param array<int,int|float> $series */
+    private function renderChart(array $spec, float $x, float $y, float $size): string
+    {
+        $series = $spec['series'] ?? [];
+        $pad = $size * 0.12;
+
+        return match ($spec['chart']) {
+            'pie' => $this->renderPieChart($series, $x, $y, $size),
+            'line' => $this->renderLineChart($series, $x, $y, $size, $pad),
+            default => $this->renderBarChart($series, $x, $y, $size, $pad),
+        };
+    }
+
+    private function renderBarChart(array $series, float $x, float $y, float $size, float $pad): string
+    {
+        if (empty($series)) {
+            return '';
+        }
+        $max = max($series) ?: 1;
+        $inner = $size - 2 * $pad;
+        $n = count($series);
+        $barGap = $inner * 0.08;
+        $barW = ($inner - ($n - 1) * $barGap) / $n;
+
+        $out = '';
+        foreach (array_values($series) as $i => $v) {
+            $h = $inner * ($v / $max);
+            $bx = $x + $pad + $i * ($barW + $barGap);
+            $by = $y + $pad + ($inner - $h);
+            $out .= '<rect x="'.round($bx, 1).'" y="'.round($by, 1).'" width="'.round($barW, 1).'" height="'.round(max(0, $h), 1)
+                .'" fill="'.self::FILL.'" stroke="'.self::STROKE.'" stroke-width="1"/>';
+        }
+        $baseY = round($y + $pad + $inner, 1);
+        $out .= '<line x1="'.round($x + $pad, 1).'" y1="'.$baseY.'" x2="'.round($x + $pad + $inner, 1).'" y2="'.$baseY.'" stroke="'.self::STROKE.'" stroke-width="1.5"/>';
+
+        return $out;
+    }
+
+    private function renderPieChart(array $series, float $x, float $y, float $size): string
+    {
+        $total = array_sum($series) ?: 1;
+        $cx = $x + $size / 2;
+        $cy = $y + $size / 2;
+        $r = $size * 0.38;
+        $colors = ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#22d3ee'];
+
+        $angle = -90.0;
+        $out = '';
+        foreach (array_values($series) as $i => $v) {
+            $sweep = 360 * ($v / $total);
+            $out .= $this->pieSlice($cx, $cy, $r, $angle, $angle + $sweep, $colors[$i % count($colors)]);
+            $angle += $sweep;
+        }
+
+        return $out;
+    }
+
+    private function pieSlice(float $cx, float $cy, float $r, float $startDeg, float $endDeg, string $color): string
+    {
+        $startRad = deg2rad($startDeg);
+        $endRad = deg2rad($endDeg);
+        $x1 = $cx + $r * cos($startRad);
+        $y1 = $cy + $r * sin($startRad);
+        $x2 = $cx + $r * cos($endRad);
+        $y2 = $cy + $r * sin($endRad);
+        $largeArc = ($endDeg - $startDeg) > 180 ? 1 : 0;
+
+        $path = 'M '.round($cx, 1).' '.round($cy, 1)
+            .' L '.round($x1, 1).' '.round($y1, 1)
+            .' A '.round($r, 1).' '.round($r, 1)." 0 {$largeArc} 1 ".round($x2, 1).' '.round($y2, 1).' Z';
+
+        return '<path d="'.$path.'" fill="'.$color.'" stroke="#ffffff" stroke-width="1"/>';
+    }
+
+    private function renderLineChart(array $series, float $x, float $y, float $size, float $pad): string
+    {
+        $values = array_values($series);
+        if (empty($values)) {
+            return '';
+        }
+        $max = max($values);
+        $min = min(0, min($values));
+        $range = max(1e-6, $max - $min);
+        $inner = $size - 2 * $pad;
+        $n = count($values);
+        $step = $n > 1 ? $inner / ($n - 1) : 0;
+
+        $points = [];
+        foreach ($values as $i => $v) {
+            $px = $x + $pad + $i * $step;
+            $py = $y + $pad + $inner * (1 - ($v - $min) / $range);
+            $points[] = [round($px, 1), round($py, 1)];
+        }
+
+        $out = '<polyline points="'.implode(' ', array_map(fn ($p) => $p[0].','.$p[1], $points)).'" fill="none" stroke="'.self::FILL.'" stroke-width="2.5"/>';
+        foreach ($points as [$px, $py]) {
+            $out .= '<circle cx="'.$px.'" cy="'.$py.'" r="3" fill="'.self::STROKE.'"/>';
+        }
+
+        return $out;
+    }
+
+    private function renderBoolOverlay(array $spec, float $x, float $y, float $size): string
+    {
+        $result = $this->combineCells($spec['cellsA'], $spec['cellsB'], $spec['bool']);
+        $pad = $size * 0.12;
+        $cellSize = ($size - 2 * $pad) / 4;
+
+        $out = '';
+        for ($r = 0; $r < 4; $r++) {
+            for ($c = 0; $c < 4; $c++) {
+                $filled = in_array([$r, $c], $result, true);
+                $out .= '<rect x="'.round($x + $pad + $c * $cellSize, 1).'" y="'.round($y + $pad + $r * $cellSize, 1)
+                    .'" width="'.round($cellSize, 1).'" height="'.round($cellSize, 1)
+                    .'" fill="'.($filled ? self::FILL : 'none').'" stroke="'.self::PANEL_BORDER.'" stroke-width="1"/>';
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * AND/OR/XOR of two 4x4 cell sets. Public so seeders compute the
+     * resulting cell set once and reuse it both to render the correct
+     * answer tile AND to verify no distractor tile accidentally reproduces
+     * the same cell set (uniqueness check), the same "compute once, reuse
+     * for both rendering and verification" pattern as transformPoly().
+     *
+     * @param  array<int,array{0:int,1:int}>  $cellsA
+     * @param  array<int,array{0:int,1:int}>  $cellsB
+     * @return array<int,array{0:int,1:int}>
+     */
+    public function combineCells(array $cellsA, array $cellsB, string $op): array
+    {
+        $key = fn ($c) => $c[0].','.$c[1];
+        $setA = array_flip(array_map($key, $cellsA));
+        $setB = array_flip(array_map($key, $cellsB));
+
+        $result = match ($op) {
+            'and' => array_intersect_key($setA, $setB),
+            'or' => $setA + $setB,
+            default => array_diff_key($setA, $setB) + array_diff_key($setB, $setA), // xor
+        };
+
+        return array_values(array_map(fn ($k) => array_map('intval', explode(',', $k)), array_keys($result)));
     }
 }

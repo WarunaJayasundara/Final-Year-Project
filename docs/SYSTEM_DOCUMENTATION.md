@@ -71,7 +71,7 @@ produce a measurable ability gain.
 | i18n | i18next + react-i18next + language-detector | EN/SI, see §12 |
 | Toasts | sonner | |
 | Testing | PHPUnit (backend), TypeScript compiler strict-mode (frontend) | No frontend test runner configured; correctness verified via `tsc --noEmit` + manual browser verification |
-| ML pipeline | Python 3.11, scikit-learn, XGBoost, SHAP, FastAPI + uvicorn | Standalone `ml-service/` microservice, called from Laravel over HTTP — see §7 |
+| ML pipeline | Python 3.11, scikit-learn, XGBoost, LightGBM, CatBoost, Optuna, SHAP, LIME, FastAPI + uvicorn | Standalone `ml-service/` microservice, called from Laravel over HTTP — see §7 |
 
 **Dev topology:** Laravel serves the API on `:8000` (`php artisan serve`);
 Vite serves the SPA on `:5173` and proxies `/api/*` to the backend; MySQL
@@ -327,54 +327,79 @@ days-to-exam weighting are not yet implemented — see §17.
 
 ## 7. AI Exam Readiness Prediction (ML Module)
 
-A supervised machine-learning layer sitting alongside the IRT engine,
-predicting whether a student is **Ready / Almost Ready / Needs Improvement
-/ High Risk** for an upcoming exam, with SHAP-based explainable reasons.
-Full methodology, dataset design, and model comparison numbers live in
-[`ML_EXAM_READINESS_EXPLAINED.md`](ML_EXAM_READINESS_EXPLAINED.md) — this
-section is a map of what exists and where.
+A research-grade supervised machine-learning layer sitting alongside the
+IRT engine, predicting whether a student is **Ready / Almost Ready / Needs
+Improvement / High Risk** for an upcoming exam (plus three additional
+real-data-grounded outputs, see below), with SHAP/LIME-cross-checked
+explainable reasons and a trend-aware plain-English explanation. Full
+methodology — dataset selection, hybrid-dataset design, feature-engineering
+math, model comparison, hyperparameter optimization, evaluation, XAI,
+multi-output scoping, the recommendation-engine integration, continual
+learning, and a threats-to-validity/bias/fairness/privacy analysis — lives
+in [`ML_RESEARCH_METHODOLOGY.md`](ML_RESEARCH_METHODOLOGY.md) (thesis-grade)
+and [`ML_EXAM_READINESS_EXPLAINED.md`](ML_EXAM_READINESS_EXPLAINED.md)
+(plain-language walkthrough); this section is a map of what exists and
+where.
 
-**In one paragraph:** `FeatureExtractionService` computes a fixed
-24-feature vector per student (IRT theta, per-category accuracy, practice
-frequency/streak, response time, self-reported study hours/motivation/
-attendance, days until exam, etc.) purely from data the platform already
-has, plus a small amount of new self-reported data captured via a daily
-check-in. `ReadinessPredictionService` POSTs that vector to a standalone
+**In one paragraph:** `FeatureExtractionService` computes a 42-feature
+vector per student (the original 24 — IRT theta, per-category accuracy,
+practice frequency/streak, response time, self-reported study
+hours/motivation/attendance, days until exam — plus 18 new advanced
+behavioural features: rolling/weekly/monthly trends, learning velocity,
+consistency index, fatigue/retention/engagement scores, and more, each with
+a documented mathematical definition) purely from data the platform already
+has. `ReadinessPredictionService` POSTs that vector (plus the student's
+previous prediction snapshot, for trend-aware explanations) to a standalone
 **FastAPI microservice** (`ml-service/`, port 8100) — the same
 swappable-external-service pattern as the Gemini integration — which runs a
-pre-trained **XGBoost** classifier (selected by comparing Random Forest,
-Gradient Boosting, and XGBoost on macro-F1) and returns a readiness
-percentage, a class label, and the top-5 SHAP-attributed reasons. The
-result is persisted as a new `exam_readiness_predictions` row (history, not
-overwritten) so a readiness trend can be charted.
+model selected from **9 candidate families** (Random Forest, Extra Trees,
+Gradient Boosting, AdaBoost, XGBoost, LightGBM, CatBoost, SVM, MLP —
+TabNet deliberately excluded, see the methodology doc) via 5-fold
+screening + Optuna Bayesian hyperparameter optimization under nested CV,
+trained on a **hybrid dataset**: real OULAD (32,593 real students, CC BY
+4.0) + real UCI Student Performance (1,044 students, CC BY 4.0) + a
+synthetic layer calibrated against real OULAD outcome coefficients
+(45.7% real-data share overall). The response returns a readiness
+percentage, class label, top-5 SHAP-attributed reasons, a plain-English
+explanation, and (where the deployed multi-output models are present)
+**risk of dropping practice**, **predicted next assessment score**, and
+**predicted score change** — all three trained on genuine, temporally
+non-leaky real OULAD ground truth (first-half activity → second-half
+outcome). The result is persisted as a new `exam_readiness_predictions` row
+(history, not overwritten) so a readiness trend can be charted.
 
 | Component | File |
 |---|---|
-| Feature extraction (24 features from existing + self-reported data) | `backend/app/Services/Ml/FeatureExtractionService.php` |
-| HTTP client to the ML microservice + persistence | `backend/app/Services/Ml/ReadinessPredictionService.php` |
+| Feature extraction (42 features: 24 original + 18 advanced) | `backend/app/Services/Ml/FeatureExtractionService.php` |
+| HTTP client to the ML microservice + persistence (incl. `previous_features`) | `backend/app/Services/Ml/ReadinessPredictionService.php` |
 | Student-facing endpoints | `backend/app/Http/Controllers/ReadinessController.php`, `CheckinController.php` |
-| Synthetic dataset generator (80,000 rows, documented composite-heuristic labels) | `ml-service/generate_dataset.py` |
-| Model training/comparison + SHAP global importance | `ml-service/train_model.py` |
-| Inference API (`/predict`, `/health`, `/metadata`) | `ml-service/app.py` |
-| Saved model artifacts (versioned) | `ml-service/models/model.joblib`, `scaler.joblib`, `metadata.json` |
-| Student dashboard widget | `frontend/src/features/readiness/ReadinessCard.tsx` |
-| Feature test (mocks the ML HTTP call) | `backend/tests/Feature/ReadinessPredictionTest.php` |
+| Dataset fetch/ETL (OULAD + UCI) | `ml-service/data_pipeline/fetch_datasets.py`, `process_oulad.py`, `process_oulad_temporal.py`, `process_uci.py` |
+| Real→MindRise feature mapping + synthetic calibration | `ml-service/data_pipeline/feature_mapping.py`, `calibrate_synthetic.py`, `structural_model.py` |
+| 18 advanced-feature math definitions | `ml-service/data_pipeline/advanced_features.py` |
+| Hybrid dataset assembly (73,637 rows) | `ml-service/data_pipeline/build_hybrid_dataset.py` → `ml-service/data/hybrid_student_dataset.csv` |
+| 9-model comparison + Optuna nested-CV HPO | `ml-service/model_comparison.py` |
+| Comprehensive evaluation suite (all requested metrics, CV, bootstrap CI, learning/validation curves) | `ml-service/evaluate.py` |
+| Explainability (SHAP + LIME + permutation importance + PDP) | `ml-service/explain.py` |
+| Multi-output models (risk/next-score/score-change) | `ml-service/train_multioutput.py` |
+| Bias/fairness analysis (real OULAD demographics) | `ml-service/data_pipeline/bias_fairness_report.py` |
+| Model versioning + champion-vs-challenger retraining | `ml-service/model_registry.py`, `retrain.py` |
+| Inference API (`/predict`, `/health`, `/metadata`, `/models`, `/evaluation-report`, `/explainability-report`) | `ml-service/app.py` |
+| Saved model artifacts (versioned) | `ml-service/models/` (`model.joblib`, `scaler.joblib`, `metadata.json`, `risk_model.joblib`, `next_score_model.joblib`, `score_change_model.joblib`, `registry.json`) |
+| Student dashboard widget (readiness + risk + predicted score + plain-English explanation) | `frontend/src/features/readiness/ReadinessCard.tsx` |
+| Feature tests (mocks the ML HTTP call; covers research-grade fields + backward compatibility) | `backend/tests/Feature/ReadinessPredictionTest.php` |
 | Admin ML overview | `GET /api/admin/analytics/ml-overview` (students ready/at-risk, average readiness, live model metrics) |
-
-**Model comparison** (80,000 synthetic records, 80/20 stratified split):
-XGBoost selected automatically (macro-F1 = 0.616, macro ROC-AUC = 0.856,
-accuracy = 0.622) over Random Forest and Gradient Boosting. Full confusion
-matrix, per-class precision/recall, and the top-8 globally important
-features (led by `avg_test_score` and `theta`) are in the companion doc.
 
 The three features with no objective source elsewhere on the platform —
 `study_hours`, `motivation_score`, `attendance_percent` — are captured via
 `user_daily_checkins` rather than fabricated; a student who hasn't checked
-in recently gets neutral defaults instead of a failed prediction. Labels in
-the training dataset are synthetic (a documented composite heuristic, not
-real historical exam outcomes) since real usage volume can't yet support
-training — this is disclosed, not hidden, and retraining on real outcomes
-later requires no architecture change, only a real `label` column.
+in recently gets neutral defaults instead of a failed prediction. The
+`exam_readiness_predictions` label is now **45.7% grounded in real student
+outcomes** (up from 0% pre-upgrade) via the hybrid dataset, with the
+remaining synthetic share generated by a documented composite heuristic
+*calibrated against real OULAD outcome coefficients* — this is disclosed,
+not hidden, as a real limitation in the methodology doc's threats-to-
+validity section, and retraining on MindRise's own real outcomes later
+(once enough accumulate) requires no architecture change.
 
 ---
 
@@ -891,9 +916,13 @@ follows a phased roadmap agreed after supervisor feedback that the original
 scope lacked novelty — **Phase 1 (AI Exam Readiness Prediction, §7), Phase 2
 (Government Exam Profile + Countdown + Smart Study Planner, §8), Phase 3
 (UI/UX redesign, §13), Phase 4 (Gamification, §9), Phase 5 (AI Question
-Generation §11 + two new mini-games §14), and Phase 6 (competitive-grade
-question bank redesign, §15) are all complete.** The full originally-agreed
-roadmap has now shipped; remaining items are smaller loose ends:
+Generation §11 + two new mini-games §14), Phase 6 (competitive-grade
+question bank redesign, §15), and Phase 7 (research-grade ML upgrade — real
+OULAD/UCI data, 9-model comparison with Optuna HPO, expanded XAI,
+multi-output prediction, continual learning, full research methodology —
+§7 and `ML_RESEARCH_METHODOLOGY.md`) are all complete.** The full
+originally-agreed roadmap has now shipped; remaining items are smaller
+loose ends:
 
 - **`GeminiAiQuestionGeneratorService` is unverified against the live
   Gemini API** — no API key has been configured yet (`mock` remains the
@@ -913,6 +942,18 @@ roadmap has now shipped; remaining items are smaller loose ends:
   × level, by-subcategory, by-Bloom's-level, and an untagged-question
   count), but there is still no bulk CSV/JSON import tool for adding
   questions in batches outside the seeder system.
+- **The ML module's readiness label is only 45.7% grounded in real student
+  outcomes** (the hybrid dataset's real-data share) — a genuine,
+  extensively-documented limitation, not an oversight; see
+  `ML_RESEARCH_METHODOLOGY.md` §12 for the full threats-to-validity, bias,
+  fairness, and limitations analysis, including a population mismatch
+  between the real datasets' source populations and MindRise's actual
+  target demographic.
+- **No fully-automatic scheduled ML retraining.** `retrain.py` implements
+  real champion-vs-challenger versioning and can be run at any time, but
+  nothing currently triggers it on a schedule — a deliberate scope decision
+  (disproportionate infrastructure for a single-VM student project), see
+  `ML_RESEARCH_METHODOLOGY.md` §11.2.
 
 ---
 
@@ -923,13 +964,31 @@ roadmap has now shipped; remaining items are smaller loose ends:
 2. Backend: `cd backend && php artisan serve` (port 8000).
 3. Frontend: `cd frontend && npm run dev` (port 5173, proxies `/api/*` to
    the backend).
-4. ML service (only needed for the exam-readiness feature):
+4. ML service (only needed for the exam-readiness feature) — **first-time
+   setup runs the full research-grade pipeline**, not just a single script;
+   see §18.1 below for what each step does and how long it takes:
    ```
    cd ml-service
    python -m venv venv
    ./venv/Scripts/python.exe -m pip install -r requirements.txt   # first time only
-   ./venv/Scripts/python.exe generate_dataset.py                  # first time only, writes data/*.csv
-   ./venv/Scripts/python.exe train_model.py                       # first time only, writes models/*
+
+   # Dataset ETL (downloads ~45MB of public data; the ~450MB VLE clickstream
+   # is streamed/aggregated, never held fully in memory or written to git)
+   ./venv/Scripts/python.exe -m data_pipeline.fetch_datasets
+   ./venv/Scripts/python.exe -m data_pipeline.process_oulad
+   ./venv/Scripts/python.exe -m data_pipeline.process_oulad_temporal
+   ./venv/Scripts/python.exe -m data_pipeline.process_uci
+   ./venv/Scripts/python.exe -m data_pipeline.calibrate_synthetic
+   ./venv/Scripts/python.exe -m data_pipeline.build_hybrid_dataset
+
+   # Training (the expensive step - see §18.1's time estimate)
+   ./venv/Scripts/python.exe model_comparison.py
+   ./venv/Scripts/python.exe evaluate.py
+   ./venv/Scripts/python.exe explain.py
+   ./venv/Scripts/python.exe train_multioutput.py
+   ./venv/Scripts/python.exe -m data_pipeline.bias_fairness_report
+   ./venv/Scripts/python.exe model_registry.py list   # confirms the version registered
+
    ./venv/Scripts/python.exe -m uvicorn app:app --host 127.0.0.1 --port 8100
    ```
    Laravel reads its URL from `ML_SERVICE_URL` in `.env` (default
@@ -948,8 +1007,189 @@ php artisan irt:validate-simulation       # Monte Carlo validation (writes stora
 php artisan db:seed                       # re-run all seeders (categories, levels, questions, games, super admin)
 ```
 
-Retraining the ML model (e.g. after generating more/better synthetic data,
-or once real exam-outcome data exists): re-run `generate_dataset.py` and
-`train_model.py` inside `ml-service/`, then restart the `uvicorn` process —
-the new `models/metadata.json` version is picked up automatically and
-reported in every subsequent prediction.
+### 18.1 ML pipeline deployment/retraining guide
+
+**First-time setup time budget.** Dataset ETL (`fetch_datasets.py` through
+`build_hybrid_dataset.py`) takes a few minutes, dominated by the ~450MB
+OULAD VLE clickstream download+chunked aggregation. **Training
+(`model_comparison.py`) is the expensive step** — 9-model 5-fold screening
+plus Optuna nested-CV hyperparameter optimization on ~59K training rows can
+run for well over an hour depending on hardware, particularly if CatBoost
+(forced single-threaded to avoid oversubscription) is among the top-3
+screened candidates. Run it as a background process; it is CPU-bound, not
+memory-bound, and safe to leave unattended. `evaluate.py`, `explain.py`,
+`train_multioutput.py`, and `bias_fairness_report.py` are each on the order
+of seconds to low minutes once `model_comparison.py`'s artifacts exist.
+
+**Schema-mismatch note.** `app.py`'s `/predict` endpoint always builds the
+current 42-feature vector. If the currently-deployed `scaler.joblib` was
+trained on the pre-upgrade 24-feature schema (i.e. `model_comparison.py`
+has never been run against the hybrid dataset), `/predict` will fail with a
+scikit-learn feature-count error until `model_comparison.py` completes and
+overwrites the deployed artifacts — this is an expected, self-resolving
+mid-migration state, not a bug to patch around; `data_pipeline/
+bias_fairness_report.py` and other offline scripts detect and gracefully
+skip this case (`n_features_in_` mismatch check) rather than crashing.
+
+**Retraining later** (new real MindRise data, an updated public dataset, or
+just periodically): re-run `python retrain.py` from `ml-service/` — it
+re-runs the full `model_comparison.py` → `evaluate.py` → `explain.py`
+chain, registers the result as a new version, and only promotes it to live
+if it beats the current champion's macro-F1 by the documented margin (see
+`ML_RESEARCH_METHODOLOGY.md` §11). Restart the `uvicorn` process afterward
+to pick up a newly-promoted version — `app.py` loads artifacts once at
+startup, not per-request. There is no automatic scheduled retraining
+trigger built in (a deliberate scope decision, see §17); wire `python
+retrain.py` to a scheduled task/cron job if periodic retraining is desired.
+
+---
+
+## 19. Time-Aware Exam Readiness, Mock Exams & Sinhala Glossary (Phase 8 Upgrade)
+
+Adds real per-question response-time capture and a matching learned-time
+calibration lifecycle, a speed-accuracy analytics score, optional real-exam
+structure on the exam profile, a personalized mock-exam generator,
+phase-aware weak-area weighting, and a curated Sinhala terminology
+glossary — all additive to the existing IRT/readiness/study-plan
+architecture (§6-8), never replacing it.
+
+**Response-time capture.** `session_answers` gained `response_time_ms`,
+`time_performance_ratio` (`actual/expected`), and
+`answered_within_expected_time` — captured client-side via
+`useQuestionTimer()` (`performance.now()` at question mount vs. submit) and
+sent alongside the existing `question_id`/`selected_option_key` to
+`POST /sessions/{session}/answers`. `questions` gained
+`learned_expected_time_seconds`/`time_sample_count`/`time_calibration_status`
+— an exact mirror of the existing `irt_difficulty`/`irt_calibration_status`
+uncalibrated→provisional→calibrated lifecycle, populated by the new
+`ResponseTimeCalibrationService` (`php artisan time:calibrate`, median-based,
+outlier-robust) rather than `irt_difficulty`'s mean-based PROX calibration.
+`RaschCalibrationService::calibrate()` was also fixed to keep
+`irt_response_count`/`irt_calibration_status` updated on every run (previously
+only backfilled once, at migration time — a real gap closed in passing).
+**Rasch theta/item calibration remain completely untouched by any of this** —
+per explicit design requirement, response-time never feeds back into the
+adaptive-testing math.
+
+**Speed-Accuracy Performance Score** (`SpeedAccuracyScoreService`) — a
+documented, bounded [0,100] score: wrong answers always score 0 (never
+double-penalized for speed); correct answers get full credit at or faster
+than the expected pace, with a mild penalty (floored at -15%) for answering
+slower than expected; items weighted by authored difficulty. Three candidate
+formulations considered, one selected — see the class docblock for the full
+rationale and the unit tests (`tests/Unit/SpeedAccuracyScoreServiceTest.php`)
+that lock in its invariants.
+
+**Exam profile** (`exam_profiles`) gained optional/skippable real-exam
+structure: `exam_total_questions`, `exam_duration_minutes`, `pass_mark`,
+`negative_marking`, `exam_sections`. `ExamProfile::targetSecondsPerQuestion()`
+derives a pace target when both question count and duration are set.
+
+**Readiness gap + insufficient-plan warning** — `StudyPlanService::generate()`
+now returns a `readiness_gap` block (current vs. target readiness, current vs.
+target pace) and, only when the exam is genuinely near (≤30 days), the gap is
+meaningful (≥10 points), and the current daily-hours plan can't plausibly
+close it, a `warning` object with a severity, recommended daily minutes, and
+a bilingual explanation — never a guarantee, always a reason. Rendered as a
+`ReadinessGapPanel` on `/study-plan`.
+
+**Time-aware ML features** — `FeatureExtractionService::TIME_AWARE_FEATURE_ORDER`
+(9 objective features: `median_response_time_sec`, `response_time_std`,
+`speed_accuracy_score`, `guess_rate`, `time_efficiency_score`,
+`questions_per_minute`, `exam_pace_gap`, `response_time_improvement`,
+`active_practice_minutes`) mirrored on the Python side
+(`ml-service/data_pipeline/time_features.py`). **Deliberately not yet merged
+into `extract()`'s live-served 43-feature vector** — the currently-deployed
+model was trained on exactly that 43-value contract, so appending features
+now would silently break it. `hybrid_student_dataset.csv` was regenerated
+with all 9 new columns (55 total, same 73,637 rows / 45.7% real-data share as
+before) so a new model CAN be trained on the wider vector; the cutover
+(swap `extract()`, retrain, promote, restart uvicorn) happens together, once.
+`active_practice_minutes` is the objective replacement for the self-reported
+`study_hours` check-in field per the brief's "de-weight subjective features"
+requirement — `attendance_percent`/`study_hours` are excluded from every new
+feature-set variant in the ablation study below, though the check-in UI
+itself was kept (not removed) since it's still a reasonable optional signal.
+
+**Ablation study** (`ml-service/ablation_study.py`) — holds the algorithm
+fixed at XGBoost (already selected via `model_comparison.py`'s full 9-model
+screening) and varies only the feature set across 6 groups: the current live
+43-feature baseline, then the brief's own 5-step progressive ablation
+(scores-only → +IRT → +behaviour → +response-time → full, the last one also
+testing whether re-adding the subjective features on top actually helps).
+Full evaluation-suite metrics (accuracy, balanced accuracy, macro/weighted
+F1, ROC-AUC, PR-AUC, MCC, log loss, Brier score) reported per group via
+`evaluate.py`'s own `core_metrics()`, so results are directly comparable to
+the live model's `evaluation_report.json`. Writes `models/ablation_report.json`
+— never touches the live-serving `model.joblib` (promotion is a separate,
+deliberate step via `model_registry.py`, gated on beating the current live
+model by the existing margin).
+
+**Richer `/predict` response** — additive fields: `prediction_confidence_note`
+(a fixed disclaimer distinguishing "research-grade model estimate" from a
+verified real-world outcome, per the brief's explicit requirement),
+`predicted_score_range` (point estimate ± the next-score model's held-out
+RMSE), `time_management_readiness_percent` (rule-based, not a trained
+sub-model — only computed when the caller sends the optional
+`exam_pace_gap`/`time_efficiency_score` fields, which `ReadinessPredictionService`
+now does alongside the unchanged 43-feature payload).
+
+**Mock exams** (brief-requested, didn't exist before this upgrade) —
+`test_sessions.session_type` gained `'mock'`. `POST /api/mock-exams`
+(`MockExamController` + `QuestionSamplingService::sampleForMockExam()`)
+generates a session from student-chosen question count/duration/scope
+(full syllabus or selected categories)/difficulty mode (standard or
+per-category adaptive), with **weighted-but-bounded** category allocation —
+weak categories over-sampled by inverse mastery, but every requested
+category still gets a guaranteed minimum share (50% of the exam split evenly,
+50% weighted). Reuses the existing generic `/sessions/{session}/answers|complete|report`
+endpoints for everything after creation. Frontend: `/test/mock`
+(`MockExamSetupPage` + `MockExamRunner`) — the first real countdown timer in
+the test-taking UI, auto-submitting the session on expiry.
+
+**Exam-approaching training mode** — `WeakAreaWeightingService::allocationFor()`
+gained an optional `$phase` parameter (from `StudyPlanService::determinePhase()`,
+now `public static`): in `intensive`/`final_revision` phases, the existing
+inverse-accuracy weighting is *sharpened* (higher exponent — a category at 20%
+accuracy gets an even larger relative share as the exam nears), never
+overridden. `TestSessionController::startDaily()` wires this in automatically
+from the student's own exam profile. The brief's own caution ("don't just make
+every timer shorter") is respected — no daily-session time limit is imposed.
+
+**Sinhala glossary** (`backend/resources/sinhala_glossary.json`) — curated
+EN↔SI term pairs across cognitive-training, numerical/logical/spatial
+reasoning, attention, government-exam, and instruction vocabulary, built
+**programmatically from already-reviewed source pairs** (`CategorySeeder`
+names/descriptions, matching-key locale-file pairs) rather than freehand-typed,
+after a real corruption incident during a first hand-typed attempt was
+self-caught and discarded (same class of mistake `CLAUDE.md` §16 already
+warns about, this time in a new file rather than a seeder). Injected into
+`GeminiAiQuestionGeneratorService`'s prompt as consistent-terminology context.
+
+**Sinhala translation-quality fields** — `questions`/`ai_generated_questions`
+gained `translation_status`, `translation_quality_score`,
+`sinhala_review_status`, `semantic_equivalence_score` (`questions` also gains
+`reviewed_by`; `ai_generated_questions` already had it from Phase 5).
+`SinhalaSemanticValidationService` — a **documented structural-equivalence
+heuristic** (numeric-literal parity, option-count parity, answer-key
+presence, relative length), explicitly not a deep-NLP semantic-understanding
+claim, since both language versions of a question are generated together
+from the same underlying data rather than independently translated. Wired
+into `QuestionDraftService::generateDrafts()`; low scores are flagged
+`needs_review` and surfaced as a badge in `AdminAiQuestionsPage`, but a human
+reviewer approving a draft (the existing gate) still marks it reviewed —
+never auto-published, per the brief's explicit requirement.
+
+**AI question generation gained `solving_time_seconds`** on both the Mock
+generator (deterministic per-difficulty lookup) and Gemini (LLM-estimated,
+server-side clamped to documented per-level bounds, e.g. Level 1: 15-45s,
+Level 5: 60-150s) — a real pre-existing gap was found and fixed while wiring
+this: `ai_generated_questions` had never gained the `solving_time_seconds`
+column `questions` got in Phase 6, so a draft's estimated time had nowhere to
+be persisted until a new migration added it.
+
+**New feature tests** (no `RefreshDatabase`, explicit `tearDown()`, matching
+every existing test file): `MockExamTest`, `ResponseTimeCalibrationTest`,
+`StudyPlanReadinessGapTest`, plus additions to `WeakAreaWeightingTest` and
+`ReadinessPredictionTest`, and new unit tests
+(`SpeedAccuracyScoreServiceTest`, `SinhalaSemanticValidationServiceTest`).

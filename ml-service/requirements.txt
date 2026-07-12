@@ -2,6 +2,10 @@ pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.5.1
 xgboost==2.1.1
+lightgbm==4.6.0
+catboost==1.2.10
+optuna==4.9.0
+lime==0.2.0.1
 shap==0.46.0
 joblib==1.4.2
 fastapi==0.115.0

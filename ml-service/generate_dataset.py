@@ -22,9 +22,17 @@ Usage:
     python generate_dataset.py --rows 80000 --seed 42
 """
 import argparse
+import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from data_pipeline import advanced_features as af
+from data_pipeline import structural_model as sm
+from data_pipeline import time_features as tf
+
+CALIBRATION_PATH = Path(__file__).parent / "data" / "processed" / "calibration_report.json"
 
 FEATURE_ORDER = [
     "placement_iq",
@@ -72,21 +80,17 @@ def generate(n: int, seed: int) -> pd.DataFrame:
     motivation_latent = _clip(rng.normal(0, 1, n), -2.5, 2.5)
     consistency_latent = _clip(rng.normal(0, 1, n), -2.5, 2.5)
 
-    current_iq = _clip(100 + 15 * theta + rng.normal(0, 3, n), 40, 160)
+    current_iq = sm.iq_from_theta(theta, rng)
     # Placement happened earlier in the student's journey; current_iq reflects
     # any improvement since then (improvement_trend below is derived from the gap).
     improvement_raw = _clip(rng.normal(1.5, 4, n) + consistency_latent * 2, -15, 20)
     placement_iq = _clip(current_iq - improvement_raw, 40, 160)
 
-    def category(bias_scale=15):
-        bias = rng.normal(0, 1, n)
-        return _clip(50 + 15 * theta + bias_scale * bias * 0.4 + rng.normal(0, 6, n), 0, 100)
-
-    memory_score = category()
-    logical_score = category()
-    numerical_score = category()
-    attention_score = category()
-    spatial_score = category()
+    memory_score = sm.category_score(theta, rng)
+    logical_score = sm.category_score(theta, rng)
+    numerical_score = sm.category_score(theta, rng)
+    attention_score = sm.category_score(theta, rng)
+    spatial_score = sm.category_score(theta, rng)
 
     avg_test_score = _clip(
         (memory_score + logical_score + numerical_score + attention_score + spatial_score) / 5
@@ -96,25 +100,22 @@ def generate(n: int, seed: int) -> pd.DataFrame:
     )
     wrong_answer_percent = _clip(100 - avg_test_score + rng.normal(0, 2, n), 0, 100)
 
-    avg_game_score = _clip(
-        40 + 10 * theta + 8 * consistency_latent + rng.normal(0, 12, n), 0, 100
-    )
+    avg_game_score = sm.game_score(theta, consistency_latent, rng)
 
-    motivation_score = np.rint(_clip(5.5 + 1.8 * motivation_latent + rng.normal(0, 0.8, n), 1, 10))
+    motivation_score = sm.motivation_score_1to10(motivation_latent, rng)
     study_hours = _clip(1.2 + 0.8 * motivation_latent + rng.gamma(2, 0.6, n), 0, 8)
     attendance_percent = _clip(75 + 10 * motivation_latent + rng.normal(0, 8, n), 0, 100)
 
-    practice_intensity = _clip(0.6 * motivation_latent + 0.4 * consistency_latent, -3, 3)
-    daily_practice_count = rng.poisson(_clip(2 + practice_intensity, 0.1, None))
-    weekly_practice_count = daily_practice_count + rng.poisson(_clip(4 + practice_intensity * 1.5, 0.1, None))
-    practice_streak = rng.poisson(_clip(3 + practice_intensity * 2, 0.1, None))
-    ai_coach_usage_count = rng.poisson(_clip(1.5 + 0.5 * motivation_latent, 0.05, None))
+    daily_practice_count, weekly_practice_count, practice_streak = sm.practice_counts(
+        motivation_latent, consistency_latent, rng
+    )
+    ai_coach_usage_count = sm.ai_coach_usage(motivation_latent, rng)
 
-    avg_response_time_sec = _clip(18 - 3 * theta + rng.normal(0, 4, n), 4, 60)
-    avg_difficulty_solved = _clip(theta * 0.8 + rng.normal(0, 0.5, n), -3, 3)
+    avg_response_time_sec = sm.response_time_sec(theta, rng)
+    avg_difficulty_solved = sm.difficulty_solved(theta, rng)
     improvement_trend = _clip(improvement_raw / 3 + rng.normal(0, 1.5, n), -12, 15)
     consistency_score = _clip(60 + 15 * consistency_latent + rng.normal(0, 6, n), 0, 100)
-    question_completion_rate = _clip(85 + 8 * motivation_latent + rng.normal(0, 6, n), 30, 100)
+    question_completion_rate = sm.question_completion_rate(motivation_latent, rng)
 
     days_until_exam = rng.integers(0, 181, n)
 
@@ -147,10 +148,39 @@ def generate(n: int, seed: int) -> pd.DataFrame:
         }
     )
 
+    advanced = af.synthesize(theta, motivation_latent, consistency_latent, rng)
+    for col, values in advanced.items():
+        df[col] = values
+
+    time_aware = tf.synthesize(theta, motivation_latent, consistency_latent, rng)
+    for col, values in time_aware.items():
+        df[col] = values
+
     df["readiness_percent"], df["label"] = _composite_score(df, rng)
     df.insert(0, "student_id", np.arange(1, n + 1))
 
-    return df[["student_id", *FEATURE_ORDER, "readiness_percent", "label"]]
+    return df[[
+        "student_id", *FEATURE_ORDER, *af.ADVANCED_FEATURE_ORDER, *tf.TIME_AWARE_FEATURE_ORDER,
+        "readiness_percent", "label",
+    ]]
+
+
+def _load_calibrated_weights() -> tuple[dict, dict] | None:
+    """
+    If calibrate_synthetic.py has been run against real OULAD/UCI data, its
+    empirically-fitted feature weights (logistic regression of real outcome
+    on real features, see that script) replace the hand-picked ones below
+    for the features it actually covers - the two dicts are merged with the
+    calibrated values taking precedence, so features with no real-data
+    analogue (e.g. theta, memory_score) keep their documented hand-picked
+    weight regardless. Falls back to None (pure hand-picked weights) if no
+    calibration has been run yet, so this script's default behaviour is
+    unchanged until someone deliberately opts into calibration.
+    """
+    if not CALIBRATION_PATH.exists():
+        return None
+    report = json.loads(CALIBRATION_PATH.read_text())
+    return report.get("positive_weights", {}), report.get("inverted_weights", {})
 
 
 def _composite_score(df: pd.DataFrame, rng: np.random.Generator):
@@ -189,6 +219,12 @@ def _composite_score(df: pd.DataFrame, rng: np.random.Generator):
         "ai_coach_usage_count": 0.03,
     }
     inverted = {"wrong_answer_percent": 0.05, "avg_response_time_sec": 0.03}
+
+    calibrated = _load_calibrated_weights()
+    if calibrated is not None:
+        calibrated_weights, calibrated_inverted = calibrated
+        weights.update({k: v for k, v in calibrated_weights.items() if k in weights})
+        inverted.update({k: v for k, v in calibrated_inverted.items() if k in inverted})
 
     score = np.zeros(len(df))
     for col, w in weights.items():

@@ -10,6 +10,24 @@
   "weeklySchedule": "මෙම සතියේ කාලසටහන",
   "todaysPlan": "අද දින සැලැස්ම",
   "minutes": "මිනිත්තු {{count}}",
+  "start": "ආරම්භ කරන්න",
+  "daysLeft": "දින {{count}}ක් ඉතිරිව ඇත",
+  "streakChip": "{{count}} දින පුහුණුව",
+  "levelChip": "මට්ටම {{level}}",
+  "phaseNames": {
+    "foundation": "මූලික අවධිය",
+    "practice": "අභ්‍යාසය අවධිය",
+    "intensive": "දැඩි අවධිය",
+    "final_revision": "අවසාන සමාලෝචනය",
+    "exam_day": "විභාග දිනය"
+  },
+  "motivation": {
+    "foundation": "සූදානම පුහුණුව මගින් ආරම්භ වේ.",
+    "practice": "පුහුණුව ස්ථාවර වේ.",
+    "intensive": "දැඩි පුහුණුව අවශ්‍ය වේ.",
+    "final_revision": "අවසාන සමාලෝචනය කරයි.",
+    "exam_day": "විභාග දිනය සූදානම වේ."
+  },
   "days": {
     "monday": "සඳුදා",
     "tuesday": "අඟහරුවාදා",
@@ -26,5 +44,23 @@
     "mock": "මාදිලි විභාගය",
     "rest": "විවේක දිනය",
     "rest_light": "සැහැල්ලු සමාලෝචනය"
+  },
+  "noExamProfile": {
+    "title": "පුහුණු යෝජනා",
+    "subtitle": "තවම විභාගයක් සකසා නැත - ඔබේ මෑත කාර්ය සාධනය මත පදනම්ව අවධානය යොමු කළ යුතු දේ මෙන්න.",
+    "accuracy": "නිරවද්‍යතාව {{percent}}%",
+    "mockExamTitle": "සම්පූර්ණ මාදිලි විභාගයක් උත්සාහ කරන්න",
+    "mockExamHint": "සියලුම ප්‍රවර්ග ආවරණය කරන කාල නියමිත ප්‍රශ්න කට්ටලයක්.",
+    "setupHint": "ඒ වෙනුවට සම්පූර්ණ විභාග සැලැස්මක් අවශ්‍යද?"
+  },
+  "readinessGap": {
+    "title": "සූදානම සහ ඉලක්කය",
+    "currentReadiness": "වත්මන් සූදානම",
+    "targetReadiness": "ඉලක්ක සූදානම",
+    "currentPace": "වත්මන් වේගය",
+    "targetPace": "ඉලක්ක වේගය",
+    "secondsPerQuestion": "තත්පර {{count}}",
+    "noPredictionYet": "අනාවැකියක් නැත.",
+    "noExamPaceYet": "විභාග ප්‍රශ්න ගණන සහ කාලය එක් කරන්න."
   }
 }

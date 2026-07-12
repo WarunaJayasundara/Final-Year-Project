@@ -19,8 +19,32 @@ export function useCohortOverview() {
   return useQuery({ queryKey: ['admin', 'analytics', 'overview'], queryFn: fetchOverview });
 }
 
-export function pairedScoresCsvUrl(): string {
-  return '/api/admin/analytics/paired-scores.csv';
+/**
+ * Downloads via the authenticated axios client (responseType: 'blob') rather
+ * than a plain <a href> pointed at the API URL - a raw browser navigation to
+ * an API route doesn't reliably carry the same Accept/session context as an
+ * XHR request, and previously produced a fatal 500 (see Handler::unauthenticated
+ * and Authenticate::redirectTo for the matching backend fix). The blob is
+ * turned into a temporary object URL only to trigger the browser's native
+ * save-file dialog, then immediately revoked.
+ */
+async function downloadPairedScoresCsv(): Promise<void> {
+  const response = await api.get('/admin/analytics/paired-scores.csv', { responseType: 'blob' });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'paired-scores.csv';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+export function useDownloadPairedScoresCsv(options?: { onError?: () => void }) {
+  return useMutation({
+    mutationFn: downloadPairedScoresCsv,
+    onError: () => options?.onError?.(),
+  });
 }
 
 export interface PsychometricsSummary {
@@ -105,4 +129,35 @@ async function fetchQuestionBankStats(): Promise<QuestionBankStats> {
 
 export function useQuestionBankStats() {
   return useQuery({ queryKey: ['admin', 'analytics', 'question-bank'], queryFn: fetchQuestionBankStats });
+}
+
+export interface MlOverview {
+  students_with_prediction: number;
+  average_readiness_percent: number | null;
+  label_distribution: Record<string, number>;
+  model: Record<string, unknown> | null;
+}
+
+async function fetchMlOverview(): Promise<MlOverview> {
+  const { data } = await api.get<{ data: MlOverview }>('/admin/analytics/ml-overview');
+  return data.data;
+}
+
+export function useMlOverview() {
+  return useQuery({ queryKey: ['admin', 'analytics', 'ml-overview'], queryFn: fetchMlOverview });
+}
+
+export interface MlResearchReports {
+  evaluation: Record<string, unknown> | null;
+  explainability: Record<string, unknown> | null;
+  registry: { versions: Array<Record<string, unknown>>; live_version: string | null } | null;
+}
+
+async function fetchMlResearchReports(): Promise<MlResearchReports> {
+  const { data } = await api.get<{ data: MlResearchReports }>('/admin/analytics/ml-research-reports');
+  return data.data;
+}
+
+export function useMlResearchReports() {
+  return useQuery({ queryKey: ['admin', 'analytics', 'ml-research-reports'], queryFn: fetchMlResearchReports });
 }

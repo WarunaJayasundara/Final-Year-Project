@@ -165,7 +165,7 @@ class AiQuestionGenerationTest extends TestCase
             {
             }
 
-            public function generate($category, $level, $examCategoryLabel, array $avoidQuestionTexts): array
+            public function generate($category, $level, $examCategoryLabel, array $avoidQuestionTexts, ?string $sourceContext = null): array
             {
                 return [
                     'question_text_en' => $this->duplicateText,

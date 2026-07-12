@@ -1,0 +1,261 @@
+{
+  "version": "20260711054426",
+  "trained_at": "2026-07-11T05:44:26.887540+00:00",
+  "best_model": "xgboost",
+  "feature_order": [
+    "placement_iq",
+    "current_iq",
+    "theta",
+    "avg_test_score",
+    "memory_score",
+    "logical_score",
+    "numerical_score",
+    "attention_score",
+    "spatial_score",
+    "avg_game_score",
+    "daily_practice_count",
+    "weekly_practice_count",
+    "practice_streak",
+    "study_hours",
+    "avg_response_time_sec",
+    "wrong_answer_percent",
+    "avg_difficulty_solved",
+    "improvement_trend",
+    "consistency_score",
+    "attendance_percent",
+    "days_until_exam",
+    "motivation_score",
+    "ai_coach_usage_count",
+    "question_completion_rate",
+    "rolling_avg_score",
+    "weekly_trend",
+    "monthly_trend",
+    "learning_velocity",
+    "knowledge_gain_rate",
+    "consistency_index",
+    "fatigue_score",
+    "retention_score",
+    "engagement_score",
+    "practice_intensity",
+    "error_recovery_rate",
+    "category_mastery",
+    "confidence_trend",
+    "reaction_speed_trend",
+    "adaptive_learning_gain",
+    "difficulty_progression",
+    "question_diversity_score",
+    "time_management_score",
+    "revision_frequency"
+  ],
+  "label_order": [
+    "high_risk",
+    "needs_improvement",
+    "almost_ready",
+    "ready"
+  ],
+  "training_rows": 73637,
+  "data_source_counts": {
+    "synthetic_calibrated": 40000,
+    "real_oulad": 32593,
+    "real_uci": 1044
+  },
+  "screening_round": {
+    "random_forest": {
+      "cv_f1_macro_mean": 0.6655537279509132,
+      "cv_f1_macro_std": 0.002187268301266636,
+      "cv_scores": [
+        0.6688696537179956,
+        0.6667726851813571,
+        0.6657498654086563,
+        0.6635120583551941,
+        0.662864377091363
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 88.7,
+      "rationale": "Bagged decision trees; robust default baseline, handles the feature scale mix (percentages, counts, small floats) without preprocessing sensitivity, low overfitting risk."
+    },
+    "extra_trees": {
+      "cv_f1_macro_mean": 0.6530646580499389,
+      "cv_f1_macro_std": 0.0024898836505548587,
+      "cv_scores": [
+        0.6557220218701312,
+        0.6555539702277089,
+        0.6536508660962704,
+        0.6495044128247881,
+        0.6508920192307956
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 33.4,
+      "rationale": "Extremely randomized trees - even more variance reduction than RF via random split thresholds; often a free accuracy bump on tabular data at near-identical cost."
+    },
+    "gradient_boosting": {
+      "cv_f1_macro_mean": 0.6738363922062064,
+      "cv_f1_macro_std": 0.0016398290649224066,
+      "cv_scores": [
+        0.6716985985181954,
+        0.6748893175428863,
+        0.6756459090947136,
+        0.674928281483266,
+        0.6720198543919705
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 684.6,
+      "rationale": "Classic sequential boosting; strong baseline, included as sklearn's reference boosting implementation for comparison against the 3 specialized boosting libraries below."
+    },
+    "adaboost": {
+      "cv_f1_macro_mean": 0.497782357168446,
+      "cv_f1_macro_std": 0.0031004789469384108,
+      "cv_scores": [
+        0.4923876809812976,
+        0.4978838935606648,
+        0.502076651723816,
+        0.4982036898902403,
+        0.49835986968621143
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 66.2,
+      "rationale": "Simpler boosting than gradient boosting (reweights misclassified samples rather than fitting residuals); included as a lighter-weight boosting comparison point - expected to underperform the gradient-boosted alternatives on this feature set."
+    },
+    "xgboost": {
+      "cv_f1_macro_mean": 0.6760074617433809,
+      "cv_f1_macro_std": 0.0030612915008846366,
+      "cv_scores": [
+        0.6750352614790386,
+        0.6766033950600444,
+        0.6815888796037364,
+        0.6740599416477876,
+        0.6727498309262976
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 40.4,
+      "rationale": "Regularized gradient boosting with second-order gradient information; strong track record specifically on structured/tabular educational-outcome prediction tasks in the EDM literature."
+    },
+    "lightgbm": {
+      "cv_f1_macro_mean": 0.6752265528543419,
+      "cv_f1_macro_std": 0.003353961077195113,
+      "cv_scores": [
+        0.6733596373684072,
+        0.6771807047232505,
+        0.6806441722274905,
+        0.6709843475670441,
+        0.6739639023855168
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 3637.1,
+      "rationale": "Histogram-based gradient boosting with leaf-wise growth; typically fastest of the three GBM libraries at this row count and often matches or beats XGBoost on similar tabular problems."
+    },
+    "catboost": {
+      "cv_f1_macro_mean": 0.6747428568570724,
+      "cv_f1_macro_std": 0.0019845541680009226,
+      "cv_scores": [
+        0.673138783905083,
+        0.674421403007252,
+        0.6786268952162716,
+        0.6736853199189741,
+        0.673841882237781
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 80.5,
+      "rationale": "Gradient boosting with native categorical-feature and ordered-boosting support; included because it handles the label-noise/overfitting risk from the synthetic-calibrated rows particularly well via ordered boosting."
+    },
+    "svm": {
+      "cv_f1_macro_mean": 0.6389486052888159,
+      "cv_f1_macro_std": 0.009035587601493264,
+      "cv_scores": [
+        0.6324676903101094,
+        0.6362455421697488,
+        0.6473380211479869,
+        0.6273416695594264,
+        0.6513501032568084
+      ],
+      "train_rows_used": 15000,
+      "elapsed_seconds": 123.8,
+      "rationale": "Kernel SVM (RBF); a fundamentally different (margin-based, not tree-based) inductive bias, useful as a sanity check that the tree ensembles' apparent advantage isn't an artifact of the specific model family, not typically competitive with tuned GBMs on this feature count/row count."
+    },
+    "mlp": {
+      "cv_f1_macro_mean": 0.665657703175446,
+      "cv_f1_macro_std": 0.005787864630902478,
+      "cv_scores": [
+        0.6740898657135468,
+        0.663404549190516,
+        0.6636182589140835,
+        0.6698565527710506,
+        0.6573192892880337
+      ],
+      "train_rows_used": 58909,
+      "elapsed_seconds": 17.1,
+      "rationale": "A small feed-forward neural net; the shallow-learning analogue of TabNet without TabNet's data-hunger (see the exclusion note below) or its heavy PyTorch dependency in a service that should stay light."
+    }
+  },
+  "hpo_results": {
+    "xgboost": {
+      "nested_cv_f1_macro_mean": 0.6753559420795097,
+      "nested_cv_f1_macro_std": 0.0004114921163702704,
+      "nested_cv_scores": [
+        0.6755033099056758,
+        0.6757698037392817,
+        0.6747947125935715
+      ],
+      "best_params": {
+        "n_estimators": 489,
+        "max_depth": 6,
+        "learning_rate": 0.041512089690005784,
+        "subsample": 0.7518416973680894,
+        "colsample_bytree": 0.8497844815459585,
+        "reg_lambda": 1.8612311211598944
+      },
+      "best_params_cv_score": 0.6770145577655181,
+      "n_trials": 12
+    },
+    "lightgbm": {
+      "nested_cv_f1_macro_mean": 0.6742704918089841,
+      "nested_cv_f1_macro_std": 0.0009131602668179502,
+      "nested_cv_scores": [
+        0.6754113610686056,
+        0.6742240853355548,
+        0.6731760290227918
+      ],
+      "best_params": {
+        "n_estimators": 270,
+        "max_depth": 8,
+        "learning_rate": 0.05174288938147305,
+        "num_leaves": 23,
+        "subsample": 0.9978826525884286
+      },
+      "best_params_cv_score": 0.6759297676471516,
+      "n_trials": 12
+    },
+    "catboost": {
+      "nested_cv_f1_macro_mean": 0.674467301095251,
+      "nested_cv_f1_macro_std": 0.000878614347887826,
+      "nested_cv_scores": [
+        0.6756315032197435,
+        0.6735091417682812,
+        0.6742612582977282
+      ],
+      "best_params": {
+        "iterations": 281,
+        "depth": 8,
+        "learning_rate": 0.08960785365368121,
+        "l2_leaf_reg": 3.968793330444372
+      },
+      "best_params_cv_score": 0.6747733744996216,
+      "n_trials": 12
+    }
+  },
+  "default_vs_optimized_test_f1": {
+    "xgboost": {
+      "default_test_f1_macro": 0.6794690371751313,
+      "optimized_test_f1_macro": 0.6807777554292725
+    },
+    "lightgbm": {
+      "default_test_f1_macro": 0.6779217480746058,
+      "optimized_test_f1_macro": 0.6799431590399083
+    },
+    "catboost": {
+      "default_test_f1_macro": 0.6792690096499505,
+      "optimized_test_f1_macro": 0.6800250972733356
+    }
+  },
+  "tabnet_exclusion_rationale": "TabNet (Arik & Pfister, 2021) is a deep-learning architecture designed to be competitive with GBMs specifically on LARGE tabular datasets (the paper's own benchmarks use 100K-10M+ row datasets); on ~74K rows spread across 4 classes it has no demonstrated advantage over tuned gradient boosting, its stochastic feature-masking makes per-instance explanations less reproducible than SHAP on a tree model, and it would add a full PyTorch dependency to a FastAPI microservice that is otherwise deliberately lightweight (scikit-learn/XGBoost/LightGBM/CatBoost only). Excluded as a documented, deliberate scope decision, not an oversight."
+}

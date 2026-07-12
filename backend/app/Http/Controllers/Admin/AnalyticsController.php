@@ -64,6 +64,22 @@ class AnalyticsController extends Controller
         ]]);
     }
 
+    /**
+     * Bundles the research-grade ML upgrade's three offline reports
+     * (evaluate.py, explain.py, model_registry.py) for the admin ML
+     * Research page - each individually nullable (a report only exists once
+     * its generating script has been run at least once against the
+     * currently-deployed model).
+     */
+    public function mlResearchReports()
+    {
+        return response()->json(['data' => [
+            'evaluation' => $this->readiness->evaluationReport(),
+            'explainability' => $this->readiness->explainabilityReport(),
+            'registry' => $this->readiness->versionRegistry(),
+        ]]);
+    }
+
     public function pairedScores()
     {
         return response()->json(['data' => $this->research->pairedScores()]);

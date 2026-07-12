@@ -22,8 +22,16 @@ use App\Models\IqLevel;
  */
 class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterface
 {
-    public function generate(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts): array
+    public function generate(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts, ?string $sourceContext = null): array
     {
+        // The mock generator's fixed archetype templates can't genuinely
+        // incorporate arbitrary source-document content (that needs a real
+        // LLM reading the material - see GeminiAiQuestionGeneratorService).
+        // $sourceContext is accepted for interface compatibility so the
+        // admin PDF-ingestion flow works end-to-end even without a Gemini
+        // key configured, but is intentionally not used to fabricate a
+        // false impression of document-grounded generation here.
+        unset($sourceContext);
         $difficulty = min(3, max(1, (int) ceil($level->level_number / 2)));
 
         return match ($category->code) {
@@ -104,7 +112,20 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
             'explanation_en' => "\"{$wordsEn[$oddIndex]}\" is the odd one out - the others share a common category.",
             'explanation_si' => "\"{$wordsEn[$oddIndex]}\" is the odd one out - the others share a common category.",
             'difficulty_weight' => $difficulty,
+            'solving_time_seconds' => $this->estimatedTimeFor($difficulty),
         ];
+    }
+
+    /**
+     * Deterministic lookup (not a guess): a fixed baseline plus a per-
+     * difficulty-step increment, matching the same order-of-magnitude
+     * (level 1 ~30s, harder items ~120s) as the brief's own worked example -
+     * see Question::expectedTimeSeconds()/ResponseTimeCalibrationService for
+     * how this authored baseline later gets replaced by a learned value.
+     */
+    private function estimatedTimeFor(int $difficulty): int
+    {
+        return 25 + ($difficulty - 1) * 15;
     }
 
     private function memory(int $difficulty): array
@@ -215,6 +236,7 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
             'explanation_en' => $explanationEn,
             'explanation_si' => $explanationSi,
             'difficulty_weight' => $difficulty,
+            'solving_time_seconds' => $this->estimatedTimeFor($difficulty),
         ];
     }
 

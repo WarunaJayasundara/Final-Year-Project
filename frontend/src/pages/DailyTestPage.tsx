@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { FullPageSpinner } from '@/components/auth/RequireAuth';
+import { TestSkeleton } from '@/components/skeletons/TestSkeleton';
 import { SessionRunner } from '@/features/sessions/SessionRunner';
 import { useStartDaily } from '@/features/sessions/useSessions';
 import type { SessionData } from '@/features/sessions/types';
@@ -45,5 +45,5 @@ export function DailyTestPage() {
     );
   }
 
-  return <FullPageSpinner />;
+  return <TestSkeleton />;
 }

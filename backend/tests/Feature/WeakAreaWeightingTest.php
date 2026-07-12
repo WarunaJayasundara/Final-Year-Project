@@ -130,6 +130,28 @@ class WeakAreaWeightingTest extends TestCase
         $this->assertGreaterThanOrEqual(3, $allocation[$strong->id]); // half of the even share (6)
     }
 
+    public function test_final_revision_phase_sharpens_the_weak_area_bias()
+    {
+        $this->testUser = $this->makeUser();
+        $weak = Category::where('code', 'numerical_ability')->firstOrFail();
+        $strong = Category::where('code', 'memory')->firstOrFail();
+        $this->recordAnswers($this->testUser, $weak, 10, 2);
+        $this->recordAnswers($this->testUser, $strong, 10, 9);
+
+        $service = new WeakAreaWeightingService();
+        $baseline = $service->allocationFor($this->testUser->id, 100);
+        $sharpened = $service->allocationFor($this->testUser->id, 100, 'final_revision');
+
+        $this->assertSame(100, array_sum($sharpened));
+        $this->assertGreaterThan(
+            $baseline[$weak->id],
+            $sharpened[$weak->id],
+            'final_revision phase should allocate the weak category even more questions than the unsharpened baseline.'
+        );
+        // The floor still holds - the strong category is never starved to zero even at the sharpest exponent.
+        $this->assertGreaterThan(0, $sharpened[$strong->id]);
+    }
+
     public function test_daily_session_start_applies_weighting_end_to_end()
     {
         $this->testUser = $this->makeUser();

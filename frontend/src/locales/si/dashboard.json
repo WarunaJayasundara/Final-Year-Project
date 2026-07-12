@@ -1,5 +1,8 @@
 {
   "subtitle": "ඔබේ පුහුණුව ඉදිරියට යන ආකාරය මෙන්න.",
+  "primaryCta": "අද දින සැලැස්ම ඉදිරියට ගෙන යන්න",
+  "secondaryLink": "ඒ වෙනුවට මාතෘකාවක් පුහුණු කරන්න",
+  "moreProgress": "ඔබේ දියුණුව පිළිබඳ තවත්",
   "currentLevel": "වත්මන් මට්ටම",
   "practiceStreak": "පුහුණු අඛණ්ඩතාව",
   "streakDays": "දින {{count}}",
@@ -14,17 +17,30 @@
   "tryOne": "එකක් උත්සාහ කරන්න",
   "notEnoughData": "තවම ප්‍රමාණවත් දත්ත නැත - මෙම ප්‍රස්තාරය බැලීමට සැසි කිහිපයක් සම්පූර්ණ කරන්න.",
   "iqScore": {
-    "label": "ඇස්තමේන්තුගත IQ ලකුණු",
+    "label": "ඔබේ IQ ඇස්තමේන්තුව",
+    "classification": {
+      "gifted": "ඉතා ඉහළ",
+      "above_average": "සාමාන්‍යයට වඩා ඉහළ",
+      "average": "සාමාන්‍ය",
+      "below_average": "සාමාන්‍යයට වඩා අඩු",
+      "extremely_low": "ඉතා අඩු"
+    },
+    "howEstimatedToggle": "මෙය ගණනය කරන ආකාරය",
     "methodIrt": "ඔබේ Item Response Theory හැකියා ඇස්තමේන්තුවෙන් (±{{se}} සම්මත දෝෂය) ගණනය කළ අපගමන IQ (සාමාන්‍යය 100, සම්මත අපගමනය 15) - ඔබ සම්පූර්ණ කරන සෑම සැසියකින්ම වඩාත් නිවැරදි වේ.",
     "methodIrtNoSe": "ඔබේ Item Response Theory හැකියා ඇස්තමේන්තුවෙන් ගණනය කළ අපගමන IQ (සාමාන්‍යය 100, සම්මත අපගමනය 15) - ඔබ සම්පූර්ණ කරන සෑම සැසියකින්ම වඩාත් නිවැරදි වේ."
   },
   "readiness": {
-    "title": "AI විභාග සූදානම",
+    "title": "විභාග සූදානම",
     "refresh": "අනාවැකිය ක්‍රියාත්මක කරන්න",
-    "noPredictionYet": "තවම අනාවැකියක් නැත - ඔබේ පළමු AI විභාග සූදානම් ඇස්තමේන්තුව ලබා ගැනීමට \"අනාවැකිය ක්‍රියාත්මක කරන්න\" ක්ලික් කරන්න.",
+    "noPredictionYet": "තවම අනාවැකියක් නැත - ඔබේ පළමු විභාග සූදානම් ඇස්තමේන්තුව ලබා ගැනීමට \"අනාවැකිය ක්‍රියාත්මක කරන්න\" ක්ලික් කරන්න.",
     "predictionUpdated": "විභාග සූදානම් අනාවැකිය යාවත්කාලීන කරන ලදී.",
     "predictionFailed": "අනාවැකි සේවාවට සම්බන්ධ විය නොහැකි විය. කරුණාකර මොහොතකින් නැවත උත්සාහ කරන්න.",
     "reasonsTitle": "මෙම ඇස්තමේන්තුවට හේතුව",
+    "dropRisk": "පුහුණුව අඩුවීමේ අවදානම",
+    "predictedNextScore": "ඊළඟ ලකුණු අනාවැකිය",
+    "predictedChange": "අපේක්ෂිත වෙනස",
+    "timeManagementReadiness": "කාල කළමනාකරණය සූදානම",
+    "confidenceNote": "මෙය පර්යේෂණ ඇස්තමේන්තුවක් වේ.",
     "labels": {
       "ready": "සූදානම්",
       "almost_ready": "ආසන්නයෙන් සූදානම්",
@@ -33,7 +49,6 @@
     },
     "checkinButton": "දෛනික චෙක්-ඉන්",
     "checkinTitle": "අද දින චෙක්-ඉන්",
-    "studyHours": "අද අධ්‍යයන පැය ගණන",
     "motivation": "අභිප්‍රේරණය (1-10)",
     "attendedToday": "මම අද අධ්‍යයනය කළෙමි / පැමිණියෙමි",
     "saveCheckin": "සුරකින්න",
@@ -47,17 +62,27 @@
     "edit": "විභාග පැතිකඩ සංස්කරණය",
     "save": "සුරකින්න",
     "saved": "විභාග පැතිකඩ සුරකින ලදී.",
-    "examCategory": "ඔබ කුමන විභාගය සඳහා සූදානම් වන්නේද?",
-    "selectExam": "විභාගයක් තෝරන්න",
-    "examName": "විභාග නම (විකල්ප)",
+    "examName": "විභාග නම",
     "examNamePlaceholder": "උදා: 2026 SLAS සීමිත තරඟකාරී විභාගය",
     "examDate": "විභාග දිනය",
-    "dailyHours": "දිනකට ලබා ගත හැකි අධ්‍යයන පැය ගණන",
-    "targetScore": "ඉලක්ක ලකුණු (විකල්ප)",
+    "targetScore": "100න් අවශ්‍ය ලකුණු",
+    "dailyHours": "දිනකට පැය කීයක්ද?",
+    "dailyHoursHint": "මෙය එක් වරක් පමණි.",
+    "hoursCount": "පැය {{count}}",
+    "hoursCount_other": "පැය {{count}}",
+    "minutesCount": "මිනිත්තු {{count}}",
+    "minutesCount_other": "මිනිත්තු {{count}}",
+    "realExamDetailsTitle": "විභාගය (විකල්ප)",
+    "realExamDetailsHint": "මෙය අවශ්‍ය නොවේ.",
+    "examTotalQuestions": "ප්‍රශ්න ගණන",
+    "examDurationMinutes": "කාලය (මිනිත්තු)",
+    "passMark": "සමත් ලකුණු",
+    "negativeMarking": "වැරදි පිළිතුරු සඳහා ලකුණු",
     "daysLeft": "දින ඉතිරිව ඇත",
     "countdown": "දින {{days}} පැය {{hours}} මිනිත්තු {{minutes}} ඉතිරිව ඇත",
     "todaysGoal": "අද දින ඉලක්කය: ප්‍රශ්න {{count}}ක්",
     "firstFocus": "පළමු අවධානය",
+    "viewPlan": "සම්පූර්ණ සැලැස්ම බලන්න",
     "activity": {
       "weak_category_practice": "දුර්වල ප්‍රවර්ග අභ්‍යාසය",
       "timed_mock_practice": "කාල නියමිත මාදිලි අභ්‍යාසය",
@@ -65,6 +90,36 @@
       "strong_category_maintenance": "ශක්තිමත් ප්‍රවර්ග පවත්වාගෙන යාම",
       "confidence_review": "විශ්වාසය සමාලෝචනය",
       "rest": "විවේකය"
+    }
+  },
+  "studyNotes": {
+    "eyebrow": "න්‍යාය සටහන්",
+    "title": "අධ්‍යයන සටහන්",
+    "subtitle": "පොත් වලින් ප්‍රකාශයට පත් කරන ලද සටහන්.",
+    "allCategories": "සියල්ල",
+    "none": "තවම සටහන් ප්‍රකාශයට පත් කර නොමැත.",
+    "recommendation": {
+      "title": "ඔබ මෙහි දුර්වලයි (නිවැරදිතාවය {{accuracy}}%) - දැන් ඉගෙන ගන්න",
+      "action": "පාඩම විවෘත කරන්න"
+    },
+    "dueToday": {
+      "title": "අද සමාලෝචනය කළ යුතු ({{count}})"
+    },
+    "sections": {
+      "objective": "ඉගෙනුම් අරමුණ",
+      "concept": "සංකල්පය",
+      "workedExample": "විසඳූ උදාහරණය",
+      "technique": "ප්‍රධාන ක්‍රමය",
+      "mistakes": "සුලභ වැරදි"
+    },
+    "testYourself": "ස්වයං පරීක්ෂණය",
+    "loadingPractice": "පුහුණු ප්‍රශ්න පූරණය වෙමින්...",
+    "noPracticeQuestions": "මෙම මාතෘකාව සඳහා තවම පුහුණු ප්‍රශ්න නොමැත.",
+    "review": {
+      "again": "අමතකයි",
+      "hard": "අමාරුයි",
+      "good": "හොඳයි",
+      "easy": "පහසුයි"
     }
   }
 }

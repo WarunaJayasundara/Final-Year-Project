@@ -1,14 +1,25 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Check, Loader2, Sparkles, X } from 'lucide-react';
+import { Check, FilePlus2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { InlineLoader } from '@/components/brand/BrandLoader';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAdminCategories, useAdminLevels, useAiQuestionDrafts, useApproveAiQuestion, useGenerateAiQuestions, useRejectAiQuestion } from '@/features/admin/useAdmin';
+import {
+  useAdminCategories,
+  useAdminLevels,
+  useAiQuestionDrafts,
+  useApproveAiQuestion,
+  useBulkApproveAiQuestions,
+  useGenerateAiQuestions,
+  useRejectAiQuestion,
+  useSourceDocuments,
+} from '@/features/admin/useAdmin';
 import { useExamCategories } from '@/features/examProfile/useExamProfile';
 import type { AiQuestionDraft } from '@/features/admin/types';
 
@@ -18,26 +29,55 @@ export function AdminAiQuestionsPage() {
   const { data: categories } = useAdminCategories();
   const { data: levels } = useAdminLevels();
   const { data: examCategories } = useExamCategories();
+  const { data: sourceDocuments } = useSourceDocuments();
   const { data: drafts, isLoading } = useAiQuestionDrafts('pending');
 
   const [categoryId, setCategoryId] = useState<number | undefined>();
   const [levelId, setLevelId] = useState<number | undefined>();
   const [count, setCount] = useState('3');
   const [examCategory, setExamCategory] = useState<string | undefined>();
+  const [sourceDocumentId, setSourceDocumentId] = useState<number | undefined>();
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const generate = useGenerateAiQuestions();
   const approve = useApproveAiQuestion();
   const reject = useRejectAiQuestion();
+  const bulkApprove = useBulkApproveAiQuestions();
 
   const handleGenerate = () => {
     if (!categoryId || !levelId) return;
     generate.mutate(
-      { category_id: categoryId, level_id: levelId, count: Number(count), exam_category: examCategory },
+      {
+        category_id: categoryId,
+        level_id: levelId,
+        count: Number(count),
+        exam_category: examCategory,
+        source_document_id: sourceDocumentId,
+      },
       {
         onSuccess: (created) => toast.success(t('aiQuestions.generateSuccess', { count: created.length })),
         onError: () => toast.error(t('aiQuestions.generateError')),
       },
     );
+  };
+
+  const toggleSelected = (id: number, checked: boolean) => {
+    setSelectedIds((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? (drafts?.data.map((d) => d.id) ?? []) : []);
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedIds.length === 0) return;
+    bulkApprove.mutate(selectedIds, {
+      onSuccess: (result) => {
+        toast.success(t('aiQuestions.bulkApproveSuccess', { count: result.approved_count }));
+        setSelectedIds([]);
+      },
+      onError: () => toast.error(t('aiQuestions.bulkApproveError')),
+    });
   };
 
   return (
@@ -50,7 +90,7 @@ export function AdminAiQuestionsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-primary" /> {t('aiQuestions.generateTitle')}
+            <FilePlus2 className="h-4 w-4 text-primary" /> {t('aiQuestions.generateTitle')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -107,16 +147,53 @@ export function AdminAiQuestionsPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>{t('aiQuestions.sourceDocument')}</Label>
+              <Select
+                value={sourceDocumentId ? String(sourceDocumentId) : undefined}
+                onValueChange={(v) => setSourceDocumentId(Number(v))}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={t('aiQuestions.sourceDocumentNone')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {sourceDocuments?.data.map((doc) => (
+                    <SelectItem key={doc.id} value={String(doc.id)}>
+                      {doc.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Button className="mt-4" onClick={handleGenerate} disabled={!categoryId || !levelId || generate.isPending}>
-            {generate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('aiQuestions.generate')}
+            {generate.isPending ? <InlineLoader /> : t('aiQuestions.generate')}
           </Button>
         </CardContent>
       </Card>
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">{t('aiQuestions.pendingTitle')}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">{t('aiQuestions.pendingTitle')}</h2>
+          {!!drafts?.data.length && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  checked={selectedIds.length > 0 && selectedIds.length === drafts.data.length}
+                  onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                />
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.length > 0 ? t('aiQuestions.selectedCount', { count: selectedIds.length }) : t('aiQuestions.selectAll')}
+                </span>
+              </div>
+              <Button size="sm" onClick={handleBulkApprove} disabled={selectedIds.length === 0 || bulkApprove.isPending}>
+                {bulkApprove.isPending ? <InlineLoader /> : t('aiQuestions.approveSelected')}
+              </Button>
+            </div>
+          )}
+        </div>
         {isLoading && <p className="text-sm text-muted-foreground">-</p>}
         {!isLoading && drafts?.data.length === 0 && (
           <p className="text-sm text-muted-foreground">{t('aiQuestions.noneMatch')}</p>
@@ -126,6 +203,8 @@ export function AdminAiQuestionsPage() {
             key={draft.id}
             draft={draft}
             locale={locale}
+            selected={selectedIds.includes(draft.id)}
+            onToggleSelected={(checked) => toggleSelected(draft.id, checked)}
             onApprove={() => approve.mutate(draft.id, { onSuccess: () => toast.success(t('aiQuestions.approveSuccess')) })}
             onReject={() => reject.mutate(draft.id, { onSuccess: () => toast.success(t('aiQuestions.rejectSuccess')) })}
             busy={approve.isPending || reject.isPending}
@@ -139,12 +218,16 @@ export function AdminAiQuestionsPage() {
 function DraftCard({
   draft,
   locale,
+  selected,
+  onToggleSelected,
   onApprove,
   onReject,
   busy,
 }: {
   draft: AiQuestionDraft;
   locale: 'en' | 'si';
+  selected: boolean;
+  onToggleSelected: (checked: boolean) => void;
   onApprove: () => void;
   onReject: () => void;
   busy: boolean;
@@ -156,9 +239,13 @@ function DraftCard({
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
+            <Checkbox checked={selected} onCheckedChange={(checked) => onToggleSelected(checked === true)} />
             <Badge variant="secondary">{draft.category?.name_en ?? draft.category_id}</Badge>
             <Badge variant="outline">{draft.level?.name_en ?? draft.level_id}</Badge>
             <Badge variant={draft.source === 'gemini' ? 'default' : 'secondary'}>{draft.source}</Badge>
+            {draft.sinhala_review_status === 'needs_review' && (
+              <Badge variant="warning">{t('aiQuestions.sinhalaNeedsReview')}</Badge>
+            )}
           </div>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={onReject} disabled={busy}>
@@ -177,7 +264,7 @@ function DraftCard({
             <div
               key={option.key}
               className={`rounded-lg border px-3 py-2 text-sm ${
-                option.key === draft.correct_option_key ? 'border-emerald-500 bg-emerald-500/10' : 'border-border'
+                option.key === draft.correct_option_key ? 'border-success bg-success/10' : 'border-border'
               }`}
             >
               <span className="font-medium">{option.key}.</span> {locale === 'si' ? option.text_si : option.text_en}

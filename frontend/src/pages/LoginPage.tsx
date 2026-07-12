@@ -1,10 +1,10 @@
 import type { SVGProps } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn } from '@/components/motion/FadeIn';
+import { HelaIQMark } from '@/components/brand/HelaIQMark';
 import { useCurrentUser, useGoogleLogin } from '@/features/auth/useAuth';
 
 export function LoginPage() {
@@ -22,9 +22,7 @@ export function LoginPage() {
       <div className="gradient-orb -right-16 bottom-0 h-48 w-48 bg-[color:var(--chart-2)]/20" />
 
       <FadeIn className="flex w-full flex-col items-center gap-6">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-lg shadow-primary/30">
-          <Brain className="h-6 w-6" />
-        </span>
+        <HelaIQMark variant="compact" />
 
         <Card className="glass w-full shadow-xl">
           <CardHeader className="text-center">
@@ -42,9 +40,9 @@ export function LoginPage() {
               {googleLogin.isPending ? t('signingIn') : t('continueWithGoogle')}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-xs text-muted-foreground">
               {t('notAStudent')}{' '}
-              <Link to="/admin/login" className="font-medium text-primary underline-offset-4 hover:underline">
+              <Link to="/admin/login" className="font-medium text-foreground/70 underline-offset-4 hover:text-primary hover:underline">
                 {t('adminLoginTitle')}
               </Link>
             </p>

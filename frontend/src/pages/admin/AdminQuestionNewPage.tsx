@@ -1,34 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QuestionForm } from '@/features/admin/QuestionForm';
-import { useCreateQuestion } from '@/features/admin/useAdmin';
+import { QuestionWizard } from '@/features/admin/QuestionWizard';
+import { useCreateQuestion, useUploadQuestionImage } from '@/features/admin/useAdmin';
 import type { QuestionPayload } from '@/features/admin/api';
 
 export function AdminQuestionNewPage() {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const createQuestion = useCreateQuestion();
+  const uploadImage = useUploadQuestionImage();
 
-  const handleSubmit = async (payload: QuestionPayload) => {
+  const handleSubmit = async (payload: QuestionPayload, imageFile: File | null) => {
     const question = await createQuestion.mutateAsync(payload);
-    navigate(`/admin/questions/${question.id}/edit`);
+    if (imageFile) {
+      await uploadImage.mutateAsync({ id: question.id, file: imageFile });
+    }
+    navigate('/admin/questions');
   };
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('questions.createTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <QuestionForm
-            submitLabel={t('questions.createSubmit')}
-            isSubmitting={createQuestion.isPending}
-            onSubmit={handleSubmit}
-          />
-        </CardContent>
-      </Card>
+      <h1 className="mb-6 text-2xl font-semibold">{t('questions.createTitle')}</h1>
+      <QuestionWizard onSubmit={handleSubmit} isSubmitting={createQuestion.isPending || uploadImage.isPending} />
     </div>
   );
 }

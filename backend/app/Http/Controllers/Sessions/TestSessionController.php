@@ -17,6 +17,7 @@ use App\Services\Irt\AdaptiveItemSelectionService;
 use App\Services\Leveling\LevelAdjustmentService;
 use App\Services\Sessions\QuestionSamplingService;
 use App\Services\Sessions\WeakAreaWeightingService;
+use App\Services\Study\StudyPlanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,13 @@ class TestSessionController extends Controller
     private const PLACEMENT_MAX_ITEMS = 25;
 
     private const PLACEMENT_SE_STOP_THRESHOLD = 0.35;
+
+    /**
+     * A response taking longer than this multiple of the expected time is
+     * still "within expected time" - a soft margin, not a hard cutoff, since
+     * expected times are themselves estimates (see Question::expectedTimeSeconds()).
+     */
+    private const TIME_PERFORMANCE_TOLERANCE = 1.15;
 
     public function __construct(
         private QuestionSamplingService $sampler,
@@ -110,7 +118,11 @@ class TestSessionController extends Controller
         $totalQuestions = (int) $request->input('total_questions', 30);
         $totalQuestions = max(25, min(50, $totalQuestions));
 
-        $allocation = $this->weakAreaWeighting->allocationFor($user->id, $totalQuestions);
+        // Exam-approaching training mode (brief §14): sharpens the existing
+        // weak-area bias as the exam nears, via StudyPlanService's own phase
+        // boundaries - no separate "is it near the exam" logic duplicated here.
+        $phase = StudyPlanService::determinePhase($user->examProfile?->daysRemaining());
+        $allocation = $this->weakAreaWeighting->allocationFor($user->id, $totalQuestions, $phase);
         $questions = $this->sampler->sampleForDaily($user->id, $user->currentLevel, $totalQuestions, $allocation);
 
         if ($questions->isEmpty()) {
@@ -176,6 +188,9 @@ class TestSessionController extends Controller
         $validator = Validator::make($request->all(), [
             'question_id' => ['required', 'exists:questions,id'],
             'selected_option_key' => ['required', 'string', 'max:1'],
+            // 10-minute sanity cap - drops implausible values (tab left open,
+            // browser inactivity) rather than letting them distort timing stats.
+            'response_time_ms' => ['nullable', 'integer', 'min:0', 'max:600000'],
         ]);
 
         if ($validator->fails()) {
@@ -188,12 +203,23 @@ class TestSessionController extends Controller
 
         $question = $answer->question;
         $selected = $request->input('selected_option_key');
+        $responseTimeMs = $request->input('response_time_ms');
 
-        $answer->update([
+        $timingFields = [];
+        if ($responseTimeMs !== null) {
+            $ratio = ($responseTimeMs / 1000) / $question->expectedTimeSeconds();
+            $timingFields = [
+                'response_time_ms' => $responseTimeMs,
+                'time_performance_ratio' => round($ratio, 3),
+                'answered_within_expected_time' => $ratio <= self::TIME_PERFORMANCE_TOLERANCE,
+            ];
+        }
+
+        $answer->update(array_merge([
             'selected_option_key' => $selected,
             'is_correct' => $selected === $question->correct_option_key,
             'answered_at' => now(),
-        ]);
+        ], $timingFields));
 
         if ($session->session_type === 'placement' && ! $session->completed_at) {
             return $this->handleAdaptiveAnswer($request, $session, $answer, $question);
@@ -445,7 +471,7 @@ class TestSessionController extends Controller
                 'completed_at' => $session->completed_at,
                 'answers' => $answers->map(fn (SessionAnswer $answer) => [
                     'answer_id' => $answer->id,
-                    'question' => $answer->question->toClientArray($locale),
+                    'question' => $answer->question->toClientArray($locale, true),
                     'correct_option_key' => $answer->question->correct_option_key,
                     'selected_option_key' => $answer->selected_option_key,
                     'is_correct' => $answer->is_correct,

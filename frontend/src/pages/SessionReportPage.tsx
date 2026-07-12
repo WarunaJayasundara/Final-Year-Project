@@ -72,11 +72,17 @@ export function SessionReportPage() {
                     <XCircle className="h-3.5 w-3.5" />{' '}
                     {t('report.yourAnswer', { value: answer.selected_option_key ?? '-' })}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-success">
                     <CheckCircle2 className="h-3.5 w-3.5" />{' '}
                     {t('report.correctAnswer', { value: answer.correct_option_key })}
                   </span>
                 </div>
+
+                {answer.question.explanation && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="text-sm">{answer.question.explanation}</p>
+                  </div>
+                )}
 
                 {answer.ai_feedback_text ? (
                   <div className="rounded-lg border border-primary/15 bg-primary/5 p-3">
@@ -94,7 +100,7 @@ export function SessionReportPage() {
                     onClick={() => handleExplain(answer.answer_id)}
                   >
                     <Sparkles className="h-4 w-4" />
-                    {loadingAnswerId === answer.answer_id ? t('report.thinking') : t('report.explain')}
+                    {loadingAnswerId === answer.answer_id ? t('report.thinking') : t('report.explainMore')}
                   </Button>
                 )}
               </CardContent>

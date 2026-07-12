@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { AdaptiveSessionData, Category, SessionData, SessionReport, SubmitAnswerResult } from './types';
+import type { AdaptiveSessionData, Category, MockExamRequest, SessionData, SessionReport, SubmitAnswerResult } from './types';
 
 export async function fetchCategories(): Promise<Category[]> {
   const { data } = await api.get<{ data: Category[] }>('/categories');
@@ -26,6 +26,11 @@ export async function startPractice(categoryId: number, totalQuestions?: number)
   return data.data;
 }
 
+export async function startMockExam(request: MockExamRequest): Promise<SessionData> {
+  const { data } = await api.post<{ data: SessionData }>('/mock-exams', request);
+  return data.data;
+}
+
 export async function getSession(sessionId: number): Promise<SessionData> {
   const { data } = await api.get<{ data: SessionData }>(`/sessions/${sessionId}`);
   return data.data;
@@ -35,10 +40,11 @@ export async function submitAnswer(
   sessionId: number,
   questionId: number,
   selectedOptionKey: string,
+  responseTimeMs?: number,
 ): Promise<SubmitAnswerResult> {
   const { data } = await api.post<{ data: SubmitAnswerResult }>(
     `/sessions/${sessionId}/answers`,
-    { question_id: questionId, selected_option_key: selectedOptionKey },
+    { question_id: questionId, selected_option_key: selectedOptionKey, response_time_ms: responseTimeMs },
   );
   return data.data;
 }

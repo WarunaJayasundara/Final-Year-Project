@@ -20,6 +20,15 @@ class RaschCalibrationService
     /** Items with fewer responses than this keep their prior (level-derived) difficulty. */
     private const MIN_RESPONSES_PER_ITEM = 5;
 
+    /**
+     * Response count at which irt_calibration_status graduates from
+     * 'provisional' to 'calibrated' - same value/rationale as the migration
+     * that introduced the column (2026_07_11_060200_...), kept in sync here
+     * since this is the only place that updates the status after that
+     * migration's one-time backfill.
+     */
+    private const CALIBRATED_THRESHOLD = 30;
+
     public function calibrate(): array
     {
         $responses = SessionAnswer::query()
@@ -41,6 +50,27 @@ class RaschCalibrationService
         foreach ($responses as $r) {
             $itemResponseCounts[$r['item']] = ($itemResponseCounts[$r['item']] ?? 0) + 1;
         }
+
+        // Persist response counts + status for every item seen, not just the
+        // ones eligible for re-calibration this run, so an item's count keeps
+        // climbing toward CALIBRATED_THRESHOLD even between eligible runs.
+        DB::transaction(function () use ($itemResponseCounts) {
+            foreach ($itemResponseCounts as $questionId => $count) {
+                $question = Question::find($questionId);
+                if (! $question) {
+                    continue;
+                }
+
+                $status = $question->irt_difficulty === null
+                    ? 'uncalibrated'
+                    : ($count >= self::CALIBRATED_THRESHOLD ? 'calibrated' : 'provisional');
+
+                $question->update([
+                    'irt_response_count' => $count,
+                    'irt_calibration_status' => $status,
+                ]);
+            }
+        });
 
         $eligibleItemIds = array_keys(array_filter(
             $itemResponseCounts,
@@ -68,6 +98,9 @@ class RaschCalibrationService
                 Question::whereKey($questionId)->update([
                     'irt_difficulty' => $difficulty,
                     'irt_calibrated_at' => $now,
+                    'irt_calibration_status' => Question::whereKey($questionId)->value('irt_response_count') >= self::CALIBRATED_THRESHOLD
+                        ? 'calibrated'
+                        : 'provisional',
                 ]);
             }
         });

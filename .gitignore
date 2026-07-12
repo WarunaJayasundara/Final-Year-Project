@@ -27,3 +27,7 @@ logs/
 .vscode/
 .fleet/
 .DS_Store
+
+# Raw third-party dataset downloads (regenerate via ml-service/data_pipeline/fetch_datasets.py) -
+# the OULAD studentVle.csv alone is ~450MB and must never be committed.
+ml-service/data/raw/

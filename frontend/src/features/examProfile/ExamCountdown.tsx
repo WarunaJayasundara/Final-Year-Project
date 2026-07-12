@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarClock, Settings2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CalendarClock, ChevronRight, Settings2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useExamProfile, useStudyPlan } from './useExamProfile';
 import { ExamProfileDialog } from './ExamProfileDialog';
+import { PHASE_COLORS } from './phaseStyles';
 import type { CategoryRef } from './types';
 
 function useNow(intervalMs: number) {
@@ -17,7 +20,7 @@ function useNow(intervalMs: number) {
 }
 
 export function ExamCountdown() {
-  const { t, i18n } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation(['dashboard', 'studyPlan']);
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
   const { data: profile, isLoading } = useExamProfile();
   const { data: plan } = useStudyPlan();
@@ -58,10 +61,10 @@ export function ExamCountdown() {
     category ? (locale === 'si' ? category.name_si : category.name_en) : null;
 
   return (
-    <Card className="border-primary/30">
+    <Card className={plan ? `border ${PHASE_COLORS[plan.phase]}` : 'border-primary/30'}>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarClock className="h-4 w-4" /> {profile.exam_category_label}
+          <CalendarClock className="h-4 w-4" /> {profile.exam_name || t('examProfile.title')}
         </CardTitle>
         <ExamProfileDialog
           trigger={
@@ -71,46 +74,63 @@ export function ExamCountdown() {
           }
         />
       </CardHeader>
-      <CardContent className="flex flex-wrap items-center gap-6">
-        {examDate && (
-          <div className="relative flex h-28 w-28 shrink-0 items-center justify-center">
-            <svg viewBox="0 0 100 100" className="h-28 w-28 -rotate-90">
-              <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--muted)" strokeWidth="8" />
-              <circle
-                cx="50"
-                cy="50"
-                r={radius}
-                fill="none"
-                stroke="var(--primary)"
-                strokeWidth="8"
-                strokeDasharray={circumference}
-                strokeDashoffset={dashOffset}
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute flex flex-col items-center">
-              <span className="text-2xl font-bold">{days}</span>
-              <span className="text-[10px] text-muted-foreground">{t('examProfile.daysLeft')}</span>
-            </div>
+      <CardContent className="flex flex-col gap-4">
+        {plan && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className={PHASE_COLORS[plan.phase]}>
+              {t(`studyPlan:phaseNames.${plan.phase}`)}
+            </Badge>
+            <p className="text-sm font-medium">{t(`studyPlan:motivation.${plan.phase}`)}</p>
           </div>
         )}
-        <div className="flex flex-col gap-1 text-sm">
-          {examDate ? (
-            <p className="font-medium">{t('examProfile.countdown', { days, hours, minutes })}</p>
-          ) : (
-            <p className="text-muted-foreground">{t('examProfile.noDateSet')}</p>
+
+        <div className="flex flex-wrap items-center gap-6">
+          {examDate && (
+            <div className="relative flex h-28 w-28 shrink-0 items-center justify-center">
+              <svg viewBox="0 0 100 100" className="h-28 w-28 -rotate-90">
+                <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--muted)" strokeWidth="8" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="8"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={dashOffset}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center">
+                <span className="text-2xl font-bold">{days}</span>
+                <span className="text-[10px] text-muted-foreground">{t('examProfile.daysLeft')}</span>
+              </div>
+            </div>
           )}
-          {plan && (
-            <p className="text-muted-foreground">
-              {t('examProfile.todaysGoal', { count: plan.recommended_daily_questions })}
-            </p>
-          )}
-          {todaysBlock && (
-            <p className="text-muted-foreground">
-              {t('examProfile.firstFocus')}:{' '}
-              {categoryLabel(todaysBlock.category) ?? t(`examProfile.activity.${todaysBlock.activity}`)}
-            </p>
-          )}
+          <div className="flex flex-col gap-1 text-sm">
+            {examDate ? (
+              <p className="font-medium">{t('examProfile.countdown', { days, hours, minutes })}</p>
+            ) : (
+              <p className="text-muted-foreground">{t('examProfile.noDateSet')}</p>
+            )}
+            {plan && (
+              <p className="text-muted-foreground">
+                {t('examProfile.todaysGoal', { count: plan.recommended_daily_questions })}
+              </p>
+            )}
+            {todaysBlock && (
+              <p className="text-muted-foreground">
+                {t('examProfile.firstFocus')}:{' '}
+                {categoryLabel(todaysBlock.category) ?? t(`examProfile.activity.${todaysBlock.activity}`)}
+              </p>
+            )}
+            <Link
+              to="/study-plan"
+              className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              {t('examProfile.viewPlan')} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </CardContent>
     </Card>

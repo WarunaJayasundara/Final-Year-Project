@@ -1,5 +1,8 @@
 {
   "subtitle": "Here's how your training is going.",
+  "primaryCta": "Continue today's plan",
+  "secondaryLink": "Practice a topic instead",
+  "moreProgress": "More about your progress",
   "currentLevel": "Current level",
   "practiceStreak": "Practice streak",
   "streakDays": "{{count}} day",
@@ -14,17 +17,30 @@
   "tryOne": "Try one",
   "notEnoughData": "Not enough data yet - complete a few sessions to see this chart.",
   "iqScore": {
-    "label": "Estimated IQ Score",
+    "label": "Your IQ Estimate",
+    "classification": {
+      "gifted": "Gifted",
+      "above_average": "Above Average",
+      "average": "Average",
+      "below_average": "Below Average",
+      "extremely_low": "Extremely Low"
+    },
+    "howEstimatedToggle": "How this is estimated",
     "methodIrt": "Deviation IQ (mean 100, SD 15) computed from your Item Response Theory ability estimate (±{{se}} standard error) - refined with every session you complete.",
     "methodIrtNoSe": "Deviation IQ (mean 100, SD 15) computed from your Item Response Theory ability estimate - refined with every session you complete."
   },
   "readiness": {
-    "title": "AI Exam Readiness",
+    "title": "Exam Readiness",
     "refresh": "Run prediction",
-    "noPredictionYet": "No prediction yet - click \"Run prediction\" to get your first AI-powered exam readiness estimate.",
+    "noPredictionYet": "No prediction yet - click \"Run prediction\" to get your first exam readiness estimate.",
     "predictionUpdated": "Exam readiness prediction updated.",
     "predictionFailed": "Could not reach the prediction service. Please try again shortly.",
     "reasonsTitle": "Why this estimate",
+    "dropRisk": "Risk of dropping practice",
+    "predictedNextScore": "Predicted next score",
+    "predictedChange": "Expected change",
+    "timeManagementReadiness": "Time management readiness",
+    "confidenceNote": "This is a research-grade model estimate, not a guaranteed prediction of your actual exam outcome.",
     "labels": {
       "ready": "Ready",
       "almost_ready": "Almost Ready",
@@ -33,7 +49,6 @@
     },
     "checkinButton": "Daily check-in",
     "checkinTitle": "Today's check-in",
-    "studyHours": "Study hours today",
     "motivation": "Motivation (1-10)",
     "attendedToday": "I studied/attended today",
     "saveCheckin": "Save",
@@ -47,17 +62,27 @@
     "edit": "Edit exam profile",
     "save": "Save",
     "saved": "Exam profile saved.",
-    "examCategory": "Which examination are you preparing for?",
-    "selectExam": "Select an exam",
-    "examName": "Exam name (optional)",
+    "examName": "What exam are you preparing for?",
     "examNamePlaceholder": "e.g. 2026 SLAS Limited Competitive Exam",
     "examDate": "Exam date",
-    "dailyHours": "Daily study hours available",
-    "targetScore": "Target score (optional)",
+    "targetScore": "Marks you need out of 100",
+    "dailyHours": "How long can you use the system each day?",
+    "dailyHoursHint": "Asked once here - we won't ask again during check-ins or predictions.",
+    "hoursCount": "{{count}} hour",
+    "hoursCount_other": "{{count}} hours",
+    "minutesCount": "{{count}} minute",
+    "minutesCount_other": "{{count}} minutes",
+    "realExamDetailsTitle": "Real exam details (optional)",
+    "realExamDetailsHint": "Skip this if you're not preparing for a specific exam. Used to show your pace against the real exam and to build mock exams.",
+    "examTotalQuestions": "Number of questions",
+    "examDurationMinutes": "Duration (minutes)",
+    "passMark": "Pass mark (out of 100)",
+    "negativeMarking": "Negative marking",
     "daysLeft": "days left",
     "countdown": "{{days}}d {{hours}}h {{minutes}}m remaining",
     "todaysGoal": "Today's goal: {{count}} practice questions",
     "firstFocus": "First focus",
+    "viewPlan": "View full study plan",
     "activity": {
       "weak_category_practice": "Weak-area practice",
       "timed_mock_practice": "Timed mock practice",
@@ -65,6 +90,36 @@
       "strong_category_maintenance": "Strong-area maintenance",
       "confidence_review": "Confidence review",
       "rest": "Rest"
+    }
+  },
+  "studyNotes": {
+    "eyebrow": "Self-learning library",
+    "title": "Study Notes",
+    "subtitle": "Teaching notes generated from reference books, reviewed by an admin before publishing.",
+    "allCategories": "All categories",
+    "none": "No study notes published yet.",
+    "recommendation": {
+      "title": "You've been struggling here ({{accuracy}}% accuracy). Learn it now.",
+      "action": "Open lesson"
+    },
+    "dueToday": {
+      "title": "Due for review today ({{count}})"
+    },
+    "sections": {
+      "objective": "Learning objective",
+      "concept": "Concept",
+      "workedExample": "Worked example",
+      "technique": "Key technique",
+      "mistakes": "Common mistakes"
+    },
+    "testYourself": "Test yourself",
+    "loadingPractice": "Loading practice questions...",
+    "noPracticeQuestions": "No practice questions available for this topic yet.",
+    "review": {
+      "again": "Forgot",
+      "hard": "Hard",
+      "good": "Good",
+      "easy": "Easy"
     }
   }
 }

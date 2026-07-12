@@ -1,11 +1,13 @@
 {
-  "appName": "MindRise",
+  "appName": "HelaIQ",
   "tagline": "Sri Lanka's cognitive training platform for IQ development",
   "nav": {
     "dashboard": "Dashboard",
     "dailyPractice": "Daily Practice",
     "practice": "Practice",
+    "mockExam": "Mock Exam",
     "studyPlan": "Study Plan",
+    "studyNotes": "Study Notes",
     "games": "Games",
     "badges": "Badges",
     "leaderboard": "Leaderboard",
@@ -16,10 +18,11 @@
     "adminUsers": "Users",
     "adminPsychometrics": "Psychometrics",
     "adminAiQuestions": "AI Questions",
+    "adminKnowledgeLibrary": "Knowledge Library",
     "adminQuestionBank": "Bank Stats",
+    "adminMlResearch": "ML Research",
     "login": "Log in",
-    "logout": "Log out",
-    "adminLogin": "Admin login"
+    "logout": "Log out"
   },
   "actions": {
     "save": "Save",
@@ -64,6 +67,14 @@
     "generic": "Something went wrong. Please try again.",
     "unauthorized": "You need to log in to view this page."
   },
+  "emptyState": {
+    "defaultTitle": "Nothing here yet",
+    "defaultDescription": "This will fill in as you use HelaIQ."
+  },
+  "errorState": {
+    "defaultTitle": "We couldn't load this",
+    "defaultDescription": "Check your connection and try again."
+  },
   "footer": {
     "copyright": "© 2026 Waruna Jayasundara. All rights reserved.",
     "project": "Final Year Project · University of Kelaniya",
@@ -71,25 +82,58 @@
   },
   "landing": {
     "badge": "Built for Sri Lankan students & exam candidates",
-    "heroTitle1": "Train your mind. ",
-    "heroTitle2": "Measure your growth.",
+    "heroTagline": "Train smarter. Think faster. Prepare with purpose.",
     "getStarted": "Get started free",
+    "preview": {
+      "readinessLabel": "Exam readiness",
+      "levelLabel": "Current level",
+      "streakLabel": "Practice streak"
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "steps": {
+        "assess": {
+          "title": "Take the placement test",
+          "description": "A short adaptive test finds your starting level across five cognitive areas."
+        },
+        "practice": {
+          "title": "Practice every day",
+          "description": "Daily sessions adjust to your pace and focus on your weaker areas."
+        },
+        "track": {
+          "title": "Track your readiness",
+          "description": "See your progress, predicted exam readiness, and what to study next."
+        }
+      }
+    },
+    "skillAreas": {
+      "title": "Five cognitive skill areas",
+      "description": "Every question is tagged to one of these areas, so your progress is easy to follow."
+    },
     "features": {
       "adaptive": {
         "title": "5-level adaptive IQ engine",
         "description": "A placement test measures your starting level across memory, logic, numbers, attention and pattern recognition, then adapts as you improve."
       },
-      "ai": {
-        "title": "AI-explained answers",
-        "description": "Every wrong answer gets a clear, friendly explanation so mistakes turn into understanding."
-      },
-      "games": {
-        "title": "3 brain-training games",
-        "description": "Memory Match, Sequence Puzzle and Mental Math Rush keep practice fun between full sessions."
+      "examPrep": {
+        "title": "Built for exam day",
+        "description": "Set your exam date, take full-length mock exams, and follow a study plan that adjusts as the date gets closer."
       },
       "progress": {
         "title": "Progress you can see",
         "description": "Track your level history, category strengths and streaks on a single dashboard."
+      },
+      "games": {
+        "title": "Practice through games",
+        "description": "Short games keep memory, attention and reasoning sharp between full sessions."
+      },
+      "explanations": {
+        "title": "Explained, not just marked",
+        "description": "Every wrong answer gets a clear, friendly explanation so mistakes turn into understanding."
+      },
+      "bilingual": {
+        "title": "Sinhala and English",
+        "description": "Use HelaIQ in whichever language you study best in."
       }
     }
   }

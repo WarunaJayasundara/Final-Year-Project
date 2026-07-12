@@ -10,16 +10,27 @@ export interface ExamProfile {
   exam_date: string | null;
   daily_study_hours_target: number;
   target_score: number | null;
+  // Optional real-exam structure - all skippable, null until the student
+  // fills them in. Used only to derive a pace target and size mock exams.
+  exam_total_questions: number | null;
+  exam_duration_minutes: number | null;
+  pass_mark: number | null;
+  negative_marking: boolean | null;
+  exam_sections: string[] | null;
+  target_seconds_per_question: number | null;
   days_remaining: number | null;
   prep_progress_percent: number | null;
 }
 
 export interface ExamProfileInput {
-  exam_category: string;
-  exam_name: string | null;
-  exam_date: string | null;
+  exam_name: string;
+  exam_date: string;
   daily_study_hours_target: number;
   target_score: number | null;
+  exam_total_questions?: number | null;
+  exam_duration_minutes?: number | null;
+  pass_mark?: number | null;
+  negative_marking?: boolean | null;
 }
 
 export interface CategoryRef {
@@ -55,6 +66,23 @@ export interface PhaseTimelineEntry {
   is_current: boolean;
 }
 
+export interface ReadinessGapWarning {
+  severity: 'medium' | 'high';
+  recommended_daily_minutes: number;
+  message_en: string;
+  message_si: string;
+}
+
+export interface ReadinessGap {
+  current_readiness_percent: number | null;
+  target_readiness_percent: number;
+  readiness_gap_points: number | null;
+  current_pace_seconds: number | null;
+  target_pace_seconds: number | null;
+  pace_gap_seconds: number | null;
+  warning: ReadinessGapWarning | null;
+}
+
 export interface StudyPlan {
   phase: StudyPlanPhase;
   exam_category: string | null;
@@ -68,4 +96,5 @@ export interface StudyPlan {
   daily_plan: DailyPlanBlock[];
   weekly_schedule: WeeklyScheduleDay[];
   phase_timeline: PhaseTimelineEntry[];
+  readiness_gap: ReadinessGap;
 }

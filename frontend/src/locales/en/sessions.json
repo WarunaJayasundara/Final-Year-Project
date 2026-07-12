@@ -2,7 +2,24 @@
   "types": {
     "placement": "Placement Test",
     "daily": "Daily Practice",
-    "practice": "Practice Session"
+    "practice": "Practice Session",
+    "mock": "Mock Exam"
+  },
+  "keyboardHint": "Press 1-6 to answer, Enter to continue",
+  "mockExam": {
+    "title": "Mock Exam",
+    "subtitle": "Build a personalized, timed practice exam that focuses more on your weak areas.",
+    "setupTitle": "Exam settings",
+    "totalQuestions": "Number of questions",
+    "durationMinutes": "Duration (minutes)",
+    "scope": "Coverage",
+    "scopeFull": "Full syllabus",
+    "scopeSelected": "Selected categories",
+    "difficultyMode": "Difficulty",
+    "difficultyStandard": "Standard (your current level)",
+    "difficultyAdaptive": "Adaptive (harder in your strong areas)",
+    "start": "Start mock exam",
+    "startError": "Could not start a mock exam with these settings - try a smaller question count."
   },
   "placement": {
     "title": "Let's measure your starting level",
@@ -30,7 +47,8 @@
     "reviewMistakes": "Review your mistakes",
     "yourAnswer": "Your answer: {{value}}",
     "correctAnswer": "Correct: {{value}}",
-    "thinking": "Thinking...",
-    "explain": "Explain this answer"
+    "thinking": "Preparing your explanation...",
+    "explain": "Explain this answer",
+    "explainMore": "Get a deeper explanation"
   }
 }

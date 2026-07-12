@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\LevelController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\SourceDocumentController;
+use App\Http\Controllers\Admin\StudyNoteController as AdminStudyNoteController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CheckinController;
@@ -14,7 +16,9 @@ use App\Http\Controllers\ExamProfileController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\ReadinessController;
+use App\Http\Controllers\Sessions\MockExamController;
 use App\Http\Controllers\Sessions\TestSessionController;
+use App\Http\Controllers\StudyNoteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +66,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
 
     Route::apiResource('categories', CategoryController::class)->except(['create', 'edit']);
 
+    Route::post('/questions/generate-visual-preview', [QuestionController::class, 'generateVisualPreview']);
     Route::apiResource('questions', QuestionController::class)->except(['create', 'edit']);
     Route::post('/questions/{question}/image', [QuestionController::class, 'uploadImage']);
 
@@ -72,6 +77,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
     Route::get('/analytics/psychometrics', [AnalyticsController::class, 'psychometrics']);
     Route::post('/analytics/recalibrate', [AnalyticsController::class, 'recalibrate']);
     Route::get('/analytics/ml-overview', [AnalyticsController::class, 'mlOverview']);
+    Route::get('/analytics/ml-research-reports', [AnalyticsController::class, 'mlResearchReports']);
     Route::get('/analytics/question-bank', [AnalyticsController::class, 'questionBank']);
 
     // --- Admin: AI question generation (draft -> human review -> promote) ---
@@ -79,6 +85,20 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
     Route::post('/ai-questions/generate', [AiQuestionController::class, 'generate']);
     Route::post('/ai-questions/{aiQuestion}/approve', [AiQuestionController::class, 'approve']);
     Route::post('/ai-questions/{aiQuestion}/reject', [AiQuestionController::class, 'reject']);
+    Route::post('/ai-questions/bulk-approve', [AiQuestionController::class, 'bulkApprove']);
+
+    // --- Admin: Knowledge & Question Source Library (PDF ingestion) ---
+    Route::get('/source-documents', [SourceDocumentController::class, 'index']);
+    Route::post('/source-documents', [SourceDocumentController::class, 'store']);
+    Route::get('/source-documents/{sourceDocument}', [SourceDocumentController::class, 'show']);
+    Route::post('/source-documents/{sourceDocument}/analyze', [SourceDocumentController::class, 'analyze']);
+    Route::delete('/source-documents/{sourceDocument}', [SourceDocumentController::class, 'destroy']);
+
+    // --- Admin: Study notes (theory-book -> teaching notes, draft -> human review -> publish) ---
+    Route::get('/study-notes', [AdminStudyNoteController::class, 'index']);
+    Route::post('/study-notes/generate', [AdminStudyNoteController::class, 'generate']);
+    Route::post('/study-notes/{studyNote}/publish', [AdminStudyNoteController::class, 'publish']);
+    Route::post('/study-notes/{studyNote}/reject', [AdminStudyNoteController::class, 'reject']);
 });
 
 // --- Test sessions (end user) ---
@@ -91,6 +111,13 @@ Route::prefix('sessions')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/{session}/complete', [TestSessionController::class, 'complete']);
     Route::get('/{session}/report', [TestSessionController::class, 'report']);
     Route::post('/{session}/answers/{answer}/explain', [TestSessionController::class, 'explainAnswer']);
+});
+
+// --- Mock exams (end user) - setup only; answer/complete/report lifecycle
+// reuses the generic /sessions/{session}/* routes above (a mock exam is a
+// TestSession like any other, just session_type='mock' with a time limit).
+Route::prefix('mock-exams')->middleware(['auth:sanctum'])->group(function () {
+    Route::post('/', [MockExamController::class, 'store']);
 });
 
 // --- Dashboard (end user) ---
@@ -129,6 +156,16 @@ Route::prefix('exam-profile')->middleware(['auth:sanctum'])->group(function () {
 Route::prefix('checkins')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/today', [CheckinController::class, 'today']);
     Route::post('/', [CheckinController::class, 'store']);
+});
+
+// --- Study notes: the "self-learning" reading list (published only) ---
+Route::prefix('study-notes')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/', [StudyNoteController::class, 'index']);
+    Route::get('/due-today', [StudyNoteController::class, 'dueToday']);
+    Route::get('/recommendation', [StudyNoteController::class, 'recommendation']);
+    Route::get('/{studyNote}', [StudyNoteController::class, 'show']);
+    Route::get('/{studyNote}/practice-questions', [StudyNoteController::class, 'practiceQuestions']);
+    Route::post('/{studyNote}/review', [StudyNoteController::class, 'review']);
 });
 
 // --- Gamification: XP/levels, badges, missions, leaderboard (end user) ---

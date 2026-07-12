@@ -21,8 +21,11 @@ export interface GameScoreSummary {
   plays: number;
 }
 
+export type IqClassification = 'gifted' | 'above_average' | 'average' | 'below_average' | 'extremely_low';
+
 export interface IqEstimate {
   iq_score: number;
+  classification: IqClassification;
   method: 'irt_theta';
   theta: number;
   theta_se: number | null;

@@ -5,7 +5,7 @@ import { Activity, Gauge, RefreshCw, Ruler, Target, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FullPageSpinner } from '@/components/auth/RequireAuth';
+import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
 import { usePsychometrics, useRecalibrate } from '@/features/admin/analytics';
 
 export function AdminPsychometricsPage() {
@@ -18,7 +18,7 @@ export function AdminPsychometricsPage() {
   });
 
   if (isLoading || !data) {
-    return <FullPageSpinner />;
+    return <CardGridSkeleton count={4} />;
   }
 
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';

@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Brain, Calculator, Eye, Puzzle, Shapes } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Calculator, Eye, Puzzle, Shapes, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { FullPageSpinner } from '@/components/auth/RequireAuth';
+import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
+import { TestSkeleton } from '@/components/skeletons/TestSkeleton';
 import { SessionRunner } from '@/features/sessions/SessionRunner';
 import { useCategories, useStartPractice } from '@/features/sessions/useSessions';
 import type { SessionData } from '@/features/sessions/types';
 
-const ICONS: Record<string, typeof Brain> = {
-  brain: Brain,
+const ICONS: Record<string, typeof Target> = {
+  brain: Target,
   puzzle: Puzzle,
   calculator: Calculator,
   eye: Eye,
@@ -21,6 +23,7 @@ export function PracticeTestPage() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
 
   const startPractice = useStartPractice({
     onSuccess: setSession,
@@ -30,19 +33,30 @@ export function PracticeTestPage() {
     },
   });
 
-  if (session) {
-    return <SessionRunner session={session} />;
-  }
-
-  if (isLoading) {
-    return <FullPageSpinner />;
-  }
-
   const handleStart = (categoryId: number) => {
     setIsStarting(true);
     setErrorMessage(null);
     startPractice.mutate({ categoryId });
   };
+
+  // Deep link from the study plan's "Practice Numerical Reasoning Now"
+  // buttons (see StudyPlanPage.tsx's ACTIVITY_LINK) - skips the picker and
+  // jumps straight into practicing the recommended weak category.
+  const deepLinkCategoryId = searchParams.get('category');
+  useEffect(() => {
+    if (deepLinkCategoryId && !session && !isStarting && !startPractice.isPending) {
+      handleStart(Number(deepLinkCategoryId));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkCategoryId]);
+
+  if (session) {
+    return <SessionRunner session={session} />;
+  }
+
+  if (deepLinkCategoryId && (isStarting || startPractice.isPending)) {
+    return <TestSkeleton />;
+  }
 
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
 
@@ -53,31 +67,35 @@ export function PracticeTestPage() {
         <p className="text-muted-foreground">{t('practice.subtitle', { ns: 'sessions' })}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {categories?.map((category) => {
-          const Icon = ICONS[category.icon ?? ''] ?? Brain;
-          const name = locale === 'si' ? category.name_si : category.name_en;
-          const description = locale === 'si' ? category.description_si : category.description_en;
+      {isLoading ? (
+        <CardGridSkeleton count={5} columns={{ base: 1, sm: 2, lg: 2 }} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {categories?.map((category) => {
+            const Icon = ICONS[category.icon ?? ''] ?? Target;
+            const name = locale === 'si' ? category.name_si : category.name_en;
+            const description = locale === 'si' ? category.description_si : category.description_en;
 
-          return (
-            <Card
-              key={category.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
-              onClick={() => handleStart(category.id)}
-            >
-              <CardContent className="flex flex-col gap-3 p-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <p className="font-semibold">{name}</p>
-                <p className="text-sm text-muted-foreground">{description}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+            return (
+              <Card
+                key={category.id}
+                className="cursor-pointer transition-shadow hover:shadow-md"
+                onClick={() => handleStart(category.id)}
+              >
+                <CardContent className="flex flex-col gap-3 p-6">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <p className="font-semibold">{name}</p>
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
-      {isStarting && !errorMessage && <FullPageSpinner />}
+      {isStarting && !errorMessage && <TestSkeleton />}
       {errorMessage && <p className="text-center text-sm text-destructive">{errorMessage}</p>}
     </div>
   );

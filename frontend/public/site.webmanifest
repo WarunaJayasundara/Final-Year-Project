@@ -1,0 +1,16 @@
+{
+  "name": "HelaIQ",
+  "short_name": "HelaIQ",
+  "description": "Cognitive training and exam-readiness platform for Sri Lanka",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#256b8a",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}

@@ -65,6 +65,18 @@ class ReadinessController extends Controller
             'reasons' => $prediction->reasons,
             'model_version' => $prediction->model_version,
             'predicted_at' => $prediction->predicted_at,
+            'plain_english_explanation' => $prediction->plain_english_explanation,
+            'risk_of_dropping_practice' => $prediction->risk_of_dropping_practice_probability !== null ? [
+                'probability' => (float) $prediction->risk_of_dropping_practice_probability,
+                'at_risk' => (bool) $prediction->at_risk_of_dropping_practice,
+            ] : null,
+            'predicted_next_assessment_score' => $prediction->predicted_next_assessment_score !== null
+                ? (float) $prediction->predicted_next_assessment_score : null,
+            'predicted_score_change' => $prediction->predicted_score_change !== null
+                ? (float) $prediction->predicted_score_change : null,
+            'time_management_readiness_percent' => $prediction->time_management_readiness_percent !== null
+                ? (float) $prediction->time_management_readiness_percent : null,
+            'predicted_score_range' => $prediction->predicted_score_range,
         ];
     }
 }

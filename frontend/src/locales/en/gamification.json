@@ -13,7 +13,7 @@
   },
   "badges": {
     "title": "Badges",
-    "subtitle": "Unlock achievements as you train, play games, and prepare for your exam.",
+    "subtitle": "Earn badges as you train, play games, and prepare for your exam.",
     "locked": "Locked",
     "earnedOn": "Earned {{date}}"
   },

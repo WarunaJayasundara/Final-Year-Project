@@ -6,11 +6,12 @@ import {
   getReport,
   getSession,
   startDaily,
+  startMockExam,
   startPlacement,
   startPractice,
   submitAnswer,
 } from './api';
-import type { AdaptiveSessionData, SessionData } from './types';
+import type { AdaptiveSessionData, MockExamRequest, SessionData } from './types';
 import { AUTH_QUERY_KEY } from '@/features/auth/useAuth';
 import { showRewardToast } from '@/features/gamification/rewardToast';
 
@@ -38,6 +39,10 @@ export function useStartPractice(options?: { onSuccess?: (data: SessionData) => 
   });
 }
 
+export function useStartMockExam(options?: { onSuccess?: (data: SessionData) => void; onError?: (error: unknown) => void }) {
+  return useMutation({ mutationFn: (request: MockExamRequest) => startMockExam(request), ...options });
+}
+
 export function useSession(sessionId: number | null) {
   return useQuery({
     queryKey: ['sessions', sessionId],
@@ -48,8 +53,15 @@ export function useSession(sessionId: number | null) {
 
 export function useSubmitAnswer(sessionId: number) {
   return useMutation({
-    mutationFn: ({ questionId, selectedOptionKey }: { questionId: number; selectedOptionKey: string }) =>
-      submitAnswer(sessionId, questionId, selectedOptionKey),
+    mutationFn: ({
+      questionId,
+      selectedOptionKey,
+      responseTimeMs,
+    }: {
+      questionId: number;
+      selectedOptionKey: string;
+      responseTimeMs?: number;
+    }) => submitAnswer(sessionId, questionId, selectedOptionKey, responseTimeMs),
   });
 }
 

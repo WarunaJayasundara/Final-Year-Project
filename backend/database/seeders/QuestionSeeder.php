@@ -10,6 +10,9 @@ use Database\Seeders\Questions\Bank2\MatrixSeriesImageSeeder;
 use Database\Seeders\Questions\Bank2\MemoryAttentionBank2Seeder;
 use Database\Seeders\Questions\Bank2\NumericalBank2Seeder;
 use Database\Seeders\Questions\Bank2\SpatialImageSeeder;
+use Database\Seeders\Questions\Bank3\Bank3Seeder;
+use Database\Seeders\Questions\Bank4\Bank4Seeder;
+use Database\Seeders\Questions\Bank5\Bank5Seeder;
 use Database\Seeders\Questions\ExamLogicalQuestionsSeeder;
 use Database\Seeders\Questions\ExamNumericalQuestionsSeeder;
 use Illuminate\Database\Seeder;
@@ -26,7 +29,11 @@ use Illuminate\Database\Seeder;
  * deactivate-and-replace entry point used on an existing database.
  *
  * Order matters: the Exam/Advanced waves run first so the Bank2 seeders'
- * run-time duplicate guard can see their question texts.
+ * run-time duplicate guard can see their question texts. Bank3 (blood
+ * relations / direction sense / coding-decoding / calendar-clock / seating
+ * arrangement / data interpretation / statement sufficiency - archetypes
+ * confirmed missing by the Phase-1 PDF document analysis, see CLAUDE.md)
+ * runs last for the same reason.
  */
 class QuestionSeeder extends Seeder
 {
@@ -43,6 +50,9 @@ class QuestionSeeder extends Seeder
             NumericalBank2Seeder::class,
             LogicalVerbalBank2Seeder::class,
             MemoryAttentionBank2Seeder::class,
+            Bank3Seeder::class,
+            Bank4Seeder::class,
+            Bank5Seeder::class,
         ]);
     }
 }

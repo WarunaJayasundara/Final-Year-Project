@@ -33,6 +33,8 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
 
   const [categoryId, setCategoryId] = useState(initialValues?.category_id ?? 0);
   const [levelId, setLevelId] = useState(initialValues?.level_id ?? 0);
+  const [subcategory, setSubcategory] = useState(initialValues?.subcategory ?? '');
+  const [examTags, setExamTags] = useState((initialValues?.exam_tags ?? []).join(', '));
   const [questionType, setQuestionType] = useState<'mcq_text' | 'mcq_image'>(
     initialValues?.question_type ?? 'mcq_text',
   );
@@ -83,6 +85,11 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
     await onSubmit({
       category_id: categoryId,
       level_id: levelId,
+      subcategory: subcategory.trim() || null,
+      exam_tags: examTags
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean),
       question_type: questionType,
       question_text_en: textEn,
       question_text_si: textSi,
@@ -146,6 +153,25 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
+          <Label>{t('form.subcategory')}</Label>
+          <Input
+            placeholder={t('form.subcategoryPlaceholder')}
+            value={subcategory}
+            onChange={(e) => setSubcategory(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label>{t('form.examTags')}</Label>
+          <Input
+            placeholder={t('form.examTagsPlaceholder')}
+            value={examTags}
+            onChange={(e) => setExamTags(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
           <Label>{t('form.questionTextEn')}</Label>
           <Textarea value={textEn} onChange={(e) => setTextEn(e.target.value)} rows={3} required />
         </div>
@@ -169,7 +195,7 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
               type="button"
               onClick={() => setCorrectKey(option.key)}
               className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-medium ${
-                correctKey === option.key ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-border'
+                correctKey === option.key ? 'border-success bg-success/10 text-success' : 'border-border'
               }`}
               title="Mark as correct answer"
             >
@@ -221,6 +247,8 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
               <SelectItem value="1">1</SelectItem>
               <SelectItem value="2">2</SelectItem>
               <SelectItem value="3">3</SelectItem>
+              <SelectItem value="4">4</SelectItem>
+              <SelectItem value="5">5</SelectItem>
             </SelectContent>
           </Select>
         </div>

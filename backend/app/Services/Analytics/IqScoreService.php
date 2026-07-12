@@ -30,8 +30,11 @@ class IqScoreService
             return null;
         }
 
+        $iqScore = self::fromTheta((float) $user->theta_estimate);
+
         return [
-            'iq_score' => self::fromTheta((float) $user->theta_estimate),
+            'iq_score' => $iqScore,
+            'classification' => self::classify($iqScore),
             'method' => 'irt_theta',
             'theta' => (float) $user->theta_estimate,
             'theta_se' => $user->theta_se !== null ? (float) $user->theta_se : null,
@@ -49,5 +52,24 @@ class IqScoreService
         $iq = self::MEAN_IQ + $theta * self::SD_IQ;
 
         return (int) round(max(self::MIN_IQ, min(self::MAX_IQ, $iq)));
+    }
+
+    /**
+     * Standard deviation-IQ classification bands (Wechsler-style), applied
+     * only to the final rounded IQ estimate - never derived independently
+     * from raw score/percentage-correct, so this is the single place the
+     * gifted/above-average/average/below-average/extremely-low labels are
+     * decided. Returns a stable code (not display text) so the frontend can
+     * localize it via i18n rather than the backend hardcoding English.
+     */
+    public static function classify(int $iqScore): string
+    {
+        return match (true) {
+            $iqScore >= 130 => 'gifted',
+            $iqScore >= 115 => 'above_average',
+            $iqScore >= 85 => 'average',
+            $iqScore >= 70 => 'below_average',
+            default => 'extremely_low',
+        };
     }
 }

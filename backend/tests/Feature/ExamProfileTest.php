@@ -52,16 +52,19 @@ class ExamProfileTest extends TestCase
         $this->assertContains('other', $codes);
     }
 
-    public function test_exam_profile_rejects_invalid_category()
+    public function test_exam_profile_requires_name_and_date()
     {
         $this->testUser = $this->makeUser('invalid');
 
+        // exam_category is no longer collected from the client at all (the
+        // fixed-list dropdown was removed) - exam_name and exam_date are now
+        // the required fields the freeform setup flow must provide.
         $response = $this->actingAs($this->testUser, 'web')->postJson('/api/exam-profile', [
-            'exam_category' => 'not_a_real_exam',
             'daily_study_hours_target' => 2,
         ]);
 
         $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['exam_name', 'exam_date']);
     }
 
     public function test_exam_profile_can_be_created_and_updated()
@@ -70,7 +73,6 @@ class ExamProfileTest extends TestCase
         $examDate = Carbon::now()->addDays(45)->toDateString();
 
         $create = $this->actingAs($this->testUser, 'web')->postJson('/api/exam-profile', [
-            'exam_category' => 'banking',
             'exam_name' => 'Sample Bank Officer Exam',
             'exam_date' => $examDate,
             'daily_study_hours_target' => 2.5,
@@ -78,20 +80,27 @@ class ExamProfileTest extends TestCase
         ]);
 
         $create->assertStatus(200);
-        $create->assertJsonPath('data.exam_category', 'banking');
+        // exam_category is no longer client-supplied - always stored as
+        // 'other' (difficultyWeight()'s documented 1.0 default) now that the
+        // fixed-list dropdown is gone.
+        $create->assertJsonPath('data.exam_category', 'other');
+        $create->assertJsonPath('data.exam_name', 'Sample Bank Officer Exam');
         $create->assertJsonPath('data.daily_study_hours_target', 2.5);
+        $create->assertJsonPath('data.target_score', 75);
         $this->assertEquals(45, $create->json('data.days_remaining'));
 
         $this->assertEquals(1, ExamProfile::where('user_id', $this->testUser->id)->count());
 
         // Updating should upsert the same row, not create a second one.
+        $newExamDate = Carbon::now()->addDays(60)->toDateString();
         $update = $this->actingAs($this->testUser, 'web')->postJson('/api/exam-profile', [
-            'exam_category' => 'police',
+            'exam_name' => 'Updated Exam Name',
+            'exam_date' => $newExamDate,
             'daily_study_hours_target' => 1.0,
         ]);
 
         $update->assertStatus(200);
-        $update->assertJsonPath('data.exam_category', 'police');
+        $update->assertJsonPath('data.exam_name', 'Updated Exam Name');
         $this->assertEquals(1, ExamProfile::where('user_id', $this->testUser->id)->count());
     }
 

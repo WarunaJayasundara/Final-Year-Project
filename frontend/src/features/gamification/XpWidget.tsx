@@ -24,10 +24,10 @@ export function XpWidget() {
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm font-medium">
-            <span className="flex items-center gap-1.5 text-amber-500">
+            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold)]">
               <Coins className="h-4 w-4" /> {summary.coins}
             </span>
-            <span className="flex items-center gap-1.5 text-orange-500">
+            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold)]">
               <Flame className="h-4 w-4" /> {summary.streak_days}
             </span>
           </div>

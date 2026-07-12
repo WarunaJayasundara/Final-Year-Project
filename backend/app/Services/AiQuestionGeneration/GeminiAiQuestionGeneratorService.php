@@ -33,6 +33,22 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         5 => 'Evaluate (judge between plausible options)',
     ];
 
+    /**
+     * Sane bounds per authored level for the LLM-estimated solving time -
+     * this project doesn't trust an LLM's raw numeric judgment blindly (see
+     * the clamp applied in generate()); ResponseTimeCalibrationService later
+     * replaces this authored baseline with a real learned value once enough
+     * response data exists, matching the brief's own level-1-vs-level-5
+     * example (~30s vs ~120s).
+     */
+    private const TIME_BOUNDS = [
+        1 => [15, 45],
+        2 => [20, 60],
+        3 => [30, 80],
+        4 => [40, 110],
+        5 => [60, 150],
+    ];
+
     private Client $client;
 
     private MockAiQuestionGeneratorService $fallback;
@@ -46,12 +62,12 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         $this->fallback = $fallback ?? new MockAiQuestionGeneratorService();
     }
 
-    public function generate(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts): array
+    public function generate(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts, ?string $sourceContext = null): array
     {
         $apiKey = config('services.gemini.api_key');
 
         if (! $apiKey) {
-            return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts);
+            return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext);
         }
 
         try {
@@ -59,7 +75,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
                 sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', self::MODEL, $apiKey),
                 [
                     'json' => [
-                        'contents' => [['parts' => [['text' => $this->buildPrompt($category, $level, $examCategoryLabel, $avoidQuestionTexts)]]]],
+                        'contents' => [['parts' => [['text' => $this->buildPrompt($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext)]]]],
                         'generationConfig' => ['responseMimeType' => 'application/json'],
                     ],
                     'timeout' => 20,
@@ -73,10 +89,12 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
             if (! $this->isValidDraft($parsed)) {
                 Log::warning('Gemini question generation returned an invalid shape, falling back to mock.', ['category' => $category->code]);
 
-                return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts);
+                return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext);
             }
 
             $parsed['difficulty_weight'] = max(1, min(3, (int) ($parsed['difficulty_weight'] ?? 2)));
+            [$minTime, $maxTime] = self::TIME_BOUNDS[$level->level_number] ?? self::TIME_BOUNDS[3];
+            $parsed['solving_time_seconds'] = max($minTime, min($maxTime, (int) ($parsed['estimated_time_seconds'] ?? $minTime)));
 
             return $parsed;
         } catch (\Throwable $e) {
@@ -85,11 +103,11 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts);
+            return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext);
         }
     }
 
-    private function buildPrompt(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts): string
+    private function buildPrompt(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts, ?string $sourceContext = null): string
     {
         $bloomHint = self::BLOOM_LEVEL[$level->level_number] ?? self::BLOOM_LEVEL[3];
         $examContext = $examCategoryLabel
@@ -98,6 +116,16 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         $avoidList = $avoidQuestionTexts
             ? "Do not repeat or closely paraphrase any of these existing questions:\n- " . implode("\n- ", array_slice($avoidQuestionTexts, 0, 15))
             : 'There are no existing questions to avoid duplicating yet.';
+        // $sourceContext is a short admin-curated summary (title + matched
+        // topic keywords), never a document's raw extracted text - the
+        // prompt explicitly tells the model to treat it as topic/style
+        // inspiration only, never as text to reproduce, since some source
+        // documents are copyrighted commercial books/past-paper compilations.
+        $sourceHint = $sourceContext
+            ? "Reference context (topic/style inspiration ONLY - do not reproduce or closely paraphrase any specific wording from it, it may be copyrighted material you have not seen): {$sourceContext}"
+            : 'No specific reference document context was provided for this question.';
+        $glossaryHint = $this->glossaryHintFor($category);
+        [$minTime, $maxTime] = self::TIME_BOUNDS[$level->level_number] ?? self::TIME_BOUNDS[3];
 
         return <<<PROMPT
         You are writing one multiple-choice cognitive-assessment question for the
@@ -105,13 +133,15 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
 
         Target cognitive skill (Bloom's Taxonomy): {$bloomHint}.
         {$examContext}
+        {$sourceHint}
         {$avoidList}
+        {$glossaryHint}
 
         Respond with ONLY a JSON object (no markdown fences, no commentary) matching
         exactly this shape:
         {
           "question_text_en": "...",
-          "question_text_si": "... (natural Sinhala translation, not transliteration)",
+          "question_text_si": "... (natural Sinhala translation using standard Sri Lankan educational vocabulary, not a literal word-for-word or machine-style translation - use the glossary terms above where they apply)",
           "options": [
             {"key": "A", "text_en": "...", "text_si": "..."},
             {"key": "B", "text_en": "...", "text_si": "..."},
@@ -121,13 +151,48 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
           "correct_option_key": "A" | "B" | "C" | "D",
           "explanation_en": "brief explanation of the correct answer",
           "explanation_si": "same explanation in Sinhala",
-          "difficulty_weight": 1 | 2 | 3
+          "difficulty_weight": 1 | 2 | 3,
+          "estimated_time_seconds": a realistic number of seconds a student at this level would need to solve this specific question, between {$minTime} and {$maxTime}
         }
 
         Exactly one option must be correct and unambiguous. Keep the question
         self-contained (no reference to an image). Do not include any text
         outside the JSON object.
         PROMPT;
+    }
+
+    /**
+     * A short slice of the curated EN-SI terminology glossary (brief §15),
+     * relevant to this category only, injected as prompt context - a
+     * RAG-lite pattern (curated glossary + prompt template), the approach
+     * this project's own methodology docs prefer over fine-tuning a custom
+     * Sinhala model without sufficient legally-usable training data.
+     */
+    private function glossaryHintFor(Category $category): string
+    {
+        $domainMap = [
+            'memory' => 'memory',
+            'logical_reasoning' => 'logical_reasoning',
+            'numerical_ability' => 'numerical_reasoning',
+            'attention' => 'attention',
+            'spatial_pattern' => 'spatial_reasoning',
+        ];
+        $domain = $domainMap[$category->code] ?? null;
+        $glossaryPath = base_path('resources/sinhala_glossary.json');
+
+        if (! $domain || ! file_exists($glossaryPath)) {
+            return '';
+        }
+
+        $glossary = json_decode(file_get_contents($glossaryPath), true);
+        $entries = $glossary[$domain] ?? [];
+        $terms = collect($entries)
+            ->merge($glossary['cognitive_training'] ?? [])
+            ->take(8)
+            ->map(fn ($entry) => "{$entry['en']} = {$entry['si']}")
+            ->implode('; ');
+
+        return $terms === '' ? '' : "Use this reviewed Sinhala terminology consistently where relevant: {$terms}.";
     }
 
     private function isValidDraft(mixed $parsed): bool

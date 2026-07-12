@@ -27,8 +27,26 @@ class WeakAreaWeightingService
     /** A category needs at least this many past answers before its accuracy is trusted as a real signal. */
     private const MIN_SAMPLE_SIZE = 5;
 
+    /**
+     * Exam-approaching training mode (brief §14): as the exam gets closer,
+     * sharpen (don't replace) the existing weak-area bias by raising the
+     * weight exponent - a category at 20% accuracy already gets ~4x an
+     * 80%-accuracy category's weight at exponent 1; at exponent 1.6 (final
+     * revision) that same gap widens further, without ever violating
+     * MIN_SHARE_OF_EVEN_SPLIT's floor (a strong category still always gets
+     * at least half an even share - "make it harsher," never "starve it").
+     * foundation/practice/exam_day keep the original, un-sharpened bias.
+     */
+    private const PHASE_WEIGHT_EXPONENT = [
+        'foundation' => 1.0,
+        'practice' => 1.0,
+        'intensive' => 1.3,
+        'final_revision' => 1.6,
+        'exam_day' => 1.0,
+    ];
+
     /** @return array<int,int> category_id => question count, summing to exactly $totalQuestions */
-    public function allocationFor(int $userId, int $totalQuestions): array
+    public function allocationFor(int $userId, int $totalQuestions, ?string $phase = null): array
     {
         $categories = Category::orderBy('id')->get();
         $n = $categories->count();
@@ -40,16 +58,18 @@ class WeakAreaWeightingService
         $accuracy = $this->categoryAccuracy($userId);
         $evenShare = $totalQuestions / $n;
         $minCount = (int) floor($evenShare * self::MIN_SHARE_OF_EVEN_SPLIT);
+        $exponent = self::PHASE_WEIGHT_EXPONENT[$phase] ?? 1.0;
 
-        // Weight = 1 - accuracy, clamped so no category ever gets a zero or
-        // runaway weight from a fluke 0%/100% streak. Categories with too
-        // little history default to a neutral 0.5 (even split) rather than
-        // being treated as either strong or weak on no evidence.
-        $weights = $categories->mapWithKeys(function (Category $category) use ($accuracy) {
+        // Weight = (1 - accuracy) ^ exponent, clamped so no category ever
+        // gets a zero or runaway weight from a fluke 0%/100% streak.
+        // Categories with too little history default to a neutral 0.5
+        // (even split) rather than being treated as either strong or weak
+        // on no evidence.
+        $weights = $categories->mapWithKeys(function (Category $category) use ($accuracy, $exponent) {
             $acc = $accuracy[$category->id] ?? 0.5;
             $acc = max(0.05, min(0.95, $acc));
 
-            return [$category->id => 1 - $acc];
+            return [$category->id => (1 - $acc) ** $exponent];
         });
 
         $totalWeight = $weights->sum();

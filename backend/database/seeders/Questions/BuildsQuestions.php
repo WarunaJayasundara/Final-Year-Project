@@ -27,7 +27,12 @@ trait BuildsQuestions
     /**
      * @param  array<int,array>  $rows  each row: [level_number, question_type, text_en, text_si, options, correct_key, explanation_en, explanation_si, difficulty_weight?, meta?]
      *                                  meta (index 9) is an optional assoc array: subcategory, solving_time_seconds,
-     *                                  bloom_level, exam_tags (array), cognitive_skill, image_path.
+     *                                  bloom_level, exam_tags (array), cognitive_skill, image_path,
+     *                                  source_type, source_document_reference (informal string, not a source_documents FK -
+     *                                  seeder-authored content predates the admin ingestion feature and isn't tied to a
+     *                                  specific uploaded row), difficulty_reason, generation_rule (image questions only -
+     *                                  the SvgFigureBuilder transformation name, e.g. "rotate_and_recolor"),
+     *                                  transformation_steps (array, image questions only), visual_complexity_score (float).
      * @param  array  $defaultMeta  batch-level metadata defaults, overridden by per-row meta
      */
     private function insertRows(string $categoryCode, array $rows, array $defaultMeta = []): void
@@ -38,7 +43,12 @@ trait BuildsQuestions
 
         $payload = array_map(function (array $row) use ($categoryId, $levelIds, $now, $defaultMeta) {
             [$levelNumber, $type, $textEn, $textSi, $options, $correctKey, $explanationEn, $explanationSi] = $row;
-            $difficulty = $row[8] ?? max(1, min(3, (int) ceil($levelNumber / 2)));
+            // Difficulty weight tracks the IQ level directly (1-5, matching
+            // the 5 seeded iq_levels rows). Previously capped at
+            // max(1,min(3,ceil(level/2))) - only 3 distinct values across 5
+            // levels, so Level 5 content wasn't reliably flagged harder than
+            // Level 3. Fixed as part of the adult-content difficulty audit.
+            $difficulty = $row[8] ?? max(1, min(5, (int) $levelNumber));
             $meta = array_merge($defaultMeta, $row[9] ?? []);
 
             return [
@@ -49,6 +59,9 @@ trait BuildsQuestions
                 'question_text_en' => $textEn,
                 'question_text_si' => $textSi,
                 'image_path' => $meta['image_path'] ?? null,
+                'generation_rule' => $meta['generation_rule'] ?? null,
+                'transformation_steps' => isset($meta['transformation_steps']) ? json_encode($meta['transformation_steps']) : null,
+                'visual_complexity_score' => $meta['visual_complexity_score'] ?? null,
                 'options' => json_encode($options),
                 'correct_option_key' => $correctKey,
                 'explanation_en' => $explanationEn,
@@ -60,6 +73,15 @@ trait BuildsQuestions
                 'cognitive_skill' => $meta['cognitive_skill'] ?? null,
                 'is_active' => true,
                 'created_by' => null,
+                // Source-traceability metadata (§Phase A migration) - every
+                // seeder-authored row is programmatically generated with a
+                // computed (not asserted) answer, so 'auto_validated' is
+                // accurate; 'human_approved' is reserved for rows that
+                // actually passed through an admin review UI action.
+                'source_type' => $meta['source_type'] ?? 'original',
+                'generation_method' => 'seeder',
+                'validation_status' => $meta['validation_status'] ?? 'auto_validated',
+                'difficulty_reason' => $meta['difficulty_reason'] ?? null,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];

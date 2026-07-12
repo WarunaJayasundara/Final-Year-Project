@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2 } from 'lucide-react';
+import { FilePlus2, Plus, Shapes, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -33,11 +33,23 @@ export function AdminQuestionsListPage() {
           <h1 className="text-2xl font-semibold">{t('questions.title')}</h1>
           <p className="text-muted-foreground">{t('questions.subtitle')}</p>
         </div>
-        <Button asChild>
-          <Link to="/admin/questions/new">
-            <Plus className="h-4 w-4" /> {t('questions.new')}
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link to="/admin/questions/visual-generator">
+              <Shapes className="h-4 w-4" /> {t('questions.modeVisual')}
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/admin/ai-questions">
+              <FilePlus2 className="h-4 w-4" /> {t('questions.modeAi')}
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to="/admin/questions/new">
+              <Plus className="h-4 w-4" /> {t('questions.new')}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

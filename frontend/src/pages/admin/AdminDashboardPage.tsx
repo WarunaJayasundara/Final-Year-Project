@@ -1,18 +1,32 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Download, GraduationCap, ListChecks, TrendingUp, Users } from 'lucide-react';
+import { Download, ListChecks, Loader2, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FullPageSpinner } from '@/components/auth/RequireAuth';
-import { pairedScoresCsvUrl, useCohortOverview } from '@/features/admin/analytics';
+import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCohortOverview, useDownloadPairedScoresCsv } from '@/features/admin/analytics';
 
 export function AdminDashboardPage() {
   const { t } = useTranslation('admin');
   const { data: overview, isLoading } = useCohortOverview();
+  const downloadCsv = useDownloadPairedScoresCsv({
+    onError: () => toast.error(t('dashboard.exportCsvFailed')),
+  });
 
   if (isLoading || !overview) {
-    return <FullPageSpinner />;
+    return (
+      <div className="flex flex-col gap-6">
+        <Skeleton className="h-8 w-64" />
+        <CardGridSkeleton count={4} />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Skeleton className="h-72 rounded-xl" />
+          <Skeleton className="h-72 rounded-xl" />
+        </div>
+      </div>
+    );
   }
 
   const categoryData = overview.category_accuracy.map((c) => ({
@@ -32,17 +46,16 @@ export function AdminDashboardPage() {
           <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
         </div>
-        <Button asChild variant="outline">
-          <a href={pairedScoresCsvUrl()} target="_blank" rel="noreferrer">
-            <Download className="h-4 w-4" /> {t('dashboard.exportCsv')}
-          </a>
+        <Button variant="outline" onClick={() => downloadCsv.mutate()} disabled={downloadCsv.isPending}>
+          {downloadCsv.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {t('dashboard.exportCsv')}
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Users className="h-5 w-5" />} label={t('dashboard.students')} value={String(overview.total_students)} />
         <StatCard
-          icon={<GraduationCap className="h-5 w-5" />}
+          icon={<UserCheck className="h-5 w-5" />}
           label={t('dashboard.placementCompleted')}
           value={String(overview.placement_completed)}
         />

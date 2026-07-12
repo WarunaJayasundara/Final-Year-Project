@@ -7,6 +7,7 @@ use App\Models\AiGeneratedQuestion;
 use App\Models\Category;
 use App\Models\ExamProfile;
 use App\Models\IqLevel;
+use App\Models\SourceDocument;
 use App\Services\AiQuestionGeneration\QuestionDraftService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -37,6 +38,7 @@ class AiQuestionController extends Controller
             'level_id' => ['required', 'exists:iq_levels,id'],
             'count' => ['nullable', 'integer', 'min:1', 'max:10'],
             'exam_category' => ['nullable', 'string', 'in:'.implode(',', array_keys(ExamProfile::EXAM_CATEGORIES))],
+            'source_document_id' => ['nullable', 'exists:source_documents,id'],
         ]);
 
         if ($validator->fails()) {
@@ -48,6 +50,9 @@ class AiQuestionController extends Controller
         $examCategoryLabel = $request->filled('exam_category')
             ? ExamProfile::EXAM_CATEGORIES[$request->input('exam_category')]
             : null;
+        $sourceDocument = $request->filled('source_document_id')
+            ? SourceDocument::findOrFail($request->input('source_document_id'))
+            : null;
 
         $drafts = $this->drafts->generateDrafts(
             $category,
@@ -55,6 +60,7 @@ class AiQuestionController extends Controller
             (int) $request->input('count', 3),
             $examCategoryLabel,
             $request->user()->id,
+            $sourceDocument,
         );
 
         return response()->json(['data' => Collection::make($drafts)->load(['category', 'level'])], 201);
@@ -83,5 +89,27 @@ class AiQuestionController extends Controller
         $this->drafts->reject($aiQuestion, $request->user());
 
         return response()->json(['data' => $aiQuestion->fresh()]);
+    }
+
+    public function bulkApprove(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:ai_generated_questions,id'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        $result = $this->drafts->bulkApprove($request->input('ids'), $request->user());
+
+        return response()->json([
+            'data' => [
+                'approved_count' => count($result['approved']),
+                'approved_question_ids' => Collection::make($result['approved'])->pluck('id'),
+                'skipped_ids' => $result['skipped'],
+            ],
+        ]);
     }
 }

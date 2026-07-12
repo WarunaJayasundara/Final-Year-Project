@@ -3,6 +3,9 @@
 namespace App\Services\Study;
 
 use App\Models\Category;
+use App\Models\ExamReadinessPrediction;
+use App\Models\SessionAnswer;
+use App\Models\TestSession;
 use App\Models\User;
 use App\Models\UserProgressSnapshot;
 use Illuminate\Support\Collection;
@@ -53,6 +56,25 @@ class StudyPlanService
         'exam_day' => ['weak_1' => 0.00, 'weak_2' => 0.00, 'mock' => 0.00, 'game' => 0.00, 'strong_review' => 0.00],
     ];
 
+    /** Used as the readiness target when the student hasn't set a real exam pass_mark. */
+    private const DEFAULT_TARGET_READINESS_PERCENT = 80.0;
+
+    /**
+     * Documented rule-of-thumb, not a fitted coefficient: roughly how many
+     * minutes of additional weekly focused practice tend to move readiness
+     * by one percentage point, based on the same order-of-magnitude as
+     * BASE_DAILY_QUESTIONS/PHASE_INTENSITY's existing hand-picked constants.
+     * Used only to size the "is the current plan enough?" warning below -
+     * never presented as a precise prediction.
+     */
+    private const MINUTES_PER_READINESS_POINT_PER_WEEK = 12.0;
+
+    /** Below this many days remaining, an insufficient-plan warning becomes worth surfacing at all. */
+    private const WARNING_DAYS_WINDOW = 30;
+
+    /** Minimum readiness-percent gap before a warning is worth surfacing (a 2-3pt gap isn't actionable). */
+    private const WARNING_MIN_GAP_POINTS = 10.0;
+
     /** 7-day rotation pattern per phase; 'weak_1'/'weak_2' resolve to the student's weakest categories. */
     private const PHASE_WEEKLY_PATTERN = [
         'foundation' => ['weak_1', 'weak_2', 'weak_1', 'weak_2', 'mixed', 'mock', 'rest'],
@@ -73,7 +95,7 @@ class StudyPlanService
         $weakCategories = $categoryScores->sortBy('accuracy_percent')->values();
         $strongestCategory = $categoryScores->sortByDesc('accuracy_percent')->first();
 
-        $phase = $this->determinePhase($daysRemaining);
+        $phase = self::determinePhase($daysRemaining);
         $intensity = self::PHASE_INTENSITY[$phase] * $difficultyWeight;
 
         return [
@@ -89,7 +111,116 @@ class StudyPlanService
             'daily_plan' => $this->buildDailyPlan($phase, $dailyHours, $weakCategories, $strongestCategory),
             'weekly_schedule' => $this->buildWeeklySchedule($phase, $weakCategories),
             'phase_timeline' => $this->buildPhaseTimeline($daysRemaining),
+            'readiness_gap' => $this->readinessGap($user, $examProfile, $daysRemaining, $dailyHours, $weakCategories),
         ];
+    }
+
+    /**
+     * "Is the current plan actually enough?" (brief's own critical §11
+     * feature): compares latest predicted readiness against a target,
+     * current answering pace against the real exam's pace requirement (if
+     * supplied), and - only when the exam is genuinely close AND the gap is
+     * meaningful AND the current daily-hours plan can't plausibly close it -
+     * a warning object the frontend can surface. Never guarantees anything;
+     * always explains why, per the brief's explicit "do not guarantee
+     * success" instruction.
+     */
+    private function readinessGap(User $user, $examProfile, ?int $daysRemaining, float $dailyHours, Collection $weakCategories): array
+    {
+        $currentReadiness = ExamReadinessPrediction::where('user_id', $user->id)
+            ->orderByDesc('predicted_at')
+            ->value('readiness_percent');
+        $currentReadiness = $currentReadiness !== null ? (float) $currentReadiness : null;
+
+        $targetReadiness = $examProfile?->pass_mark !== null
+            ? (float) $examProfile->pass_mark
+            : self::DEFAULT_TARGET_READINESS_PERCENT;
+
+        $currentPaceSeconds = $this->currentPaceSeconds($user);
+        $targetPaceSeconds = $examProfile?->targetSecondsPerQuestion();
+
+        $result = [
+            'current_readiness_percent' => $currentReadiness,
+            'target_readiness_percent' => $targetReadiness,
+            'readiness_gap_points' => $currentReadiness !== null ? round($targetReadiness - $currentReadiness, 1) : null,
+            'current_pace_seconds' => $currentPaceSeconds,
+            'target_pace_seconds' => $targetPaceSeconds,
+            'pace_gap_seconds' => $targetPaceSeconds !== null && $currentPaceSeconds !== null
+                ? round($targetPaceSeconds - $currentPaceSeconds, 1)
+                : null,
+            'warning' => null,
+        ];
+
+        if ($daysRemaining === null || $daysRemaining > self::WARNING_DAYS_WINDOW || $currentReadiness === null) {
+            return $result;
+        }
+
+        $gapPoints = $targetReadiness - $currentReadiness;
+        if ($gapPoints < self::WARNING_MIN_GAP_POINTS) {
+            return $result;
+        }
+
+        $weeksRemaining = max($daysRemaining / 7, 0.5);
+        $requiredWeeklyMinutes = $gapPoints * self::MINUTES_PER_READINESS_POINT_PER_WEEK;
+        $requiredDailyMinutes = $requiredWeeklyMinutes / 7;
+        $currentDailyMinutes = $dailyHours * 60;
+
+        if ($requiredDailyMinutes <= $currentDailyMinutes * 1.1) {
+            return $result;
+        }
+
+        $severity = $daysRemaining <= 14 ? 'high' : 'medium';
+        $weakNames = $weakCategories->take(2)->pluck('name_en')->filter()->implode(' + ');
+        $weakNamesSi = $weakCategories->take(2)->pluck('name_si')->filter()->implode(' + ');
+        $recommendedDailyMinutes = (int) round($requiredDailyMinutes);
+
+        $result['warning'] = [
+            'severity' => $severity,
+            'recommended_daily_minutes' => $recommendedDailyMinutes,
+            'message_en' => sprintf(
+                'Based on your current performance and the %d day%s remaining, your planned %d minutes/day may not be enough to close the %.0f-point readiness gap. %s Increasing focused practice to roughly %d minutes/day may help.',
+                $daysRemaining,
+                $daysRemaining === 1 ? '' : 's',
+                (int) round($currentDailyMinutes),
+                $gapPoints,
+                $weakNames ? "Your weakest areas are {$weakNames}." : '',
+                $recommendedDailyMinutes
+            ),
+            'message_si' => sprintf(
+                'දින %d ක් ඉතිරිව ඇත. ලකුණු %.0f ක පරතරය ඇත. වත්මන් දිනකට මිනිත්තු %d ප්‍රමාණවත් නොවේ. %s දිනකට මිනිත්තු %d අවශ්‍ය වේ.',
+                $daysRemaining,
+                $gapPoints,
+                (int) round($currentDailyMinutes),
+                $weakNamesSi ? "දුර්වලම ප්‍රවර්ග වෙත අවධානය යොමු කරන්න: {$weakNamesSi}." : '',
+                $recommendedDailyMinutes
+            ),
+        ];
+
+        return $result;
+    }
+
+    /** Median response time (seconds) over the user's most recent answered questions, null if none yet. */
+    private function currentPaceSeconds(User $user): ?float
+    {
+        $sessionIds = TestSession::where('user_id', $user->id)->pluck('id');
+
+        $ms = SessionAnswer::whereIn('test_session_id', $sessionIds)
+            ->whereNotNull('response_time_ms')
+            ->orderByDesc('answered_at')
+            ->limit(100)
+            ->pluck('response_time_ms')
+            ->all();
+
+        if (empty($ms)) {
+            return null;
+        }
+
+        sort($ms);
+        $count = count($ms);
+        $mid = intdiv($count, 2);
+        $medianMs = $count % 2 === 0 ? ($ms[$mid - 1] + $ms[$mid]) / 2 : $ms[$mid];
+
+        return round($medianMs / 1000, 1);
     }
 
     private function categoryScores(User $user): Collection
@@ -110,7 +241,13 @@ class StudyPlanService
         });
     }
 
-    private function determinePhase(?int $daysRemaining): string
+    /**
+     * Pure function of days-remaining -> phase, made public/static so other
+     * services (e.g. WeakAreaWeightingService's exam-approaching training
+     * mode) can derive the same phase without duplicating the boundary
+     * logic or depending on a full generate() call.
+     */
+    public static function determinePhase(?int $daysRemaining): string
     {
         if ($daysRemaining === null) {
             return 'foundation';

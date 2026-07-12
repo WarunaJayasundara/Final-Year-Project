@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreQuestionRequest;
 use App\Http\Requests\Admin\UpdateQuestionRequest;
 use App\Models\Question;
+use App\Services\QuestionBank\VisualQuestionGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class QuestionController extends Controller
 {
@@ -95,5 +97,38 @@ class QuestionController extends Controller
         $question->update(['image_path' => $path]);
 
         return response()->json(['data' => $question->fresh()]);
+    }
+
+    /**
+     * Pattern/visual question generator (brief #11.C): generates one
+     * question from an explicit logical rule (not decorative random shapes)
+     * via VisualQuestionGeneratorService, writes the SVG to storage so it's
+     * immediately previewable, and returns everything the admin needs to
+     * either regenerate (call again) or save (POST the same payload,
+     * including this response's image_path, to the normal store() endpoint
+     * - no separate creation path, this only ever produces a preview).
+     * Only 'shape_rotation' is wired up so far; other SvgFigureBuilder
+     * archetypes (matrix reasoning, paper folding, cube nets, counting)
+     * remain seeder-only - a documented scope cut, not an oversight.
+     */
+    public function generateVisualPreview(Request $request, VisualQuestionGeneratorService $generator)
+    {
+        $validated = $request->validate([
+            'pattern_type' => ['required', 'in:shape_rotation'],
+            'level_id' => ['required', 'exists:iq_levels,id'],
+        ]);
+
+        $level = \App\Models\IqLevel::find($validated['level_id'])->level_number ?? 1;
+
+        $result = $generator->generateShapeRotation($level);
+
+        $svg = $result['image_svg'];
+        unset($result['image_svg']);
+
+        $path = 'questions/generated/preview/'.Str::random(24).'.svg';
+        Storage::disk('public')->put($path, $svg);
+        $result['image_path'] = $path;
+
+        return response()->json(['data' => $result]);
     }
 }

@@ -185,94 +185,261 @@ itself, answer the practical question a student preparing for a competitive
 examination actually asks: *am I ready, and if not, what specifically should
 I work on?* This module adds a supervised machine-learning layer that
 predicts a 4-class exam-readiness outcome (Ready / Almost Ready / Needs
-Improvement / High Risk) from a 24-feature behavioural and ability profile,
-with an explainable-AI (SHAP) layer surfacing the specific reasons behind
-each prediction - directly addressing the predictive-analytics and
-explainable-AI novelty criteria expected of an undergraduate research
-project in this space (Romero & Ventura, 2010; Siemens & Baker, 2012).
+Improvement / High Risk), three additional real-data-grounded outputs
+(risk of dropping practice, predicted next assessment score, predicted
+score change), and an explainable-AI layer (SHAP, cross-checked with LIME
+and permutation importance) surfacing the specific reasons behind each
+prediction in plain, trend-aware English - directly addressing the
+predictive-analytics and explainable-AI novelty criteria expected of an
+undergraduate research project in this space (Romero & Ventura, 2010;
+Siemens & Baker, 2012). A full standalone methodology document
+(`docs/ML_RESEARCH_METHODOLOGY.md`) backs every claim in this section with
+exact numbers, tables, and machine-readable source-of-truth JSON reports;
+this section is a condensed thesis-chapter treatment of the same material.
 
-### 3.y.2 Feature Engineering
+### 3.y.2 Dataset Selection and Hybrid Strategy
 
-Twenty-one of the twenty-four input features are derived directly from
-existing platform data (the IRT ability estimate and its rescalings,
-per-category accuracy, session history, game performance, and derived
-behavioural statistics such as response-time and score-consistency trends).
-Three features - daily study hours, self-rated motivation, and attendance -
-have no objective instrumentation on the platform and are captured via a
-short self-report check-in rather than fabricated, a deliberate design
-choice favouring honesty over feature-set completeness.
+A first version of this module (documented in the now-superseded parts of
+`ML_EXAM_READINESS_EXPLAINED.md`) trained exclusively on synthetic data,
+since the platform's own usage volume cannot support model training and no
+public dataset matches its exact feature schema. This is a legitimate
+starting point but caps the work's research contribution: a reviewer can
+reasonably ask how a purely-synthetic-label model generalizes to real
+students, and no evidence could be offered.
 
-### 3.y.3 Synthetic Training Data
+This iteration integrates two real, publicly available, citable educational
+datasets, selected against the brief's own criteria (learning behaviour,
+engagement, assessment performance, cognitive indicators, study habits,
+exam outcomes) plus two practical constraints (freely downloadable without
+a gated request process; processable on a single development machine):
 
-Consistent with the validation approach used for the IRT engine (Section
-3.x.7), the supervised model is trained on a synthetic dataset (80,000
-records) rather than real historical outcomes, since the platform's actual
-usage volume cannot yet support model training. Feature values are sampled
-from documented distributions parameterized by latent traits (ability,
-motivation, consistency); the ground-truth label is derived from a
-documented, weighted composite heuristic over the same features (including
-an urgency interaction between time-to-exam and practice consistency) plus
-injected Gaussian noise, then discretized into the four readiness classes.
-This is a transparent, reproducible substitute for real labels, with an
-explicit path to retraining on real data once available.
+- **OULAD** (Kuzilek, Hlosta & Zdrahal, 2017) - 32,593 real students, 7
+  university course modules, a day-level virtual-learning-environment
+  clickstream (10.6M events), and dated real assessment scores. CC BY 4.0.
+- **UCI Student Performance** (Cortez & Silva, 2008) - 1,044 secondary-
+  school students with three sequential real grades and explicit
+  study-habit fields. CC BY 4.0.
 
-### 3.y.4 Model Selection
+Larger or more granular alternatives (EdNet, ASSISTments, KDD Cup
+Educational datasets) were considered and excluded, respectively, for
+infeasible scale (>100GB), gated per-dataset access-request processes this
+project has no institutional channel to complete, and a step-level
+interaction-log shape that does not map cleanly onto this platform's
+session/category structure - documented in full in the companion
+methodology document's dataset-selection section, since documenting
+exclusions is as important to a defensible methodology as documenting
+inclusions.
 
-Three tree-ensemble classifiers - Random Forest (Breiman, 2001), Gradient
-Boosting (Friedman, 2001), and XGBoost (Chen & Guestrin, 2016) - were
-trained on an 80/20 stratified train/test split and compared on accuracy,
-macro-precision/recall/F1, and macro one-vs-rest ROC-AUC. XGBoost was
-selected automatically by highest macro-F1 (0.616), with a macro ROC-AUC of
-0.856 indicating strong class separability despite an inherently noisy
-4-way decision boundary (readiness is a continuum; most residual error is
-between adjacent classes, e.g. "Almost Ready" vs. "Ready", not between the
-extremes).
+Every feature is classified as either **real-measured** (derived directly
+from a genuine measurement - e.g. `avg_test_score` from real submitted
+assessment scores, `practice_streak` from the longest real consecutive
+active-day run in the VLE clickstream) or **platform-only** (no public
+dataset measures IRT ability, MindRise's specific cognitive categories, or
+its mini-games; these are generated for real rows from a *pseudo-theta
+derived from that student's own real assessment performance*, passed
+through the same structural equations the synthetic generator trusts, so a
+real row and a synthetic row sharing the same underlying ability are
+structurally comparable). The final hybrid training set combines
+32,593 real OULAD rows, 1,044 real UCI rows, and 40,000 synthetic rows
+whose composite-score heuristic weights are **empirically calibrated**
+against a multinomial logistic regression fit on the real OULAD outcome
+data (replacing hand-picked domain-expert weights with observed
+coefficients wherever a real analogue exists) - 73,637 rows total, 45.7%
+grounded in real student outcomes, enforced by a hard 40% floor in the
+assembly pipeline so this share cannot silently regress.
 
-**Table 3.y — Model comparison** (80,000 synthetic records, 80/20 split, seed=42)
+### 3.y.3 Advanced Feature Engineering
 
-| Model | Accuracy | Precision (macro) | Recall (macro) | F1 (macro) | ROC-AUC (macro, OvR) |
-|---|---|---|---|---|---|
-| Random Forest | 0.611 | 0.648 | 0.572 | 0.597 | 0.850 |
-| Gradient Boosting | 0.619 | 0.645 | 0.592 | 0.612 | 0.854 |
-| **XGBoost (selected)** | **0.622** | **0.650** | **0.596** | **0.616** | **0.856** |
+Eighteen additional behavioural features were engineered beyond the
+original 24, each with an exact mathematical specification (full table:
+`ML_RESEARCH_METHODOLOGY.md` Section 4). Representative examples: learning
+velocity (`LV = (θ_now - θ_(t-4wk)) / 4`, the rate of IRT-ability change per
+week), consistency index (`CI = 100(1 - CV)`, a scale-invariant
+coefficient-of-variation measure), fatigue score (within-session accuracy
+decay: first-half minus second-half accuracy, averaged over recent
+sessions), error recovery rate (`P(correct at i+1 | incorrect at i)`, a
+standard learning-analytics "bounce-back" metric), and category mastery
+(`100 × P(correct | θ_c, item difficulty)` via the same Rasch model as
+Section 3.x, reusing the existing IRT engine rather than introducing a
+second ability metric). Real-derivable features are computed genuinely from
+OULAD's dated activity/assessment tables at training time; platform-only
+features are generated from the same latent structural model as the
+original 24 for training data, and computed for real from MindRise's own
+`session_answers`/`game_scores`/`checkins` tables at live inference time.
 
-### 3.y.5 Explainability
+### 3.y.4 Multi-Model Comparison and Hyperparameter Optimization
 
-Per-prediction feature attributions are computed via SHAP (SHapley Additive
-exPlanations; Lundberg & Lee, 2017) `TreeExplainer` against the "ready"
-class output. The five highest-magnitude contributing features per
-prediction are surfaced to the student as plain-language reasons (e.g.
-"Excellent Logical Reasoning", "Low practice frequency"), directly satisfying
-the explainable-AI requirement rather than exposing a bare probability.
-Global feature importance (mean |SHAP value| across the held-out set) ranks
-`avg_test_score`, `theta`, `practice_streak`, and `consistency_score` as the
-four most influential features, consistent with domain expectations and
-serving as a sanity check on model validity.
+Nine candidate model families were screened (5-fold stratified
+cross-validation, macro-F1): Random Forest, Extra Trees, Gradient Boosting,
+AdaBoost, XGBoost, LightGBM, CatBoost, SVM, and a small MLP. **TabNet**
+(Arik & Pfister, 2021) was deliberately excluded: it is designed to be
+competitive with gradient-boosted trees specifically on datasets an order
+of magnitude larger than this project's (the original paper's own
+benchmarks use 100K-10M+ rows), offers no demonstrated advantage at this
+scale, and would add a full PyTorch dependency to an otherwise lightweight
+inference service - a documented scope decision, not an oversight.
 
-### 3.y.6 Deployment Architecture
+The top-3 screened candidates were tuned via **Optuna** (Tree-structured
+Parzen Estimator, Bayesian optimization) under a **nested cross-validation**
+scheme: an outer 3-fold split provides an honest generalization estimate
+(tuning and evaluating on the same fold would overstate performance), while
+an inner 3-fold/12-trial Optuna search selects hyperparameters within each
+outer training fold; a final Optuna pass on the complete training set
+produces the parameters actually deployed. Grid and plain random search
+were not used as the primary method, since the mixed continuous/integer
+hyperparameter space (e.g. a log-scale learning rate) makes an
+exhaustive grid prohibitively coarse-or-large, and Bayesian optimization
+exploits previously-evaluated trials more efficiently than uniform random
+sampling.
+
+**Table 3.y.4 — Model comparison and final selection**
+
+*(Populated from `ml-service/models/model_comparison_report.json` - see
+`ML_RESEARCH_METHODOLOGY.md` Section 5.5/6.3 for the exact screening,
+nested-CV, and default-vs-optimized numbers from the run backing this
+document's current version.)*
+
+### 3.y.5 Comprehensive Evaluation
+
+Beyond accuracy and macro-F1, the deployed model is evaluated on: precision/
+recall (macro and weighted), ROC-AUC and PR-AUC (one-vs-rest macro - PR-AUC
+specifically because the "ready" class is a minority class, ~10% of the
+dataset), balanced accuracy, Matthews correlation coefficient, Cohen's
+kappa, log loss, Brier score, and per-class calibration curves (is a
+predicted 70% confidence actually right ~70% of the time). Generalization
+is additionally estimated via 10-fold stratified cross-validation, repeated
+5×3-fold cross-validation (reducing the CV estimate's own variance), and
+1,000-resample bootstrap 95% confidence intervals on accuracy and macro-F1.
+A learning curve (train vs. cross-validation score across increasing
+training-set sizes) provides an explicit overfitting/underfitting
+diagnosis, and a validation curve over the deployed model's most impactful
+hyperparameter shows the bias-variance tradeoff directly. Performance is
+additionally broken down by `data_source` (real OULAD / real UCI /
+synthetic-calibrated) to check the model is not quietly overfitting to the
+easier synthetic signal at the expense of real-student generalization.
+
+### 3.y.6 Explainable AI
+
+Per-prediction feature attributions are computed via SHAP (Lundberg & Lee,
+2017) against the "ready" class output, cross-checked by three independent
+methods so agreement across mechanistically-different techniques provides
+stronger evidence of genuine model behaviour than any single method alone:
+**LIME** (Ribeiro, Singh & Guestrin, 2016 - a local linear surrogate fit
+around a perturbed instance neighbourhood), **permutation importance**
+(Breiman, 2001 - a fully model-agnostic measure), and **partial
+dependence** (showing the shape, not just the magnitude, of each top
+feature's marginal effect). SHAP interaction values additionally surface
+genuine feature interactions (e.g. low practice volume mattering more when
+little exam time remains) beyond independent main effects.
+
+Predictions are additionally translated into a **trend-aware plain-English
+explanation**: `ReadinessPredictionService` supplies the student's previous
+prediction's feature snapshot alongside the current request, and the
+inference service computes the percent change on each top-ranked SHAP
+feature to produce sentences of the form *"Your readiness estimate changed
+because your weekly practice volume dropped by 45%, ..."* rather than a
+static, non-comparative explanation - directly satisfying the brief's
+worked example.
+
+### 3.y.7 Multi-Output Prediction
+
+Beyond the readiness classification, three additional outputs are trained
+on **genuine, temporally non-leaky real ground truth**: for each (student,
+course module) in OULAD, the first half of real activity/assessment records
+become the input features, and something that only happens in the second
+half becomes the target - risk of dropping practice (zero second-half VLE
+activity, a binary classifier), predicted next assessment score, and
+predicted score change (both regressors). This avoids target leakage that
+a same-summary features-and-target split would introduce, at the cost of
+training these three outputs on OULAD alone (UCI's three static grades
+provide no defensible way to carve out a "first half" of behaviour distinct
+from the target).
+
+Two further outputs named in the original brief - *recommended daily study
+hours* and *most effective learning strategy* - are deliberately **not**
+built as supervised predictions. Neither has any dataset (real or
+MindRise's own) recording what the optimal value would have been for a
+given student, and the latter specifically would require interventional or
+causal data (the same student's outcome under strategy A versus strategy B)
+that no observational dataset can provide - an observed correlation between
+"students who used strategy A did better" and strategy A *causing* that
+outcome is a textbook causal-inference confound. Both are instead delivered
+as transparent rule-based recommendations from the existing
+`StudyPlanService`, now informed by this module's real predictions as an
+input signal, and explicitly not framed as ML outputs they are not.
+
+### 3.y.8 Continual Learning
+
+Every training run is versioned (`ml-service/model_registry.py`): full
+artifacts are archived per version with a SHA-256 hash of the training data
+snapshot, and a **champion-versus-challenger promotion gate**
+(`retrain.py`) only replaces the live deployed model if a freshly retrained
+challenger beats it on the same held-out gating metric by a documented
+margin - never automatically deploying a worse or negligibly-different
+model. A complete, append-only experiment history is kept in
+`models/registry.json`. A fully automatic, continuously-scheduled
+production MLOps pipeline (drift-detection dashboards, automatic real-usage
+retraining triggers) was scoped out as disproportionate infrastructure for
+a single-VM student project - documented as a deployment-configuration note
+rather than built, consistent with this methodology's practice of
+distinguishing what is mechanically implemented from what is intentionally
+out of scope.
+
+### 3.y.9 Threats to Validity, Bias, and Limitations
+
+The largest remaining validity threat is construct validity of the label:
+even with the hybrid dataset, only 45.7% of training rows carry a genuine
+real-world outcome, and that outcome (a UK distance-learning course result)
+is itself a proxy for, not a direct measurement of, the Sri Lankan
+government-competitive-exam readiness this platform actually targets - a
+population-mismatch threat to external validity that this iteration
+narrows but does not close. A real-data bias analysis (using OULAD's
+demographic fields, which are excluded from the model's own feature vector
+by design - a protected characteristic must never be a direct model input,
+even one correlated with a real disparity the source data reflects) finds
+a measurable outcome gap by disability status (7.0% vs. 9.5% reaching the
+top outcome band) and by socioeconomic deprivation tercile (6.7% vs. 12.2%)
+in the real OULAD population, reported transparently rather than adjusted
+away, since it reflects a property of the real-world data source, not an
+artifact introduced by this model. Full discussion of these and further
+limitations (platform-only feature approximation, modest multi-output
+regression R² of 0.29-0.32, the fixed `days_until_exam` value for real
+rows, and others) is in `ML_RESEARCH_METHODOLOGY.md` Section 12.
+
+### 3.y.10 Deployment Architecture
 
 The trained model is served by a standalone FastAPI microservice
 (`ml-service/`), called by Laravel over HTTP via `ReadinessPredictionService`
 - architecturally identical to the existing Gemini AI-feedback integration's
-swappable-service pattern. This keeps the Laravel application free of a
-heavy ML runtime dependency while still allowing genuine gradient-boosted
-tree inference and SHAP explanation, and every prediction is persisted with
-its model version for auditability and future retraining comparison.
+swappable-service pattern, and unchanged by this upgrade despite the
+substantially larger feature vector and model set behind it. This keeps the
+Laravel application free of a heavy ML runtime dependency while still
+allowing genuine gradient-boosted tree inference, SHAP/LIME explanation,
+and multi-output regression, and every prediction is persisted with its
+model version, plain-English explanation, and (where available) the three
+multi-output predictions for auditability and future retraining comparison.
 
 ## References
 
+- Akiba, T., Sano, S., Yanase, T., Ohta, T. & Koyama, M. (2019). Optuna: A Next-generation Hyperparameter Optimization Framework. *KDD*.
+- Arik, S.O. & Pfister, T. (2021). TabNet: Attentive Interpretable Tabular Learning. *AAAI*.
 - Ban, J.C., Hanson, B.A., Wang, T., Yi, Q. & Harris, D.J. (2001). A comparative study of on-line pretest item-calibration/scaling methods in computerized adaptive testing. *Journal of Educational Measurement*, 38(3).
 - Breiman, L. (2001). Random Forests. *Machine Learning*, 45(1).
 - Chen, T. & Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System. *KDD*.
+- Cortez, P. & Silva, A. (2008). Using Data Mining to Predict Secondary School Student Performance. *Proceedings of 5th FUBUTEC*.
 - Cronbach, L.J. (1951). Coefficient alpha and the internal structure of tests. *Psychometrika*, 16(3).
 - Friedman, J.H. (2001). Greedy Function Approximation: A Gradient Boosting Machine. *Annals of Statistics*.
 - Green, B.F., Bock, R.D., Humphreys, L.G., Linn, R.L. & Reckase, M.D. (1984). Technical guidelines for assessing computerized adaptive tests. *Journal of Educational Measurement*, 21(4).
 - Hambleton, R.K., Swaminathan, H. & Rogers, H.J. (1991). *Fundamentals of Item Response Theory.* Sage Publications.
 - Harwell, M., Stone, C.A., Hsu, T.C. & Kirisci, L. (1996). Monte Carlo studies in item response theory. *Applied Psychological Measurement*, 20(2).
+- Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q. & Liu, T.Y. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *NeurIPS*.
 - Kingsbury, G.G. & Zara, A.R. (1989). Procedures for selecting items for computerized adaptive tests. *Applied Measurement in Education*, 2(4).
+- Kuzilek, J., Hlosta, M. & Zdrahal, Z. (2017). Open University Learning Analytics dataset. *Scientific Data*, 4, 170171.
 - Lord, F.M. (1980). *Applications of Item Response Theory to Practical Testing Problems.* Lawrence Erlbaum Associates.
 - Lundberg, S.M. & Lee, S.I. (2017). A Unified Approach to Interpreting Model Predictions. *NeurIPS*.
+- Prokhorenkova, L., Gusev, G., Vorobev, A., Dorogush, A.V. & Gulin, A. (2018). CatBoost: unbiased boosting with categorical features. *NeurIPS*.
 - Rasch, G. (1960). *Probabilistic Models for Some Intelligence and Attainment Tests.* Danish Institute for Educational Research.
+- Ribeiro, M.T., Singh, S. & Guestrin, C. (2016). "Why Should I Trust You?": Explaining the Predictions of Any Classifier. *KDD*.
 - Romero, C. & Ventura, S. (2010). Educational Data Mining: A Review of the State of the Art. *IEEE Transactions on Systems, Man, and Cybernetics*, 40(6).
 - Siemens, G. & Baker, R.S.J.d. (2012). Learning Analytics and Educational Data Mining: Towards Communication and Collaboration. *LAK '12*.
 - Weiss, D.J. (1982). Improving measurement quality and efficiency with adaptive testing. *Applied Psychological Measurement*, 6(4).

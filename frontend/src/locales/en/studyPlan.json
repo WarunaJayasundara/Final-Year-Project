@@ -10,6 +10,24 @@
   "weeklySchedule": "This week's schedule",
   "todaysPlan": "Today's plan",
   "minutes": "{{count}} min",
+  "start": "Start",
+  "daysLeft": "{{count}} days left",
+  "streakChip": "{{count}}-day streak",
+  "levelChip": "Level {{level}}",
+  "phaseNames": {
+    "foundation": "Foundation",
+    "practice": "Practice",
+    "intensive": "Intensive",
+    "final_revision": "Final Revision",
+    "exam_day": "Exam Day"
+  },
+  "motivation": {
+    "foundation": "Practice builds your foundation.",
+    "practice": "Steady practice, day by day.",
+    "intensive": "Focus on your weakest areas now.",
+    "final_revision": "Review what you've learned.",
+    "exam_day": "You're ready. Trust your preparation."
+  },
   "days": {
     "monday": "Monday",
     "tuesday": "Tuesday",
@@ -26,5 +44,23 @@
     "mock": "Mock test",
     "rest": "Rest day",
     "rest_light": "Light review"
+  },
+  "noExamProfile": {
+    "title": "Practice suggestions",
+    "subtitle": "No exam set up yet - here's what to focus on based on your recent performance.",
+    "accuracy": "{{percent}}% accuracy",
+    "mockExamTitle": "Try a full mock exam",
+    "mockExamHint": "A timed, exam-style set of questions across all categories.",
+    "setupHint": "Want a full exam countdown and day-by-day plan instead?"
+  },
+  "readinessGap": {
+    "title": "Readiness vs. target",
+    "currentReadiness": "Current readiness",
+    "targetReadiness": "Target readiness",
+    "currentPace": "Current pace",
+    "targetPace": "Target pace",
+    "secondsPerQuestion": "{{count}}s/question",
+    "noPredictionYet": "Run a prediction to see your readiness gap.",
+    "noExamPaceYet": "Add your exam's question count and duration to see a pace target."
   }
 }

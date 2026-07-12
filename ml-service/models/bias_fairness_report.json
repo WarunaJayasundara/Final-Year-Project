@@ -1,0 +1,110 @@
+{
+  "n_students": 32593,
+  "groups_analyzed": [
+    "gender",
+    "disability",
+    "age_band",
+    "imd_tercile"
+  ],
+  "outcome_distribution": {
+    "gender": {
+      "F": {
+        "n": 14718,
+        "label_distribution": {
+          "almost_ready": 0.39,
+          "high_risk": 0.305,
+          "needs_improvement": 0.211,
+          "ready": 0.095
+        }
+      },
+      "M": {
+        "n": 17875,
+        "label_distribution": {
+          "almost_ready": 0.371,
+          "high_risk": 0.317,
+          "needs_improvement": 0.221,
+          "ready": 0.091
+        }
+      }
+    },
+    "disability": {
+      "N": {
+        "n": 29429,
+        "label_distribution": {
+          "almost_ready": 0.387,
+          "high_risk": 0.303,
+          "needs_improvement": 0.215,
+          "ready": 0.095
+        }
+      },
+      "Y": {
+        "n": 3164,
+        "label_distribution": {
+          "high_risk": 0.393,
+          "almost_ready": 0.311,
+          "needs_improvement": 0.225,
+          "ready": 0.07
+        }
+      }
+    },
+    "age_band": {
+      "0-35": {
+        "n": 22944,
+        "label_distribution": {
+          "almost_ready": 0.369,
+          "high_risk": 0.322,
+          "needs_improvement": 0.228,
+          "ready": 0.081
+        }
+      },
+      "35-55": {
+        "n": 9433,
+        "label_distribution": {
+          "almost_ready": 0.403,
+          "high_risk": 0.288,
+          "needs_improvement": 0.19,
+          "ready": 0.119
+        }
+      },
+      "55<=": {
+        "n": 216,
+        "label_distribution": {
+          "almost_ready": 0.426,
+          "high_risk": 0.25,
+          "ready": 0.19,
+          "needs_improvement": 0.134
+        }
+      }
+    },
+    "imd_tercile": {
+      "most_deprived_third": {
+        "n": 14020,
+        "label_distribution": {
+          "high_risk": 0.349,
+          "almost_ready": 0.338,
+          "needs_improvement": 0.247,
+          "ready": 0.067
+        }
+      },
+      "mid_deprivation_third": {
+        "n": 9285,
+        "label_distribution": {
+          "almost_ready": 0.394,
+          "high_risk": 0.302,
+          "needs_improvement": 0.209,
+          "ready": 0.096
+        }
+      },
+      "least_deprived_third": {
+        "n": 8177,
+        "label_distribution": {
+          "almost_ready": 0.42,
+          "high_risk": 0.272,
+          "needs_improvement": 0.185,
+          "ready": 0.122
+        }
+      }
+    }
+  },
+  "model_accuracy_by_group": null
+}

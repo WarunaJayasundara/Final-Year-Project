@@ -26,7 +26,7 @@ export function GameResultCard({
         <div>
           <p className="text-3xl font-semibold">{t('result.points', { score })}</p>
           {isNewBest ? (
-            <p className="text-sm font-medium text-emerald-600">{t('result.newBest')}</p>
+            <p className="text-sm font-medium text-success">{t('result.newBest')}</p>
           ) : bestScore !== undefined ? (
             <p className="text-sm text-muted-foreground">{t('result.best', { score: bestScore })}</p>
           ) : null}

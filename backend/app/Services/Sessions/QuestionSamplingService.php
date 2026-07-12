@@ -91,6 +91,98 @@ class QuestionSamplingService
     }
 
     /**
+     * Mock exam: weighted-but-bounded category representation - weak
+     * categories are over-sampled relative to their measured mastery, but
+     * every requested category still gets a guaranteed minimum share so the
+     * mock stays realistic-coverage (brief's own example: a student weak in
+     * Numerical/Spatial gets more of those, while Logical - already strong -
+     * still appears, just less often).
+     *
+     * @param  array<int,float>  $categoryAccuracy  category_id => accuracy_percent (0-100)
+     * @param  \Illuminate\Support\Collection<int,int>  $categoryIds  categories to include (full syllabus or a selected subset)
+     * @param  bool  $adaptiveDifficulty  when true, nudges each category's level up/down by the user's mastery in that category instead of using a single flat level for every category
+     */
+    public function sampleForMockExam(
+        int $userId,
+        IqLevel $baseLevel,
+        int $totalQuestions,
+        Collection $categoryIds,
+        array $categoryAccuracy,
+        bool $adaptiveDifficulty = false
+    ): Collection {
+        if ($categoryIds->isEmpty()) {
+            return collect();
+        }
+
+        $excludeIds = $this->seenQuestionIds($userId);
+        $allocation = $this->weightedAllocation($totalQuestions, $categoryIds, $categoryAccuracy);
+
+        $questions = collect();
+        foreach ($allocation as $categoryId => $count) {
+            if ($count <= 0) {
+                continue;
+            }
+
+            $level = $adaptiveDifficulty
+                ? $this->adaptiveLevelFor($baseLevel, $categoryAccuracy[$categoryId] ?? 50.0)
+                : $baseLevel;
+
+            $questions = $questions->merge(
+                $this->pullForCategoryAtLevel($categoryId, $level, $count, $excludeIds->merge($questions->pluck('id')))
+            );
+        }
+
+        return $questions->shuffle()->values();
+    }
+
+    /**
+     * Baseline 50% of the exam split evenly across every requested category
+     * (guaranteed minimum coverage); the remaining 50% distributed by
+     * inverse-mastery weight (weaker categories get more of it). Weights are
+     * floored at 5 so an already-mastered category never drops to literally
+     * zero extra share. Rounding remainders are reconciled onto the
+     * lowest-mastery category so the total always matches exactly.
+     *
+     * @return array<int,int> category_id => question count
+     */
+    private function weightedAllocation(int $totalQuestions, Collection $categoryIds, array $categoryAccuracy): array
+    {
+        $n = $categoryIds->count();
+        $baseShare = intdiv((int) round($totalQuestions * 0.5), $n);
+        $remaining = $totalQuestions - ($baseShare * $n);
+
+        $weights = $categoryIds->mapWithKeys(fn ($id) => [$id => max(5.0, 100.0 - ($categoryAccuracy[$id] ?? 50.0))]);
+        $weightSum = $weights->sum();
+
+        $allocation = [];
+        foreach ($categoryIds as $categoryId) {
+            $extra = $weightSum > 0 ? (int) round($remaining * $weights[$categoryId] / $weightSum) : 0;
+            $allocation[$categoryId] = $baseShare + $extra;
+        }
+
+        $diff = $totalQuestions - array_sum($allocation);
+        if ($diff !== 0) {
+            $weakestCategoryId = $categoryIds->sortByDesc(fn ($id) => $weights[$id])->first();
+            $allocation[$weakestCategoryId] = max(0, $allocation[$weakestCategoryId] + $diff);
+        }
+
+        return $allocation;
+    }
+
+    /**
+     * +/-1 level nudge per category based on that category's own mastery,
+     * documented heuristic (not a second ability estimate) - clamped to the
+     * platform's 5 authored levels.
+     */
+    private function adaptiveLevelFor(IqLevel $baseLevel, float $categoryAccuracy): IqLevel
+    {
+        $delta = $categoryAccuracy >= 70 ? 1 : ($categoryAccuracy <= 40 ? -1 : 0);
+        $targetNumber = max(1, min(5, $baseLevel->level_number + $delta));
+
+        return IqLevel::where('level_number', $targetNumber)->first() ?? $baseLevel;
+    }
+
+    /**
      * All question ids ever presented to this user across any past session -
      * used to keep daily/placement/practice sessions from re-serving the same
      * question until the category/level pool is genuinely exhausted.

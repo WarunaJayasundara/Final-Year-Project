@@ -24,11 +24,27 @@ class ExamProfileController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'exam_category' => ['required', 'string', 'in:'.implode(',', array_keys(ExamProfile::EXAM_CATEGORIES))],
-            'exam_name' => ['nullable', 'string', 'max:150'],
-            'exam_date' => ['nullable', 'date', 'after_or_equal:today'],
+            // exam_category (the old fixed-list dropdown) is intentionally no
+            // longer collected from the user - the setup flow now asks for a
+            // freeform exam name + date instead (see ExamProfileDialog.tsx).
+            // The column itself stays for difficultyWeight()'s lookup table
+            // and is always stored as 'other' (its documented default
+            // weight of 1.0), so no schema/history is broken by this change.
+            'exam_name' => ['required', 'string', 'max:150'],
+            'exam_date' => ['required', 'date', 'after_or_equal:today'],
             'daily_study_hours_target' => ['required', 'numeric', 'min:0.5', 'max:16'],
             'target_score' => ['nullable', 'integer', 'min:0', 'max:100'],
+            // Real-exam structure (all optional/skippable - see §6 of the
+            // upgrade brief: "student must be able to skip if not preparing
+            // for a specific examination"). Used only to derive a pace
+            // target (ExamProfile::targetSecondsPerQuestion()) and to size
+            // mock exams; nothing here is required for the rest of the app.
+            'exam_total_questions' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'exam_duration_minutes' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'pass_mark' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'negative_marking' => ['nullable', 'boolean'],
+            'exam_sections' => ['nullable', 'array'],
+            'exam_sections.*' => ['string', 'exists:categories,code'],
         ]);
 
         if ($validator->fails()) {
@@ -37,7 +53,7 @@ class ExamProfileController extends Controller
 
         $profile = ExamProfile::updateOrCreate(
             ['user_id' => $request->user()->id],
-            $validator->validated()
+            array_merge($validator->validated(), ['exam_category' => 'other'])
         );
 
         $newBadges = $this->badges->evaluate($request->user()->fresh());
@@ -72,6 +88,12 @@ class ExamProfileController extends Controller
             'exam_date' => $profile->exam_date?->toDateString(),
             'daily_study_hours_target' => (float) $profile->daily_study_hours_target,
             'target_score' => $profile->target_score,
+            'exam_total_questions' => $profile->exam_total_questions,
+            'exam_duration_minutes' => $profile->exam_duration_minutes,
+            'pass_mark' => $profile->pass_mark,
+            'negative_marking' => $profile->negative_marking,
+            'exam_sections' => $profile->exam_sections,
+            'target_seconds_per_question' => $profile->targetSecondsPerQuestion(),
             'days_remaining' => $profile->daysRemaining(),
             'prep_progress_percent' => $this->prepProgressPercent($profile),
         ];

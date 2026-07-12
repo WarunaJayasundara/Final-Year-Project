@@ -1,0 +1,321 @@
+{
+  "_meta": {
+    "purpose": "Curated EN↔SI terminology glossary for consistent Sinhala vocabulary across question generation, explanations, and the AI coach - not a machine-translation dictionary. Every entry below is a pair ALREADY reviewed and shipped somewhere in this codebase (CategorySeeder category names/descriptions, or an existing en/si locale-file pair sharing the same key) - none were freehand-composed for this file, per this project hard Sinhala-safety rule (see backend/tools/validate_sinhala.py and CLAUDE.md).",
+    "source": "Consolidated programmatically from database/seeders/CategorySeeder.php and frontend/src/locales/{en,si}/*.json (matching keys) - extracted via script, never retyped by hand, to guarantee byte-exact fidelity with the reviewed source strings. The 'exam_guide_topics_v2' section (added in the adult-content upgrade) is copied verbatim - character for character, not retyped - from the uploaded reference PDF 'පරිසර නිලධාරි බඳවා ගැනීමේ විභාගය - IQ සහ අභියෝගයතාවය.pdf' (Environmental Officer recruitment exam guide), a real professionally-written Sri Lankan competitive-exam-prep document the user supplied specifically as a Sinhala terminology reference (per the brief's own instruction).",
+    "usage": "Injected into GeminiAiQuestionGeneratorService prompt as consistent-terminology context and available to SinhalaSemanticValidationService for terminology-consistency checks - a RAG-lite pattern (curated glossary + prompt template), not a fine-tuned Sinhala model."
+  },
+  "memory": [
+    {
+      "en": "Memory",
+      "si": "මතකය"
+    },
+    {
+      "en": "Short-term recall, sequences, and pair association.",
+      "si": "කෙටිකාල මතකය, අනුක්‍රම සහ යුගල ගැලපීම."
+    }
+  ],
+  "logical_reasoning": [
+    {
+      "en": "Logical Reasoning",
+      "si": "තාර්කික තර්කනය"
+    },
+    {
+      "en": "Syllogisms, odd-one-out, and if-then deductions.",
+      "si": "තර්ක ගැටළු, වෙනස් වූ අයිතමය සොයාගැනීම සහ නිගමන."
+    }
+  ],
+  "numerical_reasoning": [
+    {
+      "en": "Numerical Ability",
+      "si": "සංඛ්‍යාත්මක හැකියාව"
+    },
+    {
+      "en": "Arithmetic, number series, ratios and percentages.",
+      "si": "ගණිතමය ගැටළු, සංඛ්‍යා ශ්‍රේණි, අනුපාත සහ ප්‍රතිශත."
+    }
+  ],
+  "attention": [
+    {
+      "en": "Attention",
+      "si": "අවධානය"
+    },
+    {
+      "en": "Focus, rapid classification, and interference control.",
+      "si": "අවධානය, වේගවත් වර්ගීකරණය සහ බාධා පාලනය."
+    }
+  ],
+  "spatial_reasoning": [
+    {
+      "en": "Spatial & Pattern Recognition",
+      "si": "අවකාශීය හා රටා හඳුනාගැනීම"
+    },
+    {
+      "en": "Matrix completion, shape rotation, and visual pattern sequences.",
+      "si": "රටා සම්පූර්ණ කිරීම, හැඩ භ්‍රමණය සහ දෘශ්‍ය රටා අනුක්‍රම."
+    }
+  ],
+  "cognitive_training": [
+    {
+      "en": "Estimated IQ Score",
+      "si": "ඇස්තමේන්තුගත IQ ලකුණු"
+    },
+    {
+      "en": "Current level",
+      "si": "වත්මන් මට්ටම"
+    },
+    {
+      "en": "Practice streak",
+      "si": "පුහුණු අඛණ්ඩතාව"
+    },
+    {
+      "en": "AI Exam Readiness",
+      "si": "AI විභාග සූදානම"
+    },
+    {
+      "en": "Time management readiness",
+      "si": "කාල කළමනාකරණය සූදානම"
+    },
+    {
+      "en": "Study Plan",
+      "si": "අධ්‍යයන සැලැස්ම"
+    },
+    {
+      "en": "Recommended daily questions",
+      "si": "නිර්දේශිත දෛනික ප්‍රශ්න"
+    },
+    {
+      "en": "Weekly mock tests",
+      "si": "සතිපතා මාදිලි විභාග"
+    },
+    {
+      "en": "Mock Exam",
+      "si": "මාදිලි විභාගය"
+    },
+    {
+      "en": "Placement Test",
+      "si": "ස්ථානගත කිරීමේ පරීක්ෂණය"
+    },
+    {
+      "en": "Daily Practice",
+      "si": "දෛනික අභ්‍යාසය"
+    },
+    {
+      "en": "Practice Session",
+      "si": "පුහුණු සැසිය"
+    },
+    {
+      "en": "Ready",
+      "si": "සූදානම්"
+    },
+    {
+      "en": "Almost Ready",
+      "si": "ආසන්නයෙන් සූදානම්"
+    },
+    {
+      "en": "Needs Improvement",
+      "si": "දියුණු කළ යුතුයි"
+    },
+    {
+      "en": "High Risk",
+      "si": "ඉහළ අවදානම"
+    }
+  ],
+  "government_examinations": [
+    {
+      "en": "What exam are you preparing for?",
+      "si": "විභාග නම"
+    },
+    {
+      "en": "Exam date",
+      "si": "විභාග දිනය"
+    },
+    {
+      "en": "Marks you need out of 100",
+      "si": "100න් අවශ්‍ය ලකුණු"
+    },
+    {
+      "en": "Number of questions",
+      "si": "ප්‍රශ්න ගණන"
+    },
+    {
+      "en": "Duration (minutes)",
+      "si": "කාලය (මිනිත්තු)"
+    },
+    {
+      "en": "Pass mark (out of 100)",
+      "si": "සමත් ලකුණු"
+    },
+    {
+      "en": "Negative marking",
+      "si": "වැරදි පිළිතුරු සඳහා ලකුණු"
+    },
+    {
+      "en": "days left",
+      "si": "දින ඉතිරිව ඇත"
+    }
+  ],
+  "instructions": [
+    {
+      "en": "Question",
+      "si": "ප්‍රශ්නය"
+    },
+    {
+      "en": "Category",
+      "si": "ප්‍රවර්ගය"
+    },
+    {
+      "en": "Level",
+      "si": "මට්ටම"
+    },
+    {
+      "en": "Type",
+      "si": "වර්ගය"
+    },
+    {
+      "en": "Status",
+      "si": "තත්ත්වය"
+    },
+    {
+      "en": "Active",
+      "si": "සක්‍රීයයි"
+    },
+    {
+      "en": "Inactive",
+      "si": "අක්‍රීයයි"
+    },
+    {
+      "en": "Edit",
+      "si": "සංස්කරණය"
+    },
+    {
+      "en": "Start",
+      "si": "ආරම්භ කරන්න"
+    },
+    {
+      "en": "Weakest area",
+      "si": "දුර්වලම අංශය"
+    },
+    {
+      "en": "Second weakest area",
+      "si": "දෙවන දුර්වලම අංශය"
+    },
+    {
+      "en": "Mixed practice",
+      "si": "මිශ්‍ර අභ්‍යාසය"
+    },
+    {
+      "en": "Mock test",
+      "si": "මාදිලි විභාගය"
+    },
+    {
+      "en": "Rest day",
+      "si": "විවේක දිනය"
+    }
+  ],
+  "exam_guide_topics_v2": [
+    {
+      "en": "Numerical Ability",
+      "si": "ගණිතමය ගැටලු"
+    },
+    {
+      "en": "Percentages",
+      "si": "ප්‍රතිශත"
+    },
+    {
+      "en": "Ratios and Proportions",
+      "si": "අනුපාත සහ සමානුපාත"
+    },
+    {
+      "en": "Average",
+      "si": "සාමාන්‍ය අගය"
+    },
+    {
+      "en": "Series and Sequences",
+      "si": "සංඛ්‍යා සහ අක්ෂර රටා"
+    },
+    {
+      "en": "Data Interpretation",
+      "si": "දත්ත විග්‍රහය"
+    },
+    {
+      "en": "Spatial Intelligence",
+      "si": "අවකාශීය බුද්ධිය"
+    },
+    {
+      "en": "Mirror and Water Images",
+      "si": "කැඩපත් රූප සහ ජල රූප"
+    },
+    {
+      "en": "Cubes and Dice",
+      "si": "කැට සහ දාදු කැට"
+    },
+    {
+      "en": "Counting Figures",
+      "si": "රූප ගණනය කිරීම"
+    },
+    {
+      "en": "Paper Folding and Cutting",
+      "si": "කඩදාසි නැවීම සහ කැපීම"
+    },
+    {
+      "en": "Logical Reasoning",
+      "si": "තර්කන ගැටලු"
+    },
+    {
+      "en": "Venn Diagrams",
+      "si": "වෙන් රූප සටහන්"
+    },
+    {
+      "en": "Statements and Conclusions",
+      "si": "ප්‍රකාශ සහ නිගමන"
+    },
+    {
+      "en": "Blood Relations",
+      "si": "ලේ ඥාති සබඳතා"
+    },
+    {
+      "en": "Direction Sense",
+      "si": "දිශාවන් ආශ්‍රිත තර්කනය"
+    },
+    {
+      "en": "Coding-Decoding",
+      "si": "සංකේතනය සහ විසංකේතනය"
+    },
+    {
+      "en": "Time, Speed and Distance",
+      "si": "කාලය, වේගය සහ දූරය"
+    },
+    {
+      "en": "Relative Speed",
+      "si": "සාපේක්ෂ වේගය"
+    },
+    {
+      "en": "Work and Time",
+      "si": "වැඩ සහ කාලය"
+    },
+    {
+      "en": "Pipes and Cisterns",
+      "si": "පයිප්ප සහ ටැංකි"
+    },
+    {
+      "en": "Verbal Aptitude",
+      "si": "භාෂාමය අභියෝගයතාවය"
+    },
+    {
+      "en": "Analogy",
+      "si": "වචන සදෘශතාවය"
+    },
+    {
+      "en": "Problem Solving",
+      "si": "ගැටලු විසඳීමේ හැකියාව"
+    },
+    {
+      "en": "Conditional Logic",
+      "si": "කොන්දේසි සහිත ගැටලු"
+    },
+    {
+      "en": "Arrangement",
+      "si": "තොරතුරු විශ්ලේෂණය සහ පෙළගැස්වීම"
+    }
+  ]
+}

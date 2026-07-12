@@ -45,6 +45,27 @@ class GameSeeder extends Seeder
                 'description_en' => 'Spot and click the one odd symbol in the grid as fast as you can.',
                 'description_si' => 'ජාලකයේ ඇති එකම වෙනස් සංකේතය හැකි ඉක්මනින් සොයාගෙන ක්ලික් කරන්න.',
             ],
+            [
+                'code' => 'working_memory_span',
+                'name_en' => 'Working Memory Challenge',
+                'name_si' => 'ක්‍රියාකාරී මතක අභියෝගය',
+                'description_en' => 'Digit spans, reverse recall, and 2-back updating - adult-level working-memory training.',
+                'description_si' => 'ඉලක්කම් මතකය, ආපසු මතක කිරීම සහ 2-back යාවත්කාලීන කිරීම - වැඩිහිටි මට්ටමේ ක්‍රියාකාරී මතක පුහුණුව.',
+            ],
+            [
+                'code' => 'visual_spatial_memory',
+                'name_en' => 'Visual & Spatial Memory',
+                'name_si' => 'දෘශ්‍ය හා අවකාශීය මතකය',
+                'description_en' => 'Remember scene details and tap back grid sequences - research-grade visual and spatial recall.',
+                'description_si' => 'දර්ශන විස්තර මතක තබාගෙන ජාල අනුක්‍රම ආපසු ටැප් කරන්න - දෘශ්‍ය හා අවකාශීය මතක පුහුණුව.',
+            ],
+            [
+                'code' => 'cognitive_command_center',
+                'name_en' => 'Cognitive Command Center',
+                'name_si' => 'බුද්ධිමය විධාන මධ්‍යස්ථානය',
+                'description_en' => 'Rapid-fire tasks that keep switching - pattern spotting, memory, sorting rules, and inhibitory control.',
+                'description_si' => 'වේගයෙන් මාරු වන කාර්යයන් - රටා හඳුනාගැනීම, මතකය, වර්ග කිරීමේ නීති සහ ස්වයං පාලනය.',
+            ],
         ];
 
         foreach ($games as $game) {

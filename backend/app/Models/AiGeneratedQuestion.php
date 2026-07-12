@@ -18,18 +18,38 @@ class AiGeneratedQuestion extends Model
         'explanation_en',
         'explanation_si',
         'difficulty_weight',
+        'solving_time_seconds',
         'source',
         'status',
         'generated_by',
         'reviewed_by',
         'reviewed_at',
         'promoted_question_id',
+        'source_document_id',
+        'source_type',
+        'generation_method',
+        'learning_objective',
+        'difficulty_reason',
+        'quality_score',
+        'validation_status',
+        'translation_status',
+        'translation_quality_score',
+        'sinhala_review_status',
+        'semantic_equivalence_score',
+        'generation_rule',
+        'transformation_steps',
+        'visual_complexity_score',
     ];
 
     protected $casts = [
         'options' => 'array',
         'difficulty_weight' => 'integer',
         'reviewed_at' => 'datetime',
+        'quality_score' => 'float',
+        'translation_quality_score' => 'float',
+        'semantic_equivalence_score' => 'float',
+        'transformation_steps' => 'array',
+        'visual_complexity_score' => 'float',
     ];
 
     public function category(): BelongsTo
@@ -50,5 +70,10 @@ class AiGeneratedQuestion extends Model
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function sourceDocument(): BelongsTo
+    {
+        return $this->belongsTo(SourceDocument::class);
     }
 }

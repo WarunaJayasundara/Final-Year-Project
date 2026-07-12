@@ -1,5 +1,16 @@
 import { api } from '@/lib/api';
-import type { AdminCategory, AdminLevel, AdminQuestion, AdminUser, AiQuestionDraft, PaginatedResponse } from './types';
+import type {
+  AdminCategory,
+  AdminLevel,
+  AdminQuestion,
+  AdminUser,
+  AiQuestionDraft,
+  PaginatedResponse,
+  SourceDocument,
+  SourceDocumentType,
+  StudyNote,
+  VisualQuestionPreview,
+} from './types';
 
 // --- Categories & levels ---
 export async function fetchAdminCategories(): Promise<AdminCategory[]> {
@@ -43,7 +54,12 @@ export async function fetchAdminQuestion(id: number): Promise<AdminQuestion> {
   return data.data;
 }
 
-export type QuestionPayload = Omit<AdminQuestion, 'id' | 'image_path' | 'category' | 'level'>;
+export type QuestionPayload = Omit<AdminQuestion, 'id' | 'image_path' | 'category' | 'level'> & {
+  /** Only set by the Visual Question Generator flow - ordinary text/image
+   * questions get their image via the separate uploadQuestionImage() call
+   * after creation instead. */
+  image_path?: string | null;
+};
 
 export async function createQuestion(payload: QuestionPayload): Promise<AdminQuestion> {
   const { data } = await api.post<{ data: AdminQuestion }>('/admin/questions', payload);
@@ -57,6 +73,14 @@ export async function updateQuestion(id: number, payload: Partial<QuestionPayloa
 
 export async function deleteQuestion(id: number): Promise<void> {
   await api.delete(`/admin/questions/${id}`);
+}
+
+export async function generateVisualQuestionPreview(payload: {
+  pattern_type: 'shape_rotation';
+  level_id: number;
+}): Promise<VisualQuestionPreview> {
+  const { data } = await api.post<{ data: VisualQuestionPreview }>('/admin/questions/generate-visual-preview', payload);
+  return data.data;
 }
 
 export async function uploadQuestionImage(id: number, file: File): Promise<AdminQuestion> {
@@ -104,6 +128,7 @@ export async function generateAiQuestions(payload: {
   level_id: number;
   count: number;
   exam_category?: string;
+  source_document_id?: number;
 }): Promise<AiQuestionDraft[]> {
   const { data } = await api.post<{ data: AiQuestionDraft[] }>('/admin/ai-questions/generate', payload);
   return data.data;
@@ -115,4 +140,62 @@ export async function approveAiQuestion(id: number): Promise<void> {
 
 export async function rejectAiQuestion(id: number): Promise<void> {
   await api.post(`/admin/ai-questions/${id}/reject`);
+}
+
+export async function bulkApproveAiQuestions(ids: number[]): Promise<{ approved_count: number; skipped_ids: number[] }> {
+  const { data } = await api.post<{ data: { approved_count: number; skipped_ids: number[] } }>('/admin/ai-questions/bulk-approve', { ids });
+  return data.data;
+}
+
+// --- Knowledge & Question Source Library (PDF ingestion) ---
+export async function fetchSourceDocuments(): Promise<PaginatedResponse<SourceDocument>> {
+  const { data } = await api.get<PaginatedResponse<SourceDocument>>('/admin/source-documents');
+  return data;
+}
+
+export async function uploadSourceDocument(payload: {
+  file: File;
+  title: string;
+  document_type: SourceDocumentType;
+  year?: string;
+}): Promise<SourceDocument> {
+  const formData = new FormData();
+  formData.append('file', payload.file);
+  formData.append('title', payload.title);
+  formData.append('document_type', payload.document_type);
+  if (payload.year) formData.append('year', payload.year);
+  const { data } = await api.post<{ data: SourceDocument }>('/admin/source-documents', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data.data;
+}
+
+export async function analyzeSourceDocument(id: number): Promise<SourceDocument> {
+  const { data } = await api.post<{ data: SourceDocument }>(`/admin/source-documents/${id}/analyze`);
+  return data.data;
+}
+
+export async function deleteSourceDocument(id: number): Promise<void> {
+  await api.delete(`/admin/source-documents/${id}`);
+}
+
+// --- Study notes (theory-book -> teaching notes, draft -> human review -> publish) ---
+export async function fetchAdminStudyNotes(status: string): Promise<PaginatedResponse<StudyNote>> {
+  const { data } = await api.get<PaginatedResponse<StudyNote>>('/admin/study-notes', { params: { status } });
+  return data;
+}
+
+export async function generateStudyNote(payload: { source_document_id: number; category_id?: number }): Promise<StudyNote> {
+  const { data } = await api.post<{ data: StudyNote }>('/admin/study-notes/generate', payload);
+  return data.data;
+}
+
+export async function publishStudyNote(id: number): Promise<StudyNote> {
+  const { data } = await api.post<{ data: StudyNote }>(`/admin/study-notes/${id}/publish`);
+  return data.data;
+}
+
+export async function rejectStudyNote(id: number): Promise<StudyNote> {
+  const { data } = await api.post<{ data: StudyNote }>(`/admin/study-notes/${id}/reject`);
+  return data.data;
 }
