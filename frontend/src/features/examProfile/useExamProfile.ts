@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchExamCategories, fetchExamProfile, fetchStudyPlan, saveExamProfile } from './api';
-import type { ExamProfile, ExamProfileInput } from './types';
+import { fetchExamCategories, fetchExamHistory, fetchExamProfile, fetchStudyPlan, saveExamProfile, submitExamOutcome } from './api';
+import type { ExamOutcomeInput, ExamProfile, ExamProfileInput } from './types';
 import { showRewardToast } from '@/features/gamification/rewardToast';
 
 export function useExamCategories() {
@@ -13,6 +13,21 @@ export function useExamProfile() {
 
 export function useStudyPlan() {
   return useQuery({ queryKey: ['exam-profile', 'study-plan'], queryFn: fetchStudyPlan });
+}
+
+export function useExamHistory() {
+  return useQuery({ queryKey: ['exam-profile', 'history'], queryFn: fetchExamHistory });
+}
+
+export function useSubmitExamOutcome(options?: { onSuccess?: () => void }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ExamOutcomeInput) => submitExamOutcome(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exam-profile'] });
+      options?.onSuccess?.();
+    },
+  });
 }
 
 // Hook-level onSuccess/onError so callbacks reliably fire under Strict Mode.

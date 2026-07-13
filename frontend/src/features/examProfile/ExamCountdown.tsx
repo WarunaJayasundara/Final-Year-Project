@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { CalendarClock, ChevronRight, Settings2 } from 'lucide-react';
+import { CalendarClock, ChevronRight, History, Settings2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useExamProfile, useStudyPlan } from './useExamProfile';
+import { useExamHistory, useExamProfile, useStudyPlan } from './useExamProfile';
 import { ExamProfileDialog } from './ExamProfileDialog';
+import { ExamOutcomeDialog } from './ExamOutcomeDialog';
 import { PHASE_COLORS } from './phaseStyles';
 import type { CategoryRef } from './types';
 
@@ -32,13 +33,25 @@ export function ExamCountdown() {
 
   if (!profile) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
-          <CalendarClock className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">{t('examProfile.noProfileYet')}</p>
-          <ExamProfileDialog trigger={<Button size="sm">{t('examProfile.setup')}</Button>} />
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-3">
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+            <CalendarClock className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t('examProfile.noProfileYet')}</p>
+            <ExamProfileDialog trigger={<Button size="sm">{t('examProfile.setup')}</Button>} />
+          </CardContent>
+        </Card>
+        <PastExamsList />
+      </div>
+    );
+  }
+
+  if (profile.needs_outcome) {
+    return (
+      <div className="flex flex-col gap-3">
+        <ExamOutcomeDialog profile={profile} />
+        <PastExamsList />
+      </div>
     );
   }
 
@@ -133,6 +146,53 @@ export function ExamCountdown() {
           </div>
         </div>
       </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Collapsed by default - only shown expanded when there's no active exam
+ * profile (i.e. the student just finished one and hasn't started another),
+ * since that's the moment "what happened last time" is most relevant.
+ */
+function PastExamsList() {
+  const { t } = useTranslation('dashboard');
+  const { data: history } = useExamHistory();
+  const [open, setOpen] = useState(false);
+
+  if (!history || history.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card>
+      <CardHeader className="cursor-pointer select-none" onClick={() => setOpen((o) => !o)}>
+        <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
+          <History className="h-4 w-4" /> {t('examProfile.outcome.pastExams', { count: history.length })}
+        </CardTitle>
+      </CardHeader>
+      {open && (
+        <CardContent className="flex flex-col gap-2">
+          {history.map((exam, idx) => (
+            <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border border-border p-2.5 text-sm">
+              <div>
+                <p className="font-medium">{exam.exam_name}</p>
+                <p className="text-xs text-muted-foreground">{exam.exam_date}</p>
+              </div>
+              {exam.outcome_attended === null ? (
+                <Badge variant="outline">{t('examProfile.outcome.noOutcomeRecorded')}</Badge>
+              ) : !exam.outcome_attended ? (
+                <Badge variant="outline">{t('examProfile.outcome.didNotAttend')}</Badge>
+              ) : (
+                <Badge variant={exam.outcome_passed ? 'success' : 'outline'}>
+                  {exam.outcome_passed ? t('examProfile.outcome.passed') : t('examProfile.outcome.attended')}
+                  {exam.outcome_score != null ? ` · ${exam.outcome_score}%` : ''}
+                </Badge>
+              )}
+            </div>
+          ))}
+        </CardContent>
+      )}
     </Card>
   );
 }

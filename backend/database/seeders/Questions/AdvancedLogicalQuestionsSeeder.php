@@ -192,8 +192,18 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
     {
         [$premiseEn, $premiseSi, $correctEn, $correctSi, $wrong1En, $wrong1Si, $wrong2En, $wrong2Si] = self::BLOOD_RELATIONS[$idx];
 
-        $extraWrong = ['Cousin', 'Uncle', 'Aunt', 'Grandmother'][$idx % 4];
-        $extraWrongSi = ['ම්ස්සිනා', 'මාමා', 'නැන්දා', 'ආච්චි'][$idx % 4];
+        $extraWrongPool = ['Cousin', 'Uncle', 'Aunt', 'Grandmother'];
+        $extraWrongPoolSi = ['ම්ස්සිනා', 'මාමා', 'නැන්දා', 'ආච්චි'];
+        $usedEn = [$correctEn, $wrong1En, $wrong2En];
+        $poolIdx = $idx % 4;
+        for ($attempt = 0; $attempt < 4; $attempt++) {
+            if (! in_array($extraWrongPool[$poolIdx], $usedEn, true)) {
+                break;
+            }
+            $poolIdx = ($poolIdx + 1) % 4;
+        }
+        $extraWrong = $extraWrongPool[$poolIdx];
+        $extraWrongSi = $extraWrongPoolSi[$poolIdx];
 
         $values = [$correctEn, $wrong1En, $wrong2En, $extraWrong];
         $valuesSi = [$correctSi, $wrong1Si, $wrong2Si, $extraWrongSi];

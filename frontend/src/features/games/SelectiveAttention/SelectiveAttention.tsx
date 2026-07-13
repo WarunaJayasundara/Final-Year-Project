@@ -19,16 +19,16 @@ export function SelectiveAttention() {
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
-  const submitScore = useSubmitGameScore('selective_attention');
+  const submitScore = useSubmitGameScore('selective_attention', {
+    onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
+  });
 
   useEffect(() => {
     if (!finished) return;
     const seconds = Math.round((Date.now() - startedAt) / 1000);
     const score = Math.max(0, correctCount * 100 - Math.floor(seconds / 2));
-    submitScore.mutate(
-      { score, durationSeconds: seconds, metadata: { correctCount, rounds: TOTAL_ROUNDS } },
-      { onSuccess: (data) => setResult({ score, bestScore: data.best_score, isNewBest: data.is_new_best }) },
-    );
+    setResult({ score });
+    submitScore.mutate({ score, durationSeconds: seconds, metadata: { correctCount, rounds: TOTAL_ROUNDS } });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 

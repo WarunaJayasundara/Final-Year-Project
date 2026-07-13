@@ -19,7 +19,15 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:5173')],
+    // CORS_ALLOWED_ORIGINS is optional and comma-separated (e.g.
+    // "http://localhost:5173,http://192.168.1.20:5173") so LAN testing can
+    // allow both the local and network URLs at once without editing this
+    // file - see docs/DEPLOYMENT_GUIDE.md "Same Wi-Fi / LAN Testing". Falls
+    // back to the single FRONTEND_URL for the common single-origin case.
+    'allowed_origins' => array_filter(array_map('trim', explode(
+        ',',
+        env('CORS_ALLOWED_ORIGINS', env('FRONTEND_URL', 'http://localhost:5173'))
+    ))),
 
     'allowed_origins_patterns' => [],
 

@@ -39,7 +39,9 @@ export function MemoryMatch() {
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
-  const submitScore = useSubmitGameScore('memory_match');
+  const submitScore = useSubmitGameScore('memory_match', {
+    onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
+  });
 
   const matchedCount = useMemo(() => deck.filter((c) => c.matched).length, [deck]);
 
@@ -63,14 +65,12 @@ export function MemoryMatch() {
   }, [flipped]);
 
   useEffect(() => {
-    if (matchedCount === symbols.length && !finished) {
+    if (matchedCount === deck.length && !finished) {
       setFinished(true);
       const seconds = startedAt ? Math.round((Date.now() - startedAt) / 1000) : 0;
       const score = Math.max(0, 1000 - moves * 10 - seconds * 2);
-      submitScore.mutate(
-        { score, durationSeconds: seconds, metadata: { moves, seconds } },
-        { onSuccess: (data) => setResult({ score, bestScore: data.best_score, isNewBest: data.is_new_best }) },
-      );
+      setResult({ score });
+      submitScore.mutate({ score, durationSeconds: seconds, metadata: { moves, seconds } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchedCount]);

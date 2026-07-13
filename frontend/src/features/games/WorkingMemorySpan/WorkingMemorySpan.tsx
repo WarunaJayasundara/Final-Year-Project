@@ -38,14 +38,17 @@ export function WorkingMemorySpan() {
   const [nbackStep, setNbackStep] = useState(0);
   const [nbackResponded, setNbackResponded] = useState(false);
   const [nbackHits, setNbackHits] = useState(0);
-  const [nbackJudged, setNbackJudged] = useState(0);
+  const [, setNbackJudged] = useState(0);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [logs, setLogs] = useState<TrialLog[]>([]);
   const [startedAt] = useState(Date.now());
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
   const encodeStartRef = useRef(Date.now());
+  const nbackRespondedRef = useRef(false);
 
-  const submitScore = useSubmitGameScore('working_memory_span');
+  const submitScore = useSubmitGameScore('working_memory_span', {
+    onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
+  });
 
   // Encoding: reveal one digit at a time, then move to the next phase.
   useEffect(() => {
@@ -69,12 +72,13 @@ export function WorkingMemorySpan() {
       return;
     }
     setNbackResponded(false);
+    nbackRespondedRef.current = false;
     const timer = setTimeout(() => {
-      if (nbackStep >= 2) {
+      if (nbackStep >= 2 && !nbackRespondedRef.current) {
         const wasTarget = trial.nbackTargets![nbackStep];
         setNbackJudged((j) => j + 1);
         if (!wasTarget) {
-          setNbackHits((h) => h + 1); // correctly withheld a non-match
+          setNbackHits((h) => h + 1); // correctly withheld a non-match (no click during this step)
         }
       }
       setNbackStep((s) => s + 1);
@@ -84,7 +88,8 @@ export function WorkingMemorySpan() {
   }, [phase, nbackStep]);
 
   const handleNbackMatch = () => {
-    if (nbackResponded || nbackStep < 2 || !trial.nbackTargets) return;
+    if (nbackRespondedRef.current || nbackStep < 2 || !trial.nbackTargets) return;
+    nbackRespondedRef.current = true;
     setNbackResponded(true);
     const wasTarget = trial.nbackTargets[nbackStep];
     setNbackJudged((j) => j + 1);
@@ -152,21 +157,19 @@ export function WorkingMemorySpan() {
       const relevant = logs.filter((l) => l.type === type);
       return relevant.length ? relevant.filter((l) => l.correct).length / relevant.length : null;
     };
-    submitScore.mutate(
-      {
-        score,
-        durationSeconds: seconds,
-        metadata: {
-          span_reached: maxSpanReached,
-          forward_accuracy: byType('forward'),
-          backward_accuracy: byType('backward'),
-          nback_accuracy: byType('nback'),
-          interference_accuracy: byType('interference'),
-          trials: logs.length,
-        },
+    setResult({ score });
+    submitScore.mutate({
+      score,
+      durationSeconds: seconds,
+      metadata: {
+        span_reached: maxSpanReached,
+        forward_accuracy: byType('forward'),
+        backward_accuracy: byType('backward'),
+        nback_accuracy: byType('nback'),
+        interference_accuracy: byType('interference'),
+        trials: logs.length,
       },
-      { onSuccess: (data) => setResult({ score, bestScore: data.best_score, isNewBest: data.is_new_best }) },
-    );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 

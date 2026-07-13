@@ -6,6 +6,8 @@ import { RequireRole } from '@/components/auth/RequireRole';
 import { RequirePlacement } from '@/components/auth/RequirePlacement';
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
+import { RegisterPage } from '@/pages/RegisterPage';
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { AdminLoginPage } from '@/pages/AdminLoginPage';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { PlacementPage } from '@/pages/PlacementPage';
@@ -36,9 +38,11 @@ import { AdminQuestionBankPage } from '@/pages/admin/AdminQuestionBankPage';
 import { AdminMlResearchPage } from '@/pages/admin/AdminMlResearchPage';
 import { AdminAiQuestionsPage } from '@/pages/admin/AdminAiQuestionsPage';
 import { AdminKnowledgeLibraryPage } from '@/pages/admin/AdminKnowledgeLibraryPage';
+import { AdminFeedbackPage } from '@/pages/admin/AdminFeedbackPage';
 import { BadgesPage } from '@/pages/BadgesPage';
 import { LeaderboardPage } from '@/pages/LeaderboardPage';
 import { StudyNotesPage } from '@/pages/StudyNotesPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 
 function App() {
   return (
@@ -46,6 +50,8 @@ function App() {
       <Route element={<MainLayout />}>
         <Route index element={<LandingPage />} />
         <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="admin/login" element={<AdminLoginPage />} />
         <Route path="auth/callback" element={<AuthCallbackPage />} />
 
@@ -71,6 +77,7 @@ function App() {
             <Route path="badges" element={<BadgesPage />} />
             <Route path="leaderboard" element={<LeaderboardPage />} />
             <Route path="study-notes" element={<StudyNotesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Route>
       </Route>
@@ -92,6 +99,7 @@ function App() {
             <Route path="admin/ml-research" element={<AdminMlResearchPage />} />
             <Route path="admin/ai-questions" element={<AdminAiQuestionsPage />} />
             <Route path="admin/knowledge-library" element={<AdminKnowledgeLibraryPage />} />
+            <Route path="admin/feedback" element={<AdminFeedbackPage />} />
           </Route>
         </Route>
       </Route>

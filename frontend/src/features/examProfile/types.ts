@@ -4,6 +4,7 @@ export interface ExamCategoryOption {
 }
 
 export interface ExamProfile {
+  status: 'active' | 'completed';
   exam_category: string;
   exam_category_label: string;
   exam_name: string | null;
@@ -20,6 +21,21 @@ export interface ExamProfile {
   target_seconds_per_question: number | null;
   days_remaining: number | null;
   prep_progress_percent: number | null;
+  is_past_due: boolean;
+  // True when the exam date has passed and the student hasn't yet said
+  // whether they attended - the dashboard shows an outcome prompt until this
+  // clears (either by recording an outcome or starting a new exam profile).
+  needs_outcome: boolean;
+  outcome_attended: boolean | null;
+  outcome_passed: boolean | null;
+  outcome_score: number | null;
+  outcome_recorded_at: string | null;
+}
+
+export interface ExamOutcomeInput {
+  attended: boolean;
+  passed?: boolean | null;
+  score?: number | null;
 }
 
 export interface ExamProfileInput {

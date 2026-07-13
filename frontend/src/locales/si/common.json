@@ -3,6 +3,8 @@
   "tagline": "ශ්‍රී ලංකාවේ IQ දියුණුව සඳහා සංජානන පුහුණු වේදිකාව",
   "nav": {
     "dashboard": "පුවරුව",
+    "learn": "ඉගෙනුම",
+    "progress": "ප්‍රගතිය",
     "dailyPractice": "දෛනික අභ්‍යාසය",
     "practice": "පුහුණුව",
     "mockExam": "මාදිලි විභාගය",
@@ -16,6 +18,7 @@
     "adminQuestions": "ප්‍රශ්න",
     "adminCategories": "ප්‍රවර්ග",
     "adminUsers": "පරිශීලකයන්",
+    "adminFeedback": "ප්‍රතිපෝෂණය",
     "adminPsychometrics": "මනෝමිතික විශ්ලේෂණය",
     "adminAiQuestions": "AI ප්‍රශ්න",
     "adminKnowledgeLibrary": "ප්‍රභව ලේඛන",

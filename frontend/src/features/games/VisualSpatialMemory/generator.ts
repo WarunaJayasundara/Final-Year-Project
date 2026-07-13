@@ -62,7 +62,8 @@ export function generateSceneRound(itemCount: number, seed: number): SceneRound 
   const shownSample = shuffledIndices(icons.length, rng)
     .slice(0, 3)
     .map((i) => icons[i]);
-  const optionIcons = shuffledIndices(4, rng).map((_, i) => (i < 3 ? shownSample[i] : missing));
+  const combinedOptions = [...shownSample, missing];
+  const optionIcons = shuffledIndices(4, rng).map((i) => combinedOptions[i]);
   return { type: 'scene', grid, cells, icons, question: 'missingIcon', optionIcons, answer: missing };
 }
 

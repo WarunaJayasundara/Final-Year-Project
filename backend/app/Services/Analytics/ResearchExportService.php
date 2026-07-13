@@ -16,16 +16,26 @@ use Illuminate\Support\Collection;
  */
 class ResearchExportService
 {
-    public function cohortOverview(): array
+    /**
+     * $includeDemo defaults to false everywhere - synthetic demo accounts
+     * (is_demo_user, see GenerateDemoData) exist for UI testing/screenshots,
+     * not for research analysis, and must never inflate cohort-wide numbers
+     * unless an admin explicitly opts in.
+     */
+    public function cohortOverview(bool $includeDemo = false): array
     {
-        $totalStudents = User::where('role', 'user')->count();
-        $placementCompleted = User::where('role', 'user')->whereNotNull('placement_completed_at')->count();
+        $students = User::where('role', 'user')->when(! $includeDemo, fn ($q) => $q->where('is_demo_user', false));
+        $demoUserIds = $includeDemo ? null : User::where('is_demo_user', true)->pluck('id');
 
-        $completedSessions = TestSession::whereNotNull('completed_at');
+        $totalStudents = (clone $students)->count();
+        $placementCompleted = (clone $students)->whereNotNull('placement_completed_at')->count();
+
+        $completedSessions = TestSession::whereNotNull('completed_at')
+            ->when($demoUserIds, fn ($q) => $q->whereNotIn('user_id', $demoUserIds));
 
         $averageScore = (clone $completedSessions)->avg('score_percent');
 
-        $levelDistribution = User::where('role', 'user')
+        $levelDistribution = (clone $students)
             ->whereNotNull('current_level_id')
             ->join('iq_levels', 'iq_levels.id', '=', 'users.current_level_id')
             ->selectRaw('iq_levels.level_number as level_number, count(*) as total')
@@ -35,7 +45,9 @@ class ResearchExportService
 
         $categoryAccuracy = \App\Models\SessionAnswer::join('questions', 'questions.id', '=', 'session_answers.question_id')
             ->join('categories', 'categories.id', '=', 'questions.category_id')
+            ->join('test_sessions', 'test_sessions.id', '=', 'session_answers.test_session_id')
             ->whereNotNull('session_answers.answered_at')
+            ->when($demoUserIds, fn ($q) => $q->whereNotIn('test_sessions.user_id', $demoUserIds))
             ->selectRaw('categories.code as category_code, categories.name_en as category_name, avg(session_answers.is_correct) * 100 as accuracy_percent, count(*) as answers_count')
             ->groupBy('categories.code', 'categories.name_en')
             ->get();
@@ -55,9 +67,12 @@ class ResearchExportService
      * one completed daily session (post) - the minimum needed for a paired
      * comparison of pre vs post performance.
      */
-    public function pairedScores(): Collection
+    public function pairedScores(bool $includeDemo = false): Collection
     {
-        $students = User::where('role', 'user')->whereNotNull('placement_completed_at')->get();
+        $students = User::where('role', 'user')
+            ->whereNotNull('placement_completed_at')
+            ->when(! $includeDemo, fn ($q) => $q->where('is_demo_user', false))
+            ->get();
 
         return $students->map(function (User $user) {
             $pre = TestSession::where('user_id', $user->id)

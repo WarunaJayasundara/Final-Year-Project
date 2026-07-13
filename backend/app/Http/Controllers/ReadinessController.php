@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExamReadinessPrediction;
+use App\Models\User;
 use App\Services\Gamification\BadgeService;
 use App\Services\Ml\ReadinessPredictionService;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class ReadinessController extends Controller
         $newBadges = $this->badges->evaluate($user->fresh());
 
         return response()->json([
-            'data' => $this->present($prediction),
+            'data' => $this->present($prediction, $user),
             'new_badges' => array_map(fn ($b) => $b->toRewardArray(), $newBadges),
         ]);
     }
@@ -39,7 +40,7 @@ class ReadinessController extends Controller
             ->orderByDesc('predicted_at')
             ->first();
 
-        return response()->json(['data' => $prediction ? $this->present($prediction) : null]);
+        return response()->json(['data' => $prediction ? $this->present($prediction, $request->user()) : null]);
     }
 
     public function history(Request $request)
@@ -57,11 +58,26 @@ class ReadinessController extends Controller
         return response()->json(['data' => $predictions]);
     }
 
-    private function present(ExamReadinessPrediction $prediction): array
+    /**
+     * "readiness_type" distinguishes what the number actually means to the
+     * student - see CLAUDE.md/the brief's §7: without an active, not-yet-due
+     * exam profile there is no specific exam to be "ready" FOR, so the same
+     * model output is presented as a general cognitive-training indicator
+     * instead of implying a pass probability for a named exam. This is a
+     * presentation-layer distinction only (computed from the CURRENT exam
+     * profile state, not stored per-prediction) - the underlying model and
+     * its inputs are unchanged.
+     */
+    private function present(ExamReadinessPrediction $prediction, ?User $user = null): array
     {
+        $examProfile = $user?->examProfile()->first();
+        $hasActiveExam = $examProfile && $examProfile->exam_date && ! $examProfile->isPastDue();
+
         return [
             'readiness_percent' => (float) $prediction->readiness_percent,
             'readiness_label' => $prediction->readiness_label,
+            'readiness_type' => $hasActiveExam ? 'exam_specific' : 'general',
+            'exam_name' => $hasActiveExam ? $examProfile->exam_name : null,
             'reasons' => $prediction->reasons,
             'model_version' => $prediction->model_version,
             'predicted_at' => $prediction->predicted_at,

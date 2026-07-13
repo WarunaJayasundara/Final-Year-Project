@@ -3,6 +3,8 @@
   "tagline": "Sri Lanka's cognitive training platform for IQ development",
   "nav": {
     "dashboard": "Dashboard",
+    "learn": "Learn",
+    "progress": "Progress",
     "dailyPractice": "Daily Practice",
     "practice": "Practice",
     "mockExam": "Mock Exam",
@@ -16,6 +18,7 @@
     "adminQuestions": "Questions",
     "adminCategories": "Categories",
     "adminUsers": "Users",
+    "adminFeedback": "Feedback",
     "adminPsychometrics": "Psychometrics",
     "adminAiQuestions": "AI Questions",
     "adminKnowledgeLibrary": "Knowledge Library",

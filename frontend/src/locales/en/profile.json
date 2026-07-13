@@ -1,0 +1,20 @@
+{
+  "title": "Profile",
+  "subtitle": "Your account and feedback.",
+  "authGoogle": "Signed in with Google",
+  "authPassword": "Signed in with password",
+  "feedback": {
+    "title": "Send feedback",
+    "overall": "Overall rating",
+    "ui": "Interface (UI/UX)",
+    "questionQuality": "Question quality",
+    "sinhalaQuality": "Sinhala quality",
+    "usefulness": "How useful is HelaIQ for your studying?",
+    "comment": "Comments (optional)",
+    "suggestion": "Feature suggestion (optional)",
+    "submit": "Submit feedback",
+    "submitting": "Submitting...",
+    "submitted": "Thanks for your feedback!",
+    "submitFailed": "Could not submit feedback. Please try again."
+  }
+}

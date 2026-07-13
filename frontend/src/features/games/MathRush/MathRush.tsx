@@ -20,7 +20,9 @@ export function MathRush() {
   const [result, setResult] = useState<{ bestScore?: number; isNewBest?: boolean } | null>(null);
   const submittedRef = useRef(false);
 
-  const submitScore = useSubmitGameScore('math_rush');
+  const submitScore = useSubmitGameScore('math_rush', {
+    onSuccess: (data) => setResult({ bestScore: data.best_score, isNewBest: data.is_new_best }),
+  });
 
   useEffect(() => {
     if (finished) return;
@@ -40,10 +42,8 @@ export function MathRush() {
   useEffect(() => {
     if (finished && !submittedRef.current) {
       submittedRef.current = true;
-      submitScore.mutate(
-        { score, durationSeconds: DURATION_SECONDS, metadata: { correctCount, wrongCount } },
-        { onSuccess: (data) => setResult({ bestScore: data.best_score, isNewBest: data.is_new_best }) },
-      );
+      setResult({});
+      submitScore.mutate({ score, durationSeconds: DURATION_SECONDS, metadata: { correctCount, wrongCount } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);

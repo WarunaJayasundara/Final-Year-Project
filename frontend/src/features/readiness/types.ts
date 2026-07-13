@@ -17,9 +17,15 @@ export interface PredictedScoreRange {
   high: number;
 }
 
+export type ReadinessType = 'general' | 'exam_specific';
+
 export interface ReadinessPrediction {
   readiness_percent: number;
   readiness_label: ReadinessLabel;
+  // Which kind of readiness this number represents - see ReadinessController::present().
+  // Optional so a prediction fetched before this field existed still renders (defaults to 'general' framing).
+  readiness_type?: ReadinessType;
+  exam_name?: string | null;
   reasons: ReadinessReason[];
   model_version: string;
   predicted_at: string;

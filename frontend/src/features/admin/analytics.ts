@@ -10,13 +10,13 @@ export interface CohortOverview {
   category_accuracy: { category_code: string; category_name: string; accuracy_percent: string; answers_count: number }[];
 }
 
-async function fetchOverview(): Promise<CohortOverview> {
-  const { data } = await api.get<{ data: CohortOverview }>('/admin/analytics/overview');
+async function fetchOverview(includeDemo: boolean): Promise<CohortOverview> {
+  const { data } = await api.get<{ data: CohortOverview }>('/admin/analytics/overview', { params: { include_demo: includeDemo } });
   return data.data;
 }
 
-export function useCohortOverview() {
-  return useQuery({ queryKey: ['admin', 'analytics', 'overview'], queryFn: fetchOverview });
+export function useCohortOverview(includeDemo = false) {
+  return useQuery({ queryKey: ['admin', 'analytics', 'overview', includeDemo], queryFn: () => fetchOverview(includeDemo) });
 }
 
 /**
@@ -28,8 +28,11 @@ export function useCohortOverview() {
  * turned into a temporary object URL only to trigger the browser's native
  * save-file dialog, then immediately revoked.
  */
-async function downloadPairedScoresCsv(): Promise<void> {
-  const response = await api.get('/admin/analytics/paired-scores.csv', { responseType: 'blob' });
+async function downloadPairedScoresCsv(includeDemo: boolean): Promise<void> {
+  const response = await api.get('/admin/analytics/paired-scores.csv', {
+    responseType: 'blob',
+    params: { include_demo: includeDemo },
+  });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
@@ -42,7 +45,7 @@ async function downloadPairedScoresCsv(): Promise<void> {
 
 export function useDownloadPairedScoresCsv(options?: { onError?: () => void }) {
   return useMutation({
-    mutationFn: downloadPairedScoresCsv,
+    mutationFn: (includeDemo: boolean) => downloadPairedScoresCsv(includeDemo),
     onError: () => options?.onError?.(),
   });
 }
@@ -138,13 +141,13 @@ export interface MlOverview {
   model: Record<string, unknown> | null;
 }
 
-async function fetchMlOverview(): Promise<MlOverview> {
-  const { data } = await api.get<{ data: MlOverview }>('/admin/analytics/ml-overview');
+async function fetchMlOverview(includeDemo: boolean): Promise<MlOverview> {
+  const { data } = await api.get<{ data: MlOverview }>('/admin/analytics/ml-overview', { params: { include_demo: includeDemo } });
   return data.data;
 }
 
-export function useMlOverview() {
-  return useQuery({ queryKey: ['admin', 'analytics', 'ml-overview'], queryFn: fetchMlOverview });
+export function useMlOverview(includeDemo = false) {
+  return useQuery({ queryKey: ['admin', 'analytics', 'ml-overview', includeDemo], queryFn: () => fetchMlOverview(includeDemo) });
 }
 
 export interface MlResearchReports {

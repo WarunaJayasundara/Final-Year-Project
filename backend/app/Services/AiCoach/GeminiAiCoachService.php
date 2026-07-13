@@ -97,7 +97,7 @@ class GeminiAiCoachService implements AiCoachServiceInterface
         $iq = $ctx['iq_estimate']['iq_score'] ?? 'not yet available';
 
         return <<<PROMPT
-        You are MindRise's friendly cognitive-training coach for a Sri Lankan student aged 20-30
+        You are HelaIQ's friendly cognitive-training coach for a Sri Lankan student aged 20-30
         preparing for competitive exams. Always reply in {$languageName}, in 2-5 short sentences,
         encouraging and specific - never generic filler.
 

@@ -10,6 +10,7 @@ class ExamProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'status',
         'exam_category',
         'exam_name',
         'exam_date',
@@ -20,6 +21,10 @@ class ExamProfile extends Model
         'pass_mark',
         'negative_marking',
         'exam_sections',
+        'outcome_attended',
+        'outcome_passed',
+        'outcome_score',
+        'outcome_recorded_at',
     ];
 
     protected $casts = [
@@ -31,6 +36,10 @@ class ExamProfile extends Model
         'pass_mark' => 'integer',
         'negative_marking' => 'boolean',
         'exam_sections' => 'array',
+        'outcome_attended' => 'boolean',
+        'outcome_passed' => 'boolean',
+        'outcome_score' => 'integer',
+        'outcome_recorded_at' => 'datetime',
     ];
 
     /**
@@ -93,6 +102,18 @@ class ExamProfile extends Model
         }
 
         return max(0, (int) Carbon::now()->startOfDay()->diffInDays($this->exam_date, false));
+    }
+
+    /**
+     * True once the exam date has passed (strictly before today). Distinct
+     * from `status === 'completed'`: a profile becomes past-due the moment
+     * the date passes, but stays 'active' (and keeps showing the "did you
+     * attend?" prompt) until the student records an outcome or starts a new
+     * exam profile - see ExamProfileController::store()/outcome().
+     */
+    public function isPastDue(): bool
+    {
+        return $this->exam_date !== null && $this->exam_date->startOfDay()->isBefore(Carbon::now()->startOfDay());
     }
 
     /**

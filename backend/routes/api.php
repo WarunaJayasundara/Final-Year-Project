@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AiQuestionController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\LevelController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\SourceDocumentController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\CoachController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamProfileController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\GamificationController;
 use App\Http\Controllers\ReadinessController;
@@ -38,6 +40,10 @@ use Illuminate\Support\Facades\Route;
 // which the "web" middleware group provides and the "api" group does not for
 // a top-level browser redirect coming from Google's servers.
 Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
     Route::patch('/locale', [AuthController::class, 'updateLocale'])->middleware('auth:sanctum');
@@ -93,6 +99,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
     Route::get('/source-documents/{sourceDocument}', [SourceDocumentController::class, 'show']);
     Route::post('/source-documents/{sourceDocument}/analyze', [SourceDocumentController::class, 'analyze']);
     Route::delete('/source-documents/{sourceDocument}', [SourceDocumentController::class, 'destroy']);
+
+    // --- Admin: feedback & ratings ---
+    Route::get('/feedback', [AdminFeedbackController::class, 'index']);
+    Route::get('/feedback/stats', [AdminFeedbackController::class, 'stats']);
+    Route::get('/feedback/export.csv', [AdminFeedbackController::class, 'exportCsv']);
+    Route::post('/feedback/{feedback}/review', [AdminFeedbackController::class, 'markReviewed']);
 
     // --- Admin: Study notes (theory-book -> teaching notes, draft -> human review -> publish) ---
     Route::get('/study-notes', [AdminStudyNoteController::class, 'index']);
@@ -151,6 +163,14 @@ Route::prefix('exam-profile')->middleware(['auth:sanctum'])->group(function () {
     Route::post('/', [ExamProfileController::class, 'store']);
     Route::get('/categories', [ExamProfileController::class, 'examCategories']);
     Route::get('/study-plan', [ExamProfileController::class, 'studyPlan']);
+    Route::get('/history', [ExamProfileController::class, 'history']);
+    Route::post('/outcome', [ExamProfileController::class, 'outcome']);
+});
+
+// --- Student feedback & ratings ---
+Route::prefix('feedback')->middleware(['auth:sanctum'])->group(function () {
+    Route::post('/', [FeedbackController::class, 'store']);
+    Route::get('/mine', [FeedbackController::class, 'mine']);
 });
 
 Route::prefix('checkins')->middleware(['auth:sanctum'])->group(function () {

@@ -172,7 +172,7 @@ export function LandingPage() {
           <p className="mx-auto mt-2 max-w-xl text-muted-foreground">{t('landing.skillAreas.description')}</p>
         </FadeIn>
         <BalancedGrid
-          items={SKILL_AREA_KEYS}
+          items={[...SKILL_AREA_KEYS]}
           columns={{ base: 1, sm: 2, lg: 4 }}
           itemWidth="14rem"
           renderItem={(key) => (

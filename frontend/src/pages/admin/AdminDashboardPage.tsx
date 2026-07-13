@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -11,7 +11,8 @@ import { useCohortOverview, useDownloadPairedScoresCsv } from '@/features/admin/
 
 export function AdminDashboardPage() {
   const { t } = useTranslation('admin');
-  const { data: overview, isLoading } = useCohortOverview();
+  const [includeDemo, setIncludeDemo] = useState(false);
+  const { data: overview, isLoading } = useCohortOverview(includeDemo);
   const downloadCsv = useDownloadPairedScoresCsv({
     onError: () => toast.error(t('dashboard.exportCsvFailed')),
   });
@@ -46,10 +47,19 @@ export function AdminDashboardPage() {
           <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
         </div>
-        <Button variant="outline" onClick={() => downloadCsv.mutate()} disabled={downloadCsv.isPending}>
-          {downloadCsv.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          {t('dashboard.exportCsv')}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={includeDemo ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setIncludeDemo((v) => !v)}
+          >
+            {includeDemo ? t('feedback.includingDemo') : t('feedback.excludingDemo')}
+          </Button>
+          <Button variant="outline" onClick={() => downloadCsv.mutate(includeDemo)} disabled={downloadCsv.isPending}>
+            {downloadCsv.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {t('dashboard.exportCsv')}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

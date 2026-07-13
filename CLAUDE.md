@@ -909,6 +909,83 @@ into concrete brand/token decisions.
   still-uncommitted prior sessions' work remains uncommitted, per standing
   project convention (only commit when explicitly asked).
 
+### 7.15 Final Deep System Audit, Search, Testing & Validation (new session)
+
+Full end-to-end audit per a 20-section brief (codebase search, automated
+question-bank validation, game logic review, ML pipeline validation,
+IRT/IQ chain verification, Sinhala content audit, live browser testing,
+security testing). Six parallel background agents independently audited
+the question bank, visual questions, Sinhala content, the ML pipeline, all
+8 games, and security — each against the live dev DB/services, not static
+assumptions. Full report: `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`.
+
+**12 real, concrete bugs found and fixed** (not invented, not skipped):
+(1) AI coach's Gemini system prompt still said "You are MindRise's coach"
+— fixed to HelaIQ; (2) Bank5 boolean-overlay Sinhala operator label was
+literally `()` (empty) — a Sinhala-only reader had zero information on
+which operation to compute — fixed by restoring AND/OR/XOR as the
+established English-loanword pattern; (3) question ID 18326 had duplicate
+"Cousin" options (fixed live row + collision-guarded
+`AdvancedLogicalQuestionsSeeder::renderBloodRelation()` for future runs);
+(4) 9 pre-existing exact-duplicate "odd one out" questions (5 zero-history
+copies deactivated, 2 with real history kept); (5) **root-caused a real
+backend test failure**: `MockAiQuestionGeneratorService::logical()`'s
+6-template pool had been fully exhausted by the growing question bank
+(every template was already a duplicate), silently producing zero AI
+drafts for `logical_reasoning` — AND its "Sinhala" text was literally the
+English text copied verbatim, never translated. Rebuilt on the same
+verified word/translation source as `LogicalReasoningQuestionsSeeder`
+(~1,440 combinations, real Sinhala throughout); (6) **Memory Match game
+could never finish** — `matchedCount === symbols.length` (8) but
+`matchedCount` counts matched cards (max 16) — critical, fixed; (7) all 8
+games used the per-call `.mutate(vars, {onSuccess})` anti-pattern this
+same CLAUDE.md already warns against, latent StrictMode-drop risk — moved
+to hook-level `onSuccess` across all 8; (8) Working Memory Span n-back
+exploit (stale-closure race let spam-clicking "Match" get free credit on
+non-matches) — fixed with ref-based tracking; (9)-(10) Visual Spatial
+Memory: 2 of 3 question types never shuffled their answer options (correct
+answer always first or always last button) — fixed; (11)-(12) Cognitive
+Command Center: pattern-round distractors could collide when step=2, AND
+`cognitive_switching_cost_ms` — the metric this game exists to compute —
+was always null because the rule-changed flag was set before the
+comparison that needed it, always comparing a value against itself.
+
+**Verification**: `php artisan test` **100/100 passing** (was 98/100
+before this session — both pre-existing failures were root-caused and
+fixed, not skipped or ignored); `npx tsc --noEmit` clean; `npx oxlint
+src/` unchanged (3 pre-existing benign warnings); Sinhala corpus validator
+clean (33 files, 1,398-word corpus). Live-browser-verified: landing page,
+full admin login→dashboard→ML-research→knowledge-library flow, EN/SI
+language switch (confirmed via network request + DOM, not just a
+screenshot), mobile 375px breakpoint (zero horizontal overflow).
+
+**Real findings documented but NOT auto-fixed this session** (each has a
+stated reason, not an oversight): 94% of the visual-question bank (1,400
+Bank2 rows) lacks `generation_rule`/`transformation_steps` metadata — a
+traceability gap, not a correctness bug (answers independently
+re-verified correct via replay) — backfill is feasible but is a data
+migration, not a bug fix; a real ML train/test leakage risk (12.3% of
+real-OULAD students contribute repeat rows, row-level not group-level
+split) — quantified but not corrected, since fixing it needs a full
+retrain, which this project's own CLAUDE.md already flags as expensive
+and not to be done casually; 3 image-based questions where the Sinhala
+text is a generic "look at the image" instruction instead of a real
+description — flagged for human review, not auto-corrected, per this
+project's own hard rule against machine-composing Sinhala fixes; 1
+low-severity hardcoded default admin password fallback in
+`SuperAdminSeeder.php`/`.env.example` (`ChangeMe123!`) — not a live leak
+(`.env` overrides it and is gitignored) but worth rotating if ever
+deployed beyond local dev.
+
+**Not covered, same pre-existing constraint as every prior session**: a
+full student-facing browser click-through (dashboard/testing/games/study
+notes) — Google-OAuth-only auth, no dev password path. Games were instead
+verified by tracing concrete failing inputs through the actual code
+(caught 6 real bugs a casual playthrough likely would have missed, e.g.
+the Cognitive Command Center switching-cost bug only shows up in
+submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
+§11 for the full list of bounded, documented scope limits.
+
 ---
 
 ## 8. Completed Features (fully working, verified)
@@ -1118,7 +1195,15 @@ into concrete brand/token decisions.
 
 ## 12. EXACT NEXT TASK (resume here after /compact)
 
-**Most recent session's HelaIQ rebrand (§7.14) is functionally complete
+**Most recent session was the Final Deep System Audit (§7.15) — complete,
+100/100 backend tests passing, 12 real bugs found and fixed, full report
+at `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`.** Nothing blocking remains
+from it; the few things it found but deliberately didn't fix (visual
+question metadata backfill, ML train/test leakage documentation, 3
+flagged Sinhala image-question captions, one hardcoded default admin
+password) are listed in that report's §11, none of them urgent.
+
+**Before that, the HelaIQ rebrand (§7.14) is functionally complete
 across all 11 of the user's own specified phases** — `tsc`/`oxlint`/
 Sinhala-validator all clean, live-browser-verified on every route
 reachable without an auth bypass. Nothing blocking remains from it. If

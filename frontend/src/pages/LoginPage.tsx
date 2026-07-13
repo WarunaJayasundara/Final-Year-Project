@@ -1,20 +1,48 @@
 import type { SVGProps } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FadeIn } from '@/components/motion/FadeIn';
 import { HelaIQMark } from '@/components/brand/HelaIQMark';
-import { useCurrentUser, useGoogleLogin } from '@/features/auth/useAuth';
+import { useCurrentUser, useGoogleLogin, useStudentLogin } from '@/features/auth/useAuth';
+
+const schema = z.object({
+  identifier: z.string().min(1),
+  password: z.string().min(1),
+});
+type FormValues = z.infer<typeof schema>;
 
 export function LoginPage() {
   const { t } = useTranslation('auth');
   const { data: user } = useCurrentUser();
   const googleLogin = useGoogleLogin();
+  const studentLogin = useStudentLogin();
+  const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
   if (user?.role === 'user') {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const onSubmit = handleSubmit(async (values) => {
+    try {
+      await studentLogin.mutateAsync(values);
+      navigate('/dashboard');
+    } catch {
+      // surfaced via studentLogin.isError below
+    }
+  });
 
   return (
     <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
@@ -32,6 +60,7 @@ export function LoginPage() {
           <CardContent className="flex flex-col gap-4">
             <Button
               size="lg"
+              variant="outline"
               className="w-full"
               onClick={() => googleLogin.mutate()}
               disabled={googleLogin.isPending}
@@ -39,6 +68,48 @@ export function LoginPage() {
               <GoogleIcon className="h-4 w-4" />
               {googleLogin.isPending ? t('signingIn') : t('continueWithGoogle')}
             </Button>
+
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              {t('or')}
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
+            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="identifier">{t('emailOrUsername')}</Label>
+                <Input id="identifier" autoComplete="username" {...register('identifier')} />
+                {errors.identifier && <p className="text-xs text-destructive">{t('fieldRequired')}</p>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t('password')}</Label>
+                  <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+                    {t('forgotPassword')}
+                  </Link>
+                </div>
+                <Input id="password" type="password" autoComplete="current-password" {...register('password')} />
+                {errors.password && <p className="text-xs text-destructive">{t('fieldRequired')}</p>}
+              </div>
+
+              {studentLogin.isError && (
+                <p className="text-sm text-destructive">
+                  {(studentLogin.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+                    t('invalidCredentials')}
+                </p>
+              )}
+
+              <Button type="submit" size="lg" className="w-full" disabled={studentLogin.isPending}>
+                {studentLogin.isPending ? t('signingIn') : t('signIn')}
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted-foreground">
+              {t('noAccount')}{' '}
+              <Link to="/register" className="font-medium text-primary underline-offset-4 hover:underline">
+                {t('createAccount')}
+              </Link>
+            </p>
 
             <p className="text-center text-xs text-muted-foreground">
               {t('notAStudent')}{' '}

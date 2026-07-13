@@ -11,6 +11,7 @@ import enAdmin from '@/locales/en/admin.json';
 import enCoach from '@/locales/en/coach.json';
 import enStudyPlan from '@/locales/en/studyPlan.json';
 import enGamification from '@/locales/en/gamification.json';
+import enProfile from '@/locales/en/profile.json';
 import siCommon from '@/locales/si/common.json';
 import siAuth from '@/locales/si/auth.json';
 import siDashboard from '@/locales/si/dashboard.json';
@@ -20,6 +21,7 @@ import siAdmin from '@/locales/si/admin.json';
 import siCoach from '@/locales/si/coach.json';
 import siStudyPlan from '@/locales/si/studyPlan.json';
 import siGamification from '@/locales/si/gamification.json';
+import siProfile from '@/locales/si/profile.json';
 
 i18n
   .use(LanguageDetector)
@@ -36,6 +38,7 @@ i18n
         coach: enCoach,
         studyPlan: enStudyPlan,
         gamification: enGamification,
+        profile: enProfile,
       },
       si: {
         common: siCommon,
@@ -47,12 +50,13 @@ i18n
         coach: siCoach,
         studyPlan: siStudyPlan,
         gamification: siGamification,
+        profile: siProfile,
       },
     },
     fallbackLng: 'en',
     supportedLngs: ['en', 'si'],
     load: 'languageOnly',
-    ns: ['common', 'auth', 'dashboard', 'sessions', 'games', 'admin', 'coach', 'studyPlan', 'gamification'],
+    ns: ['common', 'auth', 'dashboard', 'sessions', 'games', 'admin', 'coach', 'studyPlan', 'gamification', 'profile'],
     defaultNS: 'common',
     interpolation: { escapeValue: false },
     detection: {

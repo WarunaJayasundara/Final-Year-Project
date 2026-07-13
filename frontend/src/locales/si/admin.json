@@ -1,4 +1,36 @@
 {
+  "feedback": {
+    "title": "ප්‍රතිපෝෂණය",
+    "subtitle": "සිසුන් විසින් එවන ලද ශ්‍රේණිගත කිරීම් සහ අදහස්.",
+    "totalResponses": "මුළු ප්‍රතිචාර",
+    "newCount": "නව {{count}}",
+    "includingDemo": "නිරූපණ දත්ත ඇතුළුව",
+    "excludingDemo": "නිරූපණ දත්ත හැර",
+    "exportCsv": "අපනයනය (CSV)",
+    "distribution": "ශ්‍රේණිගත කිරීමේ බෙදාහැරීම",
+    "topTerms": "නිතර භාවිත වචන",
+    "topTermsNote": "අදහස් සහ යෝජනා පිළිබඳ සරල වචන-සංඛ්‍යාතමය ගණනයක් - හැඟීම් විශ්ලේෂණයක් නොවේ.",
+    "noTerms": "නිතර භාවිත වචන පෙන්වීමට තවම ප්‍රමාණවත් පෙළක් නැත.",
+    "recent": "ප්‍රතිපෝෂණය",
+    "statusAll": "සියල්ල",
+    "statusNew": "නව",
+    "statusReviewed": "සමාලෝචනය කළ",
+    "loading": "පූරණය වෙමින්...",
+    "none": "මෙම පෙරහනට ගැලපෙන ප්‍රතිපෝෂණයක් නැත.",
+    "markReviewed": "සමාලෝචනය කළා ලෙස සලකුණු කරන්න",
+    "demoTag": "නිරූපණය",
+    "suggestionLabel": "යෝජනාව",
+    "pagination": "පිටුව {{current}} න් {{last}}",
+    "previous": "පෙර",
+    "next": "ඊළඟ",
+    "dimensions": {
+      "overall": "සමස්ත",
+      "ui": "UI/UX",
+      "questionQuality": "ප්‍රශ්න ගුණාත්මකභාවය",
+      "sinhalaQuality": "සිංහල ගුණාත්මකභාවය",
+      "usefulness": "ප්‍රයෝජනවත්භාවය"
+    }
+  },
   "dashboard": {
     "title": "පර්යේෂණ සහ විශ්ලේෂණ",
     "subtitle": "පුහුණු වැඩසටහන ඇගයීම සඳහා කණ්ඩායම පුරා කාර්ය සාධනය.",

@@ -40,7 +40,10 @@ export function ReadinessCard() {
     <Card className="border-primary/30">
       <CardHeader className="flex flex-row items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Gauge className="h-4 w-4" /> {t('readiness.title')}
+          <Gauge className="h-4 w-4" />
+          {prediction?.readiness_type === 'exam_specific' && prediction.exam_name
+            ? t('readiness.titleForExam', { exam: prediction.exam_name })
+            : t('readiness.titleGeneral')}
         </CardTitle>
         <div className="flex gap-2">
           <CheckinDialog />

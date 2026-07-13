@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { AuthUser, Locale } from './types';
+import type { AuthUser, Locale, RegisterPayload } from './types';
 
 export async function fetchMe(): Promise<AuthUser | null> {
   const { data } = await api.get<{ user: AuthUser | null }>('/auth/me');
@@ -14,6 +14,31 @@ export async function googleRedirectUrl(): Promise<string> {
 export async function adminLogin(email: string, password: string): Promise<AuthUser> {
   const { data } = await api.post<{ user: AuthUser }>('/admin/login', { email, password });
   return data.user;
+}
+
+export async function studentLogin(identifier: string, password: string): Promise<AuthUser> {
+  const { data } = await api.post<{ user: AuthUser }>('/auth/login', { identifier, password });
+  return data.user;
+}
+
+export async function register(payload: RegisterPayload): Promise<AuthUser> {
+  const { data } = await api.post<{ user: AuthUser }>('/auth/register', payload);
+  return data.user;
+}
+
+export async function forgotPassword(email: string): Promise<string> {
+  const { data } = await api.post<{ message: string }>('/auth/forgot-password', { email });
+  return data.message;
+}
+
+export async function resetPassword(payload: {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}): Promise<string> {
+  const { data } = await api.post<{ message: string }>('/auth/reset-password', payload);
+  return data.message;
 }
 
 export async function logout(): Promise<void> {

@@ -36,7 +36,14 @@
   },
   "practice": {
     "subtitle": "Pick a category to drill on its own, at your current level.",
-    "startError": "Could not start a practice session for this category yet - the question bank may still be empty at your level."
+    "startError": "Could not start a practice session for this category yet - the question bank may still be empty at your level.",
+    "quickStart": "Quick start",
+    "dailyHint": "Your adaptive daily set, weighted toward your weak areas.",
+    "weakArea": "Weak-area practice",
+    "weakAreaUnavailable": "Available once you have a practice history.",
+    "timed": "Timed",
+    "mockHint": "A full timed exam that mirrors the real thing.",
+    "byCategory": "Practice by category"
   },
   "report": {
     "title": "Session complete",

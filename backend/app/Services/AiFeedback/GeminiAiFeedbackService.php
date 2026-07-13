@@ -94,9 +94,14 @@ class GeminiAiFeedbackService implements AiFeedbackServiceInterface
         The student selected: {$selectedText}
         The correct answer is: {$correctText}
 
-        In 2-4 short sentences, written in {$languageName}, explain why the correct answer is right and
-        (if the student was wrong) what pattern or reasoning step they likely missed. Be encouraging and
-        concise, suitable for display directly to the student after a practice session.
+        Written in {$languageName}, give a short structured explanation with:
+        1. If the student was wrong, one sentence on why their selected answer doesn't fit.
+        2. A brief step-by-step walkthrough of how to reach the correct answer.
+        3. If there's a faster shortcut or pattern to spot next time, one sentence naming it (skip this
+           line if there isn't a meaningfully faster method).
+
+        Keep the whole thing under 6 short sentences, encouraging in tone, plain text (no markdown),
+        suitable for display directly to the student after a practice session.
         PROMPT;
     }
 }

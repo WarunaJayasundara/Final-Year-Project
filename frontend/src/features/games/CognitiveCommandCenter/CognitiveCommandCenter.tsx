@@ -43,7 +43,9 @@ export function CognitiveCommandCenter() {
   const roundStartRef = useRef(Date.now());
   const inhibitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const submitScore = useSubmitGameScore('cognitive_command_center');
+  const submitScore = useSubmitGameScore('cognitive_command_center', {
+    onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
+  });
 
   useEffect(() => {
     roundStartRef.current = Date.now();
@@ -67,6 +69,13 @@ export function CognitiveCommandCenter() {
     setAnswered(true);
     setLastCorrect(correct);
     setLogs((prev) => [...prev, { type: round.type, correct, reactionMs, ruleChanged }]);
+    if (round.type === 'sort') {
+      // Record AFTER ruleChangedThisRound (computed against the previous
+      // value) was already captured into the log line above - updating
+      // this any earlier would make every sort round compare its rule
+      // against itself and always read as "unchanged".
+      setLastSortRule(round.rule);
+    }
 
     const newDifficulty = correct ? Math.min(5, difficulty + 1) : Math.max(1, difficulty - 1);
     setDifficulty(newDifficulty);
@@ -97,7 +106,6 @@ export function CognitiveCommandCenter() {
       } else if (nextType === 'sort') {
         const rule = SORT_RULE_SCHEDULE[sortRuleIndex % SORT_RULE_SCHEDULE.length];
         setSortRuleIndex((i) => i + 1);
-        setLastSortRule(rule);
         setRound(generateSortRound(100 * next + newDifficulty, rule, newDifficulty));
       } else if (nextType === 'inhibition') {
         setRound(generateInhibitionRound(100 * next + newDifficulty));
@@ -127,22 +135,20 @@ export function CognitiveCommandCenter() {
       return relevant.length ? relevant.filter((l) => l.correct).length / relevant.length : null;
     };
 
-    submitScore.mutate(
-      {
-        score,
-        durationSeconds: seconds,
-        metadata: {
-          pattern_accuracy: byType('pattern'),
-          recall_accuracy: byType('recall'),
-          sort_accuracy: byType('sort'),
-          inhibition_accuracy: byType('inhibition'),
-          dual_accuracy: byType('dual'),
-          cognitive_switching_cost_ms: switchCost,
-          rounds: logs.length,
-        },
+    setResult({ score });
+    submitScore.mutate({
+      score,
+      durationSeconds: seconds,
+      metadata: {
+        pattern_accuracy: byType('pattern'),
+        recall_accuracy: byType('recall'),
+        sort_accuracy: byType('sort'),
+        inhibition_accuracy: byType('inhibition'),
+        dual_accuracy: byType('dual'),
+        cognitive_switching_cost_ms: switchCost,
+        rounds: logs.length,
       },
-      { onSuccess: (data) => setResult({ score, bestScore: data.best_score, isNewBest: data.is_new_best }) },
-    );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundIndex]);
 

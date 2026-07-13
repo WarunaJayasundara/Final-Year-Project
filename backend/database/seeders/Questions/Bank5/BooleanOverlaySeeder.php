@@ -52,7 +52,7 @@ class BooleanOverlaySeeder extends Seeder
         $rows = [];
         $ops = ['and', 'or', 'xor'];
         $opLabelEn = ['and' => 'BOTH shapes overlap (AND)', 'or' => 'EITHER shape covers (OR)', 'xor' => 'EXACTLY ONE shape covers (XOR)'];
-        $opLabelSi = ['and' => 'හැඩ දෙකම ()', 'or' => 'ඕනෑම එකක් ()', 'xor' => 'හරියටම එකක් ()'];
+        $opLabelSi = ['and' => 'හැඩ දෙකම (AND)', 'or' => 'ඕනෑම එකක් (OR)', 'xor' => 'හරියටම එකක් (XOR)'];
 
         $combos = [];
         foreach (array_keys(self::SHAPE_PAIRS) as $pairIdx) {

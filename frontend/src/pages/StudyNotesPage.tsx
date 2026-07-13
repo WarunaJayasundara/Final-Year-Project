@@ -320,13 +320,13 @@ function StudyNoteReader({ note, locale, onClose }: { note: StudyNote; locale: '
           </div>
         </div>
 
-        {practiceOpen && <RetrievalPractice studyNoteId={note.id} locale={locale} />}
+        {practiceOpen && <RetrievalPractice studyNoteId={note.id} />}
       </div>
     </>
   );
 }
 
-function RetrievalPractice({ studyNoteId, locale }: { studyNoteId: number; locale: 'en' | 'si' }) {
+function RetrievalPractice({ studyNoteId }: { studyNoteId: number }) {
   const { t } = useTranslation('dashboard');
   const { data: questions, isLoading } = usePracticeQuestions(studyNoteId);
   const [selected, setSelected] = useState<Record<number, string>>({});

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -22,6 +22,15 @@ type Phase = 'scene-exposure' | 'scene-question' | 'path-flash' | 'path-recall' 
 const ROUND_ROTATION: MemoryRound['type'][] = ['scene', 'path', 'scene', 'path', 'scene', 'path'];
 const FLASH_STEP_MS = 700;
 
+function shuffled<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 interface RoundLog {
   type: MemoryRound['type'];
   correct: boolean;
@@ -42,7 +51,9 @@ export function VisualSpatialMemory() {
   const [startedAt] = useState(Date.now());
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
-  const submitScore = useSubmitGameScore('visual_spatial_memory');
+  const submitScore = useSubmitGameScore('visual_spatial_memory', {
+    onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
+  });
 
   useEffect(() => {
     if (phase !== 'scene-exposure') return;
@@ -116,20 +127,18 @@ export function VisualSpatialMemory() {
     const score = Math.max(0, correctCount * 80 + maxItems * 10 + maxSpan * 10 - Math.floor(seconds / 4));
     const sceneLogs = logs.filter((l) => l.type === 'scene');
     const pathLogs = logs.filter((l) => l.type === 'path');
-    submitScore.mutate(
-      {
-        score,
-        durationSeconds: seconds,
-        metadata: {
-          items_reached: maxItems,
-          path_span_reached: maxSpan,
-          scene_accuracy: sceneLogs.length ? sceneLogs.filter((l) => l.correct).length / sceneLogs.length : null,
-          path_accuracy: pathLogs.length ? pathLogs.filter((l) => l.correct).length / pathLogs.length : null,
-          rounds: logs.length,
-        },
+    setResult({ score });
+    submitScore.mutate({
+      score,
+      durationSeconds: seconds,
+      metadata: {
+        items_reached: maxItems,
+        path_span_reached: maxSpan,
+        scene_accuracy: sceneLogs.length ? sceneLogs.filter((l) => l.correct).length / sceneLogs.length : null,
+        path_accuracy: pathLogs.length ? pathLogs.filter((l) => l.correct).length / pathLogs.length : null,
+        rounds: logs.length,
       },
-      { onSuccess: (data) => setResult({ score, bestScore: data.best_score, isNewBest: data.is_new_best }) },
-    );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -192,6 +201,14 @@ function SceneView({
 }) {
   const { t } = useTranslation('games');
   const n = round.grid;
+  const countOptions = useMemo(
+    () => shuffled([round.answer as number, (round.answer as number) - 1, (round.answer as number) + 1, (round.answer as number) + 2]),
+    [round],
+  );
+  const positionOptions = useMemo(() => {
+    const distractorIcons = round.icons.filter((ic) => ic !== round.answer).slice(0, 3);
+    return shuffled([round.answer as string, ...distractorIcons]);
+  }, [round]);
 
   if (phase === 'scene-exposure') {
     return (
@@ -212,7 +229,7 @@ function SceneView({
   }
 
   if (round.question === 'count') {
-    const options = [round.answer as number, (round.answer as number) - 1, (round.answer as number) + 1, (round.answer as number) + 2];
+    const options = countOptions;
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm">{t('visualSpatialMemory.howMany')}</p>
@@ -228,8 +245,7 @@ function SceneView({
   }
 
   if (round.question === 'positionIcon') {
-    const distractorIcons = round.icons.filter((ic) => ic !== round.answer).slice(0, 3);
-    const options = [round.answer as string, ...distractorIcons];
+    const options = positionOptions;
     return (
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm">{t('visualSpatialMemory.whichIconWasAt')}</p>

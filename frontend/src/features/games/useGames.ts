@@ -6,7 +6,14 @@ export function useGames() {
   return useQuery({ queryKey: ['games'], queryFn: fetchGames, staleTime: 5 * 60_000 });
 }
 
-export function useSubmitGameScore(code: string) {
+type SubmitGameScoreResult = Awaited<ReturnType<typeof submitGameScore>>;
+
+/**
+ * onSuccess must be registered here (hook-level), never as a per-call
+ * `.mutate(vars, { onSuccess })` argument - the latter is silently dropped
+ * under React 18/19 Strict Mode's double-invoke behaviour. See CLAUDE.md.
+ */
+export function useSubmitGameScore(code: string, options?: { onSuccess?: (result: SubmitGameScoreResult) => void }) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -22,6 +29,7 @@ export function useSubmitGameScore(code: string) {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['gamification'] });
       showRewardToast(result.rewards);
+      options?.onSuccess?.(result);
     },
   });
 }

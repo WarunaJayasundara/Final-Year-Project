@@ -66,23 +66,55 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
         );
     }
 
+    /**
+     * Same word/translation source as LogicalReasoningQuestionsSeeder::CATEGORIES
+     * (copied verbatim, already corpus-validated Sinhala) - reused here
+     * rather than duplicating a smaller, separately-invented word pool. The
+     * seeder's own combinatorial "3 words from a main category + 1 odd word
+     * from a different category" design is mirrored below for the same
+     * reason: a handful of fixed templates exhausts fast once real seeded
+     * content already contains every combination, which is exactly what
+     * happened with the previous 6-template pool (every one of its outputs
+     * was already a duplicate of existing questions, so generation for this
+     * category silently produced zero drafts - see git history/audit notes).
+     */
+    private const CATEGORIES = [
+        ['en' => ['Apple', 'Mango', 'Banana', 'Grape'], 'si' => ['ඇපල්', 'අඹ', 'කෙසෙල්', 'මිදි'], 'name_en' => 'fruit', 'name_si' => 'පලතුරු'],
+        ['en' => ['Car', 'Bus', 'Train', 'Bicycle'], 'si' => ['මෝටර් රථය', 'බස් රථය', 'දුම්රිය', 'බයිසිකලය'], 'name_en' => 'vehicle', 'name_si' => 'වාහන'],
+        ['en' => ['Hammer', 'Screwdriver', 'Nail', 'Drill'], 'si' => ['මුගුරුව', 'ඉස්කුරුප්පු අණ්ටිය', 'ඇණය', 'විදුම් යන්ත්‍රය'], 'name_en' => 'tool', 'name_si' => 'මෙවලම්'],
+        ['en' => ['Circle', 'Square', 'Triangle', 'Rectangle'], 'si' => ['රවුම', 'චතුරස්‍රය', 'ත්‍රිකෝණය', 'ආයතය'], 'name_en' => 'shape', 'name_si' => 'හැඩය'],
+        ['en' => ['Doctor', 'Teacher', 'Engineer', 'Lawyer'], 'si' => ['වෛද්‍යවරයා', 'ගුරුවරයා', 'ඉංජිනේරු', 'නීතිඥයා'], 'name_en' => 'profession', 'name_si' => 'වෘත්තිය'],
+        ['en' => ['Rose', 'Lily', 'Tulip', 'Jasmine'], 'si' => ['රෝස මල', 'ලිලී මල', 'ටියුලිප් මල', 'පිච්ච මල'], 'name_en' => 'flower', 'name_si' => 'මල්'],
+        ['en' => ['Guitar', 'Piano', 'Violin', 'Drum'], 'si' => ['ගිටාරය', 'පියානෝව', 'වයලීනය', 'බෙරය'], 'name_en' => 'musical instrument', 'name_si' => 'සංගීත භාණ්ඩ'],
+        ['en' => ['Cow', 'Goat', 'Sheep', 'Pig'], 'si' => ['එළදෙන', 'එළුවා', 'බැටළුවා', 'ඌරා'], 'name_en' => 'farm animal', 'name_si' => 'ගොවිපල සතුන්'],
+        ['en' => ['Cricket', 'Football', 'Tennis', 'Rugby'], 'si' => ['ක්‍රිකට්', 'පාපන්දු', 'ටෙනිස්', 'රග්බි'], 'name_en' => 'sport', 'name_si' => 'ක්‍රීඩා'],
+        ['en' => ['Tea', 'Coffee', 'Juice', 'Milk'], 'si' => ['තේ', 'කෝපි', 'යුෂ', 'කිරි'], 'name_en' => 'beverage', 'name_si' => 'පාන වර්ග'],
+    ];
+
     private function logical(int $difficulty): array
     {
-        // A deliberately varied template pool - index 3 is always the odd
-        // one out. More templates means fewer within-batch collisions with
-        // QuestionDraftService's duplicate check, which compares the full
-        // question text (see the note on question_text_en below).
-        $groups = [
-            [['Apple', 'Banana', 'Mango', 'Carrot'], ['Apple', 'Banana', 'Mango', 'Carrot'], 3],
-            [['Circle', 'Square', 'Triangle', 'Red'], ['Circle', 'Square', 'Triangle', 'Red'], 3],
-            [['Dog', 'Cat', 'Cow', 'Chair'], ['Dog', 'Cat', 'Cow', 'Chair'], 3],
-            [['Hammer', 'Wrench', 'Pliers', 'Bread'], ['Hammer', 'Wrench', 'Pliers', 'Bread'], 3],
-            [['Piano', 'Guitar', 'Violin', 'Ladder'], ['Piano', 'Guitar', 'Violin', 'Ladder'], 3],
-            [['Sun', 'Moon', 'Star', 'Cup'], ['Sun', 'Moon', 'Star', 'Cup'], 3],
-        ];
-        $keys = ['A', 'B', 'C', 'D'];
-        [$wordsEn, $wordsSi, $oddIndex] = $groups[array_rand($groups)];
+        $categories = self::CATEGORIES;
+        $n = count($categories);
+        $mainIdx = random_int(0, $n - 1);
+        do {
+            $otherIdx = random_int(0, $n - 1);
+        } while ($otherIdx === $mainIdx);
 
+        $main = $categories[$mainIdx];
+        $other = $categories[$otherIdx];
+
+        $mainWordIdx = [0, 1, 2, 3];
+        shuffle($mainWordIdx);
+        $mainWordIdx = array_slice($mainWordIdx, 0, 3);
+        $oddWordIdx = random_int(0, 3);
+
+        $wordsEn = array_map(fn ($i) => $main['en'][$i], $mainWordIdx);
+        $wordsSi = array_map(fn ($i) => $main['si'][$i], $mainWordIdx);
+        $wordsEn[] = $other['en'][$oddWordIdx];
+        $wordsSi[] = $other['si'][$oddWordIdx];
+        $oddIndex = 3;
+
+        $keys = ['A', 'B', 'C', 'D'];
         $order = range(0, 3);
         shuffle($order);
 
@@ -103,14 +135,20 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
         // generic stem ("Which word does not belong?") would be identical
         // across every group and defeat duplicate detection entirely.
         $wordListEn = implode(', ', $wordsEn);
+        $wordListSi = implode(', ', $wordsSi);
 
         return [
             'question_text_en' => "Which word does not belong with the others: {$wordListEn}?",
-            'question_text_si' => "Which word does not belong with the others: {$wordListEn}?",
+            // Word list (verified vocabulary from CATEGORIES above) prefixed
+            // onto LogicalReasoningQuestionsSeeder::renderOddOneOut()'s own
+            // verified Sinhala question stem, unmodified - not a new
+            // composed sentence.
+            'question_text_si' => "{$wordListSi} - මේවායින් අනෙක් ඒවාට වඩා වෙනස් වන්නේ කුමක්ද?",
             'options' => $options,
             'correct_option_key' => $correctKey,
-            'explanation_en' => "\"{$wordsEn[$oddIndex]}\" is the odd one out - the others share a common category.",
-            'explanation_si' => "\"{$wordsEn[$oddIndex]}\" is the odd one out - the others share a common category.",
+            'explanation_en' => "\"{$wordsEn[$oddIndex]}\" is the odd one out - the others are all {$main['name_en']}s.",
+            // Same interpolation pattern as renderOddOneOut()'s explanation_si.
+            'explanation_si' => "අනෙක් ඒවා සියල්ල {$main['name_si']} වන අතර, \"{$wordsSi[$oddIndex]}\" යනු {$other['name_si']} කි.",
             'difficulty_weight' => $difficulty,
             'solving_time_seconds' => $this->estimatedTimeFor($difficulty),
         ];

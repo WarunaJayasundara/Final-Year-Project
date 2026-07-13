@@ -1,4 +1,36 @@
 {
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Ratings and comments submitted by students.",
+    "totalResponses": "Total responses",
+    "newCount": "{{count}} new",
+    "includingDemo": "Including demo data",
+    "excludingDemo": "Excluding demo data",
+    "exportCsv": "Export (CSV)",
+    "distribution": "Rating distribution",
+    "topTerms": "Most frequent words",
+    "topTermsNote": "A simple word-frequency count over comments and suggestions - not sentiment analysis.",
+    "noTerms": "Not enough text yet to show frequent words.",
+    "recent": "Feedback",
+    "statusAll": "All",
+    "statusNew": "New",
+    "statusReviewed": "Reviewed",
+    "loading": "Loading...",
+    "none": "No feedback matches this filter.",
+    "markReviewed": "Mark reviewed",
+    "demoTag": "Demo",
+    "suggestionLabel": "Suggestion",
+    "pagination": "Page {{current}} of {{last}}",
+    "previous": "Previous",
+    "next": "Next",
+    "dimensions": {
+      "overall": "Overall",
+      "ui": "UI/UX",
+      "questionQuality": "Question quality",
+      "sinhalaQuality": "Sinhala quality",
+      "usefulness": "Usefulness"
+    }
+  },
   "dashboard": {
     "title": "Research & analytics",
     "subtitle": "Cohort-wide performance for evaluating the training program.",

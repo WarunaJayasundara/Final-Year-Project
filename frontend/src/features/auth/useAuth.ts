@@ -1,7 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { adminLogin, fetchMe, googleRedirectUrl, logout, updateLocale } from './api';
-import type { Locale } from './types';
+import {
+  adminLogin,
+  fetchMe,
+  forgotPassword,
+  googleRedirectUrl,
+  logout,
+  register,
+  resetPassword,
+  studentLogin,
+  updateLocale,
+} from './api';
+import type { Locale, RegisterPayload } from './types';
 
 export const AUTH_QUERY_KEY = ['auth', 'me'];
 
@@ -29,6 +39,40 @@ export function useAdminLogin() {
     onSuccess: (user) => {
       queryClient.setQueryData(AUTH_QUERY_KEY, user);
     },
+  });
+}
+
+export function useStudentLogin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ identifier, password }: { identifier: string; password: string }) =>
+      studentLogin(identifier, password),
+    onSuccess: (user) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+    },
+  });
+}
+
+export function useRegister() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: RegisterPayload) => register(payload),
+    onSuccess: (user) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, user);
+    },
+  });
+}
+
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email: string) => forgotPassword(email),
+  });
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (payload: { token: string; email: string; password: string; password_confirmation: string }) =>
+      resetPassword(payload),
   });
 }
 

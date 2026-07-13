@@ -74,8 +74,16 @@ export function generatePatternRound(seed: number, difficulty: number): PatternR
   const length = 4;
   const sequence = Array.from({ length }, (_, i) => start + i * step);
   const answer = start + length * step;
-  const distractors = [answer + step, answer - 1, answer + 2].filter((d) => d !== answer);
-  const options = shuffle([answer, ...distractors.slice(0, 3)], rng);
+  const candidateOffsets = [step, -1, 2, 1, -2, step + 1, -step, 3];
+  const distractors: number[] = [];
+  for (const offset of candidateOffsets) {
+    const value = answer + offset;
+    if (value !== answer && !distractors.includes(value)) {
+      distractors.push(value);
+    }
+    if (distractors.length === 3) break;
+  }
+  const options = shuffle([answer, ...distractors], rng);
   return { type: 'pattern', sequence, answer, options, displayNumber: answer };
 }
 

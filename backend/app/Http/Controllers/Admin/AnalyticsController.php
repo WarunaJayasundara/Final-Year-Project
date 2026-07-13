@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExamReadinessPrediction;
+use App\Models\User;
 use App\Services\Analytics\ItemAnalysisService;
 use App\Services\Analytics\QuestionBankStatsService;
 use App\Services\Analytics\ResearchExportService;
 use App\Services\Irt\RaschCalibrationService;
 use App\Services\Ml\ReadinessPredictionService;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnalyticsController extends Controller
@@ -22,9 +24,9 @@ class AnalyticsController extends Controller
     ) {
     }
 
-    public function overview()
+    public function overview(Request $request)
     {
-        return response()->json(['data' => $this->research->cohortOverview()]);
+        return response()->json(['data' => $this->research->cohortOverview($request->boolean('include_demo'))]);
     }
 
     public function psychometrics()
@@ -46,9 +48,15 @@ class AnalyticsController extends Controller
         return response()->json(['data' => $this->bankStats->overview()]);
     }
 
-    public function mlOverview()
+    public function mlOverview(Request $request)
     {
-        $latestIds = ExamReadinessPrediction::selectRaw('MAX(id) as id')->groupBy('user_id')->pluck('id');
+        $includeDemo = $request->boolean('include_demo');
+        $demoUserIds = $includeDemo ? null : User::where('is_demo_user', true)->pluck('id');
+
+        $latestIds = ExamReadinessPrediction::selectRaw('MAX(id) as id')
+            ->when($demoUserIds, fn ($q) => $q->whereNotIn('user_id', $demoUserIds))
+            ->groupBy('user_id')
+            ->pluck('id');
         $latest = ExamReadinessPrediction::whereIn('id', $latestIds)->get();
 
         return response()->json(['data' => [
@@ -80,14 +88,14 @@ class AnalyticsController extends Controller
         ]]);
     }
 
-    public function pairedScores()
+    public function pairedScores(Request $request)
     {
-        return response()->json(['data' => $this->research->pairedScores()]);
+        return response()->json(['data' => $this->research->pairedScores($request->boolean('include_demo'))]);
     }
 
-    public function pairedScoresCsv(): StreamedResponse
+    public function pairedScoresCsv(Request $request): StreamedResponse
     {
-        $rows = $this->research->pairedScores();
+        $rows = $this->research->pairedScores($request->boolean('include_demo'));
 
         $callback = function () use ($rows) {
             $handle = fopen('php://output', 'w');
