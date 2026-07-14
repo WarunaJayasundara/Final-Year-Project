@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
  */
 class GeminiAiFeedbackService implements AiFeedbackServiceInterface
 {
-    private const MODEL = 'gemini-1.5-flash';
+    private const MODEL = 'gemini-2.5-flash';
 
     private Client $client;
 

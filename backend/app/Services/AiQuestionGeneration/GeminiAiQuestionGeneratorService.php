@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterface
 {
-    private const MODEL = 'gemini-1.5-flash';
+    private const MODEL = 'gemini-2.5-flash';
 
     /**
      * Bloom's Taxonomy verb the question should target, scaled by IQ level -

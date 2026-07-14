@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\IqLevel;
 use App\Models\TestSession;
 use App\Models\User;
+use App\Models\UserDailyCheckin;
 use Illuminate\Support\Collection;
 
 /**
@@ -52,11 +53,17 @@ class ResearchExportService
             ->groupBy('categories.code', 'categories.name_en')
             ->get();
 
+        $checkins = UserDailyCheckin::when($demoUserIds, fn ($q) => $q->whereNotIn('user_id', $demoUserIds))->get(['attended']);
+        $averageAttendance = $checkins->isNotEmpty()
+            ? round($checkins->where('attended', true)->count() / $checkins->count() * 100, 1)
+            : null;
+
         return [
             'total_students' => $totalStudents,
             'placement_completed' => $placementCompleted,
             'sessions_completed' => (clone $completedSessions)->count(),
             'average_score_percent' => $averageScore !== null ? round((float) $averageScore, 2) : null,
+            'average_attendance_percent' => $averageAttendance,
             'level_distribution' => $levelDistribution,
             'category_accuracy' => $categoryAccuracy,
         ];
@@ -91,6 +98,8 @@ class ResearchExportService
                 return null;
             }
 
+            $checkins = UserDailyCheckin::where('user_id', $user->id)->get(['attended']);
+
             return [
                 'user_id' => $user->id,
                 'name' => $user->name,
@@ -103,6 +112,9 @@ class ResearchExportService
                     ->where('session_type', 'daily')
                     ->whereNotNull('completed_at')
                     ->count(),
+                'attendance_percent' => $checkins->isNotEmpty()
+                    ? round($checkins->where('attended', true)->count() / $checkins->count() * 100, 1)
+                    : null,
             ];
         })->filter()->values();
     }

@@ -29,7 +29,7 @@ export function AdminFeedbackPage() {
   const { t } = useTranslation('admin');
   const [status, setStatus] = useState<'all' | 'new' | 'reviewed'>('all');
   const [page, setPage] = useState(1);
-  const [includeDemo, setIncludeDemo] = useState(false);
+  const [includeDemo, setIncludeDemo] = useState(true);
 
   const { data: stats, isLoading: statsLoading } = useFeedbackStats(includeDemo);
   const { data: feedback, isLoading: feedbackLoading } = useAdminFeedback({

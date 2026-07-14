@@ -50,7 +50,6 @@ export function WorkingMemorySpan() {
     onSuccess: (data) => setResult((prev) => (prev ? { ...prev, bestScore: data.best_score, isNewBest: data.is_new_best } : prev)),
   });
 
-  // Encoding: reveal one digit at a time, then move to the next phase.
   useEffect(() => {
     if (phase !== 'encoding') return;
     encodeStartRef.current = Date.now();
@@ -146,7 +145,6 @@ export function WorkingMemorySpan() {
     }
   };
 
-  // Submit once finished.
   useEffect(() => {
     if (phase !== 'finished') return;
     const seconds = Math.round((Date.now() - startedAt) / 1000);

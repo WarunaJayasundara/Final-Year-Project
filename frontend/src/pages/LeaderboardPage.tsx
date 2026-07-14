@@ -43,7 +43,7 @@ export function LeaderboardPage() {
                 </span>
                 <div>
                   <p className="text-sm font-medium">{entry.name}</p>
-                  <p className="text-xs text-muted-foreground">{t('widget.level', { level: entry.level })}</p>
+                  <p className="text-xs text-muted-foreground">{t('widget.rank', { level: entry.level })}</p>
                 </div>
               </div>
               <Badge variant={entry.is_you ? 'default' : 'secondary'}>{entry.xp} XP</Badge>

@@ -7,13 +7,12 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Competitive-exam numerical reasoning bank (~1,060 questions across all 5
- * levels). Every archetype reuses a bilingual sentence frame already
- * verified in the existing seeders - only numbers change - and every answer
- * is computed, never authored. Parameter subspaces are chosen to be
- * disjoint from ExamNumericalQuestionsSeeder / AdvancedNumericalQuestionsSeeder
- * (which run first), and a run-time check against already-active question
- * text guarantees no cross-seeder duplicates slip through.
+ * Competitive-exam numerical reasoning bank. Every archetype reuses a
+ * bilingual sentence frame already verified in the existing seeders -
+ * only numbers change - and every answer is computed, never authored.
+ * Parameter ranges are kept disjoint from ExamNumericalQuestionsSeeder /
+ * AdvancedNumericalQuestionsSeeder (which run first), backed by a
+ * run-time check against active question text for any duplicates.
  */
 class NumericalBank2Seeder extends Seeder
 {
@@ -242,10 +241,9 @@ class NumericalBank2Seeder extends Seeder
                 $kind = $kindsByLevel[$level][$i % 2];
                 $params = $pools[$kind][$cursors[$kind]++];
 
-                // English explanations carry the specific rule; the Sinhala
-                // side uses the generic verified frame ("following the
-                // pattern, the next number is N") - novel Sinhala phrasing
-                // is deliberately avoided per the corpus-validation policy.
+                // English explanations state the specific rule; Sinhala
+                // reuses the generic verified frame to avoid novel phrasing,
+                // per the corpus-validation policy.
                 [$terms, $answer, $ruleEn] = match ($kind) {
                     'squares' => (function () use ($params) {
                         $k = $params[0];
@@ -365,9 +363,9 @@ class NumericalBank2Seeder extends Seeder
     /** @return array<int,array> */
     private function workAndTime(): array
     {
-        // All (a, b) with an integer combined time t, generated from the
-        // identity 1/a + 1/b = 1/t  <=>  a = t + d, b = t + t²/d for any
-        // divisor d of t² - guarantees clean answers with a large pool.
+        // Generates (a, b) pairs with an integer combined time t, using
+        // 1/a + 1/b = 1/t <=> a = t + d, b = t + t²/d for any divisor d of
+        // t², which always gives a clean whole-number answer.
         $combos = [];
         for ($t = 4; $t <= 48; $t++) {
             for ($d = 1; $d < $t; $d++) {

@@ -23,6 +23,15 @@ class AiQuestionGenerationTest extends TestCase
 {
     private ?User $adminUser = null;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Force the mock driver regardless of the app's real .env setting,
+        // so this test never depends on network access or a live Gemini key.
+        config(['services.ai_question_generator_driver' => 'mock']);
+    }
+
     protected function tearDown(): void
     {
         if ($this->adminUser) {

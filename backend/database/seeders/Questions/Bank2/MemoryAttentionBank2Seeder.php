@@ -7,13 +7,12 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Competitive-grade memory (~500) and attention (~1,000 total with
- * attention's ~500) banks. Same verified bilingual frames as the original
- * seeders but with an adult working-memory load: digit spans up to 9,
- * 4-6 item paired-association lists, 6-9 word visual-search phrases and
- * 8-14 number scanning lists. Sinhala ordinals only go up to "seventh" in
- * the verified corpus, so recall positions are capped at 7 even when the
- * memorized sequence is longer (which is also what keeps long spans fair).
+ * Competitive-grade memory and attention banks, using the original
+ * seeders' verified bilingual frames but with an adult working-memory
+ * load: digit spans up to 9, 4-6 item paired-association lists, 6-9 word
+ * visual-search phrases, and 8-14 number scanning lists. Recall positions
+ * are capped at 7 since the verified Sinhala ordinal corpus only goes up
+ * to "seventh".
  */
 class MemoryAttentionBank2Seeder extends Seeder
 {

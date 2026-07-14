@@ -44,10 +44,8 @@ class MemoryQuestionsSeeder extends Seeder
     private function buildSequenceQuestion(int $level, int $length, int $variant): array
     {
         mt_srand($level * 100000 + $variant * 37 + 7);
-        // Digits may repeat within the sequence (real memory tests, e.g. phone
-        // numbers, often do) - this also widens the space of distinct
-        // sequences well beyond 9P(length) so a 40-variant run per level
-        // doesn't collide into duplicate questions.
+        // Digits may repeat, like a real phone number - this also gives
+        // enough distinct sequences that 40 variants per level won't collide.
         $digits = [];
         for ($i = 0; $i < $length; $i++) {
             $digits[] = mt_rand(0, 9);

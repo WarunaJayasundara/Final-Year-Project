@@ -10,15 +10,11 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Spatial-intelligence image bank: polyomino shape rotation (true rotation
  * vs mirrored distractors), mirror images of glyph strings, paper folding
- * with punched holes, cube nets (opposite faces), and grid counting. All
- * answers are exact by construction:
- *   - rotation: correct tile = rotate(target), distractors = mirror+rotate,
- *     with a programmatic chirality check so mirror forms can never
- *     coincide with a rotation of the original;
- *   - paper folding: unfolded hole sets are computed reflections;
- *   - cube nets: opposite-face pairs use the standard fold mapping of the
- *     two hand-verified net layouts;
- *   - counting: closed-form formulas (squares / rectangles in a grid).
+ * with punched holes, cube nets (opposite faces), and grid counting. Every
+ * answer is exact by construction - rotation uses a chirality check so a
+ * mirrored shape can never pass as a rotation, folding computes the
+ * unfolded holes as reflections, cube nets use hand-verified fold
+ * mappings, and counting uses closed-form formulas.
  */
 class SpatialImageSeeder extends Seeder
 {
@@ -84,9 +80,9 @@ class SpatialImageSeeder extends Seeder
     {
         $builder = new SvgFigureBuilder();
 
-        // Verify chirality once per base: no rotation of the mirror may equal
-        // any rotation of the original, otherwise "mirrored" distractors
-        // could accidentally BE valid rotations.
+        // Check each base is chiral: no rotation of the mirror should equal
+        // a rotation of the original, or a "mirrored" distractor could
+        // accidentally be a valid rotation.
         $bases = [];
         foreach (self::POLY_BASES as $name => $cells) {
             $originals = [];
@@ -103,7 +99,7 @@ class SpatialImageSeeder extends Seeder
                 throw new \RuntimeException("Polyomino base '{$name}' is not chiral - unusable for rotation questions.");
             }
             $bases[$name] = $cells;
-            $bases[$name.'m'] = array_map(fn ($c) => [$c[0], 3 - $c[1]], $cells); // mirrored twin as an extra base
+            $bases[$name.'m'] = array_map(fn ($c) => [$c[0], 3 - $c[1]], $cells); // mirrored twin, used as an extra base
         }
 
         $combos = [];
@@ -246,9 +242,9 @@ class SpatialImageSeeder extends Seeder
                 $guard++;
                 $vertical = $cfg['folds'] === 1 ? mt_rand(0, 1) === 0 : true;
 
-                // Punch positions inside the folded (visible) region. The
-                // two-fold variants use a finer grid: the visible quarter is
-                // small, so a 5x5 grid would give too few unique layouts.
+                // Punch positions inside the folded (visible) region - the
+                // two-fold variants use a finer grid since the visible
+                // quarter is small.
                 $positions = $cfg['folds'] === 2
                     ? [0.05, 0.11, 0.17, 0.23, 0.29, 0.35, 0.41]
                     : [0.09, 0.17, 0.25, 0.33, 0.41];
@@ -414,8 +410,8 @@ class SpatialImageSeeder extends Seeder
                 $net = self::NETS[$layoutName];
 
                 if ($level >= 5) {
-                    // Expert variant: three shapes x filled/outline - opposite
-                    // faces can share a shape and differ only by fill.
+                    // Expert variant: opposite faces can share a shape and
+                    // differ only by fill.
                     $shapePool = self::NET_SHAPES;
                     shuffle($shapePool);
                     $three = array_slice($shapePool, 0, 3);

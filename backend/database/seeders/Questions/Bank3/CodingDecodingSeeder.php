@@ -7,10 +7,9 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Coding-decoding (letter-shift cipher) reasoning - an archetype confirmed
- * missing from MindRise's existing categories by the Phase-1 PDF analysis.
- * Every code is a genuine Caesar-shift computation (mod 26, case-preserving)
- * on a real word pool - the correct answer is computed by the same
+ * Coding-decoding (letter-shift cipher) reasoning, an archetype missing
+ * from the question bank. Every code is a real Caesar-shift computation
+ * (mod 26) on a real word pool - the answer is computed by the same
  * shiftWord() function that builds the question, never asserted.
  */
 class CodingDecodingSeeder extends Seeder

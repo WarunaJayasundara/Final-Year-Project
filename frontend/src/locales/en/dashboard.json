@@ -78,6 +78,7 @@
     "noDateSet": "No exam date set yet.",
     "setup": "Set up exam profile",
     "edit": "Edit exam profile",
+    "backToDashboard": "Back to dashboard",
     "save": "Save",
     "saved": "Exam profile saved.",
     "examName": "What exam are you preparing for?",

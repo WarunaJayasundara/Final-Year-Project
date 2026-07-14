@@ -5,7 +5,7 @@
   },
   "widget": {
     "title": "ඔබේ ප්‍රගතිය",
-    "level": "මට්ටම {{level}}",
+    "rank": "ශ්‍රේණිය {{level}}",
     "xpToNext": "ඊළඟ මට්ටමට XP {{current}}/{{target}}",
     "coins": "කාසි",
     "streak": "දින අඛණ්ඩතාව",

@@ -35,9 +35,8 @@ class RemoveDemoData extends Command
             return self::SUCCESS;
         }
 
-        Feedback::where('is_demo_feedback', true)->delete();
-
         if ($demoUserIds->isNotEmpty()) {
+            Feedback::whereIn('user_id', $demoUserIds)->delete();
             $sessionIds = TestSession::whereIn('user_id', $demoUserIds)->pluck('id');
             SessionAnswer::whereIn('test_session_id', $sessionIds)->delete();
             TestSession::whereIn('user_id', $demoUserIds)->delete();
@@ -49,7 +48,9 @@ class RemoveDemoData extends Command
             User::whereIn('id', $demoUserIds)->delete();
         }
 
-        $this->info("Removed {$demoUserIds->count()} demo users and {$feedbackCount} demo feedback rows.");
+        $legacyFeedback = Feedback::where('is_demo_feedback', true)->delete();
+
+        $this->info("Removed {$demoUserIds->count()} demo users and related activity (plus {$legacyFeedback} legacy demo feedback rows).");
 
         return self::SUCCESS;
     }

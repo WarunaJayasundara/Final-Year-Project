@@ -7,19 +7,16 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Blood-relations/kinship reasoning - an archetype confirmed missing from
- * MindRise's existing 6 categories by the Phase-1 PDF analysis (present in
- * nearly every Sri Lankan government-exam-prep source reviewed - see
- * docs/ML_RESEARCH_METHODOLOGY.md's source-document inventory). Subjects are
- * letter labels (P, Q, R, ...), never named individuals, so no Sinhala
- * gender-agreement grammar is needed beyond an explicit "is male" /
- * "is not male" clause. Every template's correct answer is fixed by the
- * template's own logic (verified once, reused across many letter-label
- * instances) - never asserted per-row. Deliberately restricted to direct
- * nuclear-family terms already verified elsewhere in this project's Sinhala
- * corpus (father/mother/brother/sister/grandmother/uncle/aunt/child) - see
- * backend/tools/validate_sinhala.py's review log for why paternal/maternal-
- * specific aunt/uncle distinctions were deliberately not attempted.
+ * Blood-relations/kinship reasoning, an archetype missing from the
+ * question bank and common in Sri Lankan government-exam-prep material.
+ * Subjects are letter labels (P, Q, R, ...), not named people, so the
+ * only gender detail needed is an explicit "is male" / "is not male"
+ * clause. Each template's answer is fixed by its own logic, verified once
+ * and reused across letter-label instances - never asserted per row.
+ * Restricted to direct nuclear-family terms already verified in this
+ * project's Sinhala corpus (father/mother/brother/sister/grandmother/
+ * uncle/aunt/child); see validate_sinhala.py's review log for why
+ * paternal/maternal-specific aunt/uncle terms were left out.
  */
 class BloodRelationsSeeder extends Seeder
 {
@@ -117,17 +114,17 @@ class BloodRelationsSeeder extends Seeder
                 $kind = $i % 3;
 
                 if ($kind === 0) {
-                    // Grandmother: R is Q's child, Q is P's child, P is not male.
+                    // Grandmother.
                     $en = "{$r} is the child of {$q}. {$q} is the child of {$p}. {$p} is not male. What is {$p} to {$r}?";
                     $si = "{$r}, {$q} ගේ දරුවා වේ. {$q}, {$p} ගේ දරුවා වේ. {$p} පිරිමි නොවේ. {$p}, {$r} ට කුමක්ද?";
                     $ansEn = 'Grandmother';
                 } elseif ($kind === 1) {
-                    // Uncle: Q's mother is R, P is R's brother.
+                    // Uncle.
                     $en = "{$q}'s mother is {$r}. {$p} is the brother of {$r}. What is {$p} to {$q}?";
                     $si = "{$q} ගේ මව {$r} වේ. {$p}, {$r} ගේ සොයුරා වේ. {$p}, {$q} ට කුමක්ද?";
                     $ansEn = 'Uncle';
                 } else {
-                    // Aunt: Q's father is R, P is R's sister.
+                    // Aunt.
                     $en = "{$q}'s father is {$r}. {$p} is the sister of {$r}. What is {$p} to {$q}?";
                     $si = "{$q} ගේ පියා {$r} වේ. {$p}, {$r} ගේ සොයුරිය වේ. {$p}, {$q} ට කුමක්ද?";
                     $ansEn = 'Aunt';

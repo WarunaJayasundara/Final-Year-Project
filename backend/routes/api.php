@@ -23,22 +23,11 @@ use App\Http\Controllers\Sessions\TestSessionController;
 use App\Http\Controllers\StudyNoteController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-
 // --- Auth ---
 // Note: /auth/google/redirect and /auth/google/callback live in routes/web.php
-// instead (see comment there) - they need session support unconditionally,
-// which the "web" middleware group provides and the "api" group does not for
-// a top-level browser redirect coming from Google's servers.
+// instead (see comment there) - a top-level browser redirect from Google
+// needs the unconditional session support the "web" middleware group
+// provides, which "api" doesn't give it.
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

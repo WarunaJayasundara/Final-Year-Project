@@ -28,7 +28,12 @@ class UserManagementController extends Controller
             $query->where('role', $role);
         }
 
-        $users = $query->orderByDesc('created_at')->paginate(20);
+        $users = $query->with('currentLevel')
+            ->withCount([
+                'testSessions as daily_sessions_completed_count' => fn ($q) => $q->where('session_type', 'daily')->whereNotNull('completed_at'),
+            ])
+            ->orderByDesc('created_at')
+            ->paginate(20);
 
         return response()->json($users);
     }

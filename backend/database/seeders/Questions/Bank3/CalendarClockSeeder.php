@@ -7,11 +7,10 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Calendar (day-of-week arithmetic) and clock-angle reasoning - an
- * archetype confirmed missing from MindRise's existing categories by the
- * Phase-1 PDF analysis. Day-of-week answers are computed via modular
- * arithmetic on a 7-day cycle (never asserted); clock-angle answers use the
- * real formula |30H - 5.5M| (reduced to the 0-180 range), restricted to
+ * Calendar (day-of-week arithmetic) and clock-angle reasoning, an
+ * archetype missing from the question bank. Day-of-week answers are
+ * computed with modular arithmetic on a 7-day cycle; clock-angle answers
+ * use the real formula |30H - 5.5M| (reduced to 0-180), restricted to
  * even minute values so every answer is a clean integer degree count.
  */
 class CalendarClockSeeder extends Seeder

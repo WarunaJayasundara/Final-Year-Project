@@ -73,11 +73,9 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Bundles the research-grade ML upgrade's three offline reports
-     * (evaluate.py, explain.py, model_registry.py) for the admin ML
-     * Research page - each individually nullable (a report only exists once
-     * its generating script has been run at least once against the
-     * currently-deployed model).
+     * Bundles the three offline ML reports (evaluate.py, explain.py,
+     * model_registry.py) for the admin ML Research page - each nullable
+     * since a report only exists once its script has been run.
      */
     public function mlResearchReports()
     {
@@ -99,7 +97,7 @@ class AnalyticsController extends Controller
 
         $callback = function () use ($rows) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['user_id', 'name', 'email', 'pre_score_percent', 'post_score_percent', 'level_start', 'level_current', 'daily_sessions_completed']);
+            fputcsv($handle, ['user_id', 'name', 'email', 'pre_score_percent', 'post_score_percent', 'level_start', 'level_current', 'daily_sessions_completed', 'attendance_percent']);
 
             foreach ($rows as $row) {
                 fputcsv($handle, [
@@ -111,6 +109,7 @@ class AnalyticsController extends Controller
                     $row['level_start'],
                     $row['level_current'],
                     $row['daily_sessions_completed'],
+                    $row['attendance_percent'],
                 ]);
             }
 

@@ -43,11 +43,9 @@ trait BuildsQuestions
 
         $payload = array_map(function (array $row) use ($categoryId, $levelIds, $now, $defaultMeta) {
             [$levelNumber, $type, $textEn, $textSi, $options, $correctKey, $explanationEn, $explanationSi] = $row;
-            // Difficulty weight tracks the IQ level directly (1-5, matching
-            // the 5 seeded iq_levels rows). Previously capped at
-            // max(1,min(3,ceil(level/2))) - only 3 distinct values across 5
-            // levels, so Level 5 content wasn't reliably flagged harder than
-            // Level 3. Fixed as part of the adult-content difficulty audit.
+            // Difficulty weight tracks the IQ level directly (1-5). Used to
+            // cap out at 3 distinct values, so Level 5 wasn't reliably
+            // harder than Level 3 - fixed to scale with the level itself.
             $difficulty = $row[8] ?? max(1, min(5, (int) $levelNumber));
             $meta = array_merge($defaultMeta, $row[9] ?? []);
 
@@ -73,11 +71,9 @@ trait BuildsQuestions
                 'cognitive_skill' => $meta['cognitive_skill'] ?? null,
                 'is_active' => true,
                 'created_by' => null,
-                // Source-traceability metadata (§Phase A migration) - every
-                // seeder-authored row is programmatically generated with a
-                // computed (not asserted) answer, so 'auto_validated' is
-                // accurate; 'human_approved' is reserved for rows that
-                // actually passed through an admin review UI action.
+                // Seeder rows are generated with a computed answer, so
+                // 'auto_validated' is accurate here; 'human_approved' is
+                // reserved for rows that went through admin review.
                 'source_type' => $meta['source_type'] ?? 'original',
                 'generation_method' => 'seeder',
                 'validation_status' => $meta['validation_status'] ?? 'auto_validated',

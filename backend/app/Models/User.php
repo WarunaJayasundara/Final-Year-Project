@@ -14,11 +14,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'username',
@@ -39,21 +34,11 @@ class User extends Authenticatable
         'coins',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
@@ -101,10 +86,9 @@ class User extends Authenticatable
     }
 
     /**
-     * The student's current active exam profile, if any. A user can
-     * accumulate many exam_profiles rows over time (see
-     * ExamProfileController::store()'s past-due rollover), but only one is
-     * ever 'active' at once - see examProfileHistory() for the rest.
+     * The student's current active exam profile, if any - only one is ever
+     * 'active' at once (see ExamProfileController::store()'s rollover);
+     * examProfileHistory() holds the rest.
      */
     public function examProfile(): HasOne
     {

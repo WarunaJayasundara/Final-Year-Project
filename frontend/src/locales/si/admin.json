@@ -40,6 +40,7 @@
     "placementCompleted": "ස්ථානගත කිරීම සම්පූර්ණයි",
     "sessionsCompleted": "සම්පූර්ණ කළ සැසි",
     "averageScore": "සාමාන්‍ය ලකුණු",
+    "averageAttendance": "සාමාන්‍ය පැමිණීම",
     "accuracyByCategory": "ප්‍රවර්ගය අනුව නිරවද්‍යතාව (කණ්ඩායම පුරා)",
     "studentsPerLevel": "එක් එක් මට්ටමේ සිසුන්"
   },
@@ -114,6 +115,11 @@
       "name": "නම",
       "email": "විද්‍යුත් තැපෑල",
       "role": "භූමිකාව",
+      "progress": "ප්‍රගතිය",
+      "placementDone": "ස්ථානගත කිරීම සම්පූර්ණයි",
+      "placementPending": "ස්ථානගත කිරීම ආරම්භ කර නැත",
+      "dailySessions_one": "දෛනික සැසි {{count}}ක් සම්පූර්ණයි",
+      "dailySessions_other": "දෛනික සැසි {{count}}ක් සම්පූර්ණයි",
       "joined": "එක් වූ දිනය",
       "actions": "ක්‍රියා"
     },

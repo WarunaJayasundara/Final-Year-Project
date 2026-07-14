@@ -59,7 +59,7 @@ class FeatureExtractionService
     ];
 
     /**
-     * The 18 advanced behavioural features added by the research-grade ML
+     * The 19 advanced behavioural features added by the research-grade ML
      * upgrade (ml-service/data_pipeline/advanced_features.py holds the
      * canonical mathematical definition for every one of these - this class
      * mirrors those exact formulas against MindRise's own tables). Additive

@@ -6,7 +6,7 @@ Laravel reimplementing gradient boosting, so training and inference always
 use the exact same scikit-learn/XGBoost/LightGBM/CatBoost/SHAP code path.
 
 Research-grade upgrade (see docs/ML_RESEARCH_METHODOLOGY.md): the feature
-vector grew from 24 to 42 (18 new advanced behavioural features, all with
+vector grew from 24 to 43 (19 new advanced behavioural features, all with
 documented defaults so a caller that only knows the original 24 - e.g.
 Laravel before its own upgrade lands - still gets a valid response). The
 /predict response's ORIGINAL fields (readiness_percent, readiness_label,
@@ -136,7 +136,7 @@ class PredictionRequest(BaseModel):
     motivation_score: float = 5
     ai_coach_usage_count: float = 0
     question_completion_rate: float = 100.0
-    # --- 18 new advanced features (all default to a neutral value so an
+    # --- 19 new advanced features (all default to a neutral value so an
     # old caller sending only the original 24 still gets a valid response) ---
     rolling_avg_score: float = 50.0
     weekly_trend: float = 0.0

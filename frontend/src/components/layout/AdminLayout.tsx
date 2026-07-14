@@ -84,7 +84,6 @@ export function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop persistent sidebar: branding + nav only */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
         <Link to="/admin/dashboard" className="flex items-center gap-2 border-b border-border px-5 py-5">
           <HelaIQMark variant="compact" markClassName="h-7 w-7" />
@@ -102,7 +101,6 @@ export function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar: every contextual control, on every breakpoint */}
         <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2 lg:hidden">
             <DropdownMenu>

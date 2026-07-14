@@ -90,12 +90,10 @@ export function Navbar() {
           <HelaIQMark variant="full" />
         </Link>
 
-        {/* Desktop: centered nav links */}
         <nav className="scrollbar-none hidden min-w-0 items-center justify-center gap-1 overflow-x-auto md:flex">
           {hasNav && activeNav.map((item) => <NavItem key={item.to} {...item} />)}
         </nav>
 
-        {/* Desktop: right-hand controls */}
         <div className="hidden shrink-0 items-center gap-2 md:flex">
           <LanguageSwitcher />
           <ThemeToggle />

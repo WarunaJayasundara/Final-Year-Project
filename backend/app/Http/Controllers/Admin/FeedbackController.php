@@ -33,10 +33,9 @@ class FeedbackController extends Controller
 
     /**
      * Averages per rating dimension + a 1-5 distribution of overall_rating.
-     * "Common suggestions/complaints" is a real, honest word-frequency count
-     * over comment/suggestion text (stopwords removed) - NOT sentiment
-     * analysis or an LLM summary, since neither is something this project
-     * can validate/claim. Labelled as such in the admin UI.
+     * "Top terms" is a plain word-frequency count over comment/suggestion
+     * text, not sentiment analysis or an LLM summary - labelled as such in
+     * the admin UI since this project can't validate either of those claims.
      */
     public function stats(Request $request)
     {
@@ -84,12 +83,8 @@ class FeedbackController extends Controller
     }
 
     /**
-     * Anonymized by construction - user identity is never selected here at
-     * all (no name/email/user_id column), matching the brief's "Export
-     * anonymized feedback" requirement literally rather than redacting after
-     * the fact. include_demo defaults to false, same convention as every
-     * other research export (see ResearchExportService/§ task on demo-data
-     * separation).
+     * Anonymized by construction - user identity is never selected here
+     * (no name/email/user_id column) rather than redacted after the fact.
      */
     public function exportCsv(Request $request): StreamedResponse
     {

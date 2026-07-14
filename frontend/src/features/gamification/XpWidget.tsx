@@ -20,7 +20,7 @@ export function XpWidget() {
           <div>
             <p className="text-sm font-medium text-muted-foreground">{t('widget.title')}</p>
             <p className="text-lg font-semibold">
-              {t('widget.level', { level: summary.level })} · {summary.level_title}
+              {t('widget.rank', { level: summary.level })} · {summary.level_title}
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm font-medium">

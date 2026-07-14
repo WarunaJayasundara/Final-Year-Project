@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FadeInItem, FadeInStagger } from '@/components/motion/FadeIn';
 import { useGamificationSummary } from '@/features/gamification/useGamification';
@@ -80,7 +81,12 @@ export function StudyPlanPage() {
           <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <ExamProfileDialog trigger={<Button variant="outline">{t('dashboard:examProfile.edit')}</Button>} />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" asChild>
+            <Link to="/dashboard">{t('dashboard:examProfile.backToDashboard')}</Link>
+          </Button>
+          <ExamProfileDialog trigger={<Button variant="outline">{t('dashboard:examProfile.edit')}</Button>} />
+        </div>
       </div>
 
       {!plan ? null : !plan.exam_category ? (
@@ -101,13 +107,21 @@ export function StudyPlanPage() {
                   <> &middot; {t('daysLeft', { count: plan.days_remaining })}</>
                 )}
               </p>
+              {plan.prep_day_number !== null && plan.prep_total_days !== null && (
+                <div className="flex flex-col gap-1.5">
+                  <p className="text-xs text-muted-foreground">
+                    {t('prepDayOfTotal', { day: plan.prep_day_number, total: plan.prep_total_days })}
+                  </p>
+                  <Progress value={plan.prep_progress_percent ?? 0} className="h-1.5" />
+                </div>
+              )}
               {gami && (
                 <div className="mt-1 flex flex-wrap gap-3 text-sm">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
                     <Flame className="h-3.5 w-3.5 text-[color:var(--brand-gold)]" /> {t('streakChip', { count: gami.streak_days })}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
-                    <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold)]" /> {t('levelChip', { level: gami.level })}
+                    <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold)]" /> {t('rankChip', { level: gami.level })}
                   </span>
                 </div>
               )}
@@ -169,6 +183,11 @@ export function StudyPlanPage() {
                       <p className={`text-center text-xs font-medium ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`}>
                         {phaseData ? (locale === 'si' ? phaseData.label_si : phaseData.label_en) : t(`phaseNames.${phaseKey}`)}
                       </p>
+                      {phaseData?.from_days_remaining !== null && phaseData?.to_days_remaining !== null && phaseData && (
+                        <p className="text-center text-[10px] text-muted-foreground">
+                          {t('phaseRange', { from: phaseData.from_days_remaining, to: phaseData.to_days_remaining })}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
@@ -239,10 +258,9 @@ function DailyPlanRow({
 }) {
   const Icon = ACTIVITY_ICON[block.activity] ?? Target;
   const baseLink = ACTIVITY_LINK[block.activity];
-  // Deep-link straight into the recommended category (brief §12: "the
-  // student should not need to manually search for the recommended
-  // practice") - only meaningful for the practice-page activities, which
-  // are the only ones PracticeTestPage.tsx's ?category= deep link handles.
+  // Deep-links into the recommended category so the student doesn't have to
+  // search for it manually - only practice-page activities support this,
+  // via PracticeTestPage's ?category= param.
   const link = baseLink && block.category && baseLink === '/test/practice'
     ? `${baseLink}?category=${block.category.category_id}`
     : baseLink;
@@ -334,12 +352,10 @@ function GapStat({ label, value }: { label: string; value: string }) {
 
 /**
  * Shown instead of the full exam-phase plan when the student has no exam
- * profile - the phase/mock-test/pace-gap machinery below all assumes an
- * exam date, which doesn't apply here. weak_categories is still computed
- * by StudyPlanService::generate() regardless of exam profile (it only
- * depends on UserProgressSnapshot), so a student using the platform for
- * general cognitive training still gets a concrete "practice this" nudge
- * instead of only a bare "set up an exam" prompt.
+ * profile, since the phase/mock-test/pace-gap machinery below assumes an
+ * exam date. weak_categories doesn't depend on an exam profile, so a
+ * student training generally still gets a concrete "practice this" nudge
+ * instead of just a "set up an exam" prompt.
  */
 function NoExamWeakAreaPanel({
   weakCategories,

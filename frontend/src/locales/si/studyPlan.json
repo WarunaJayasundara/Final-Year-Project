@@ -12,8 +12,9 @@
   "minutes": "මිනිත්තු {{count}}",
   "start": "ආරම්භ කරන්න",
   "daysLeft": "දින {{count}}ක් ඉතිරිව ඇත",
+  "prepDayOfTotal": "සැලැස්මේ දිනය {{day}} / {{total}}",
   "streakChip": "{{count}} දින පුහුණුව",
-  "levelChip": "මට්ටම {{level}}",
+  "rankChip": "ශ්‍රේණිය {{level}}",
   "phaseNames": {
     "foundation": "මූලික අවධිය",
     "practice": "අභ්‍යාසය අවධිය",

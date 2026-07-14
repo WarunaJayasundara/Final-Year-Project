@@ -7,16 +7,15 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Competitive-exam logical + verbal reasoning bank (~1,300 questions).
- * Archetypes: shift ciphers, alphabet-position codes, direction-sense
- * walks, categorical syllogisms, number classification (odd one out),
- * letter series, number analogies, blood relations, and ranking/position
- * puzzles. All bilingual frames reuse sentences already verified in the
- * existing seeders; the three genuinely new Sinhala words needed by the
- * ranking archetype (වම්, දකුණු, පසින්) are individually reviewed and
- * whitelisted in tools/validate_sinhala.py. Word pools are disjoint from
- * the Advanced/Exam seeders, and a run-time check against active question
- * text skips any residual cross-seeder duplicate.
+ * Competitive-exam logical + verbal reasoning bank. Archetypes: shift
+ * ciphers, alphabet-position codes, direction-sense walks, categorical
+ * syllogisms, number classification (odd one out), letter series, number
+ * analogies, blood relations, and ranking/position puzzles. Bilingual
+ * frames reuse sentences already verified in the existing seeders; the
+ * three new Sinhala words the ranking archetype needs (වම්, දකුණු,
+ * පසින්) are reviewed and whitelisted in tools/validate_sinhala.py. Word
+ * pools are kept disjoint from the Advanced/Exam seeders, backed by a
+ * run-time check against active question text for duplicates.
  */
 class LogicalVerbalBank2Seeder extends Seeder
 {
@@ -348,9 +347,7 @@ class LogicalVerbalBank2Seeder extends Seeder
             shuffle($pool);
             $members = array_slice($pool, 0, 3);
             $odd = $kind['oddPool'][mt_rand(0, count($kind['oddPool']) - 1)];
-            // The odd number must not accidentally satisfy the rule (e.g. a
-            // multiple of 6 sneaking into the multiples-of-9 odd pool is
-            // impossible by pool construction, but keep the guard explicit).
+            // Guard against the "odd" number accidentally satisfying the rule.
             if (in_array($odd, $kind['pool'], true) || in_array($odd, $members, true)) {
                 continue;
             }

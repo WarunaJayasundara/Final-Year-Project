@@ -7,17 +7,13 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Multi-step (2-3 chained operations) adult numeric word problems - ages,
+ * Multi-step (2-3 chained operations) adult numeric word problems: ages,
  * weighted-ratio profit-sharing, chained work-and-time, and relative-speed
- * problems - modelled on the worked-example structure of the uploaded
- * Environmental Officer exam guide's own numerical chapters (which
- * themselves build from single-step to multi-step across sections,
- * confirming a *range* is legitimate; what Bank2's existing numerical
- * seeders lack at Level 4-5 specifically is the second/third chained
- * operation). Every row is generated forward from real integers/fractions
- * (never an asserted answer): the scenario's hidden target value is picked
- * first, the visible clues are derived from it, so the printed answer is
- * always the exact value used to build the question.
+ * problems. Fills a gap in the existing numerical seeders, which don't go
+ * past a single chained operation at Level 4-5. Every row is generated
+ * forward, never asserted: the scenario's hidden target value is picked
+ * first, then the visible clues are derived from it, so the printed
+ * answer is always the exact value used to build the question.
  */
 class AdultWordProblemSeeder extends Seeder
 {
@@ -158,7 +154,7 @@ class AdultWordProblemSeeder extends Seeder
         foreach ([3 => 20, 4 => 20, 5 => 20] as $level => $count) {
             for ($i = 0; $i < $count; $i++) {
                 mt_srand($seedBase + $level * 1000 + $i);
-                $speedKmh = random_int(4, 20) * 9; // multiples of 9 keep m/s conversion clean-ish
+                $speedKmh = random_int(4, 20) * 9; // multiples of 9 keep the m/s conversion clean
                 $speedMs = $speedKmh * 5 / 18;
                 $lengthM = random_int(5, 40) * 10;
                 $timeSec = round($lengthM / $speedMs, 1);

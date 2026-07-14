@@ -59,14 +59,11 @@ class ReadinessController extends Controller
     }
 
     /**
-     * "readiness_type" distinguishes what the number actually means to the
-     * student - see CLAUDE.md/the brief's §7: without an active, not-yet-due
-     * exam profile there is no specific exam to be "ready" FOR, so the same
-     * model output is presented as a general cognitive-training indicator
-     * instead of implying a pass probability for a named exam. This is a
-     * presentation-layer distinction only (computed from the CURRENT exam
-     * profile state, not stored per-prediction) - the underlying model and
-     * its inputs are unchanged.
+     * "readiness_type" is a presentation-layer distinction only (derived
+     * from the CURRENT exam profile, not stored per-prediction): without an
+     * active exam to be "ready" for, the same model output is shown as a
+     * general cognitive-training indicator instead of implying a pass
+     * probability for a named exam.
      */
     private function present(ExamReadinessPrediction $prediction, ?User $user = null): array
     {

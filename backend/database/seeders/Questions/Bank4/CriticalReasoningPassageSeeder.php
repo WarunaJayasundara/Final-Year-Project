@@ -7,16 +7,14 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Passage-based weaken/strengthen critical reasoning - the archetype seen
- * in the uploaded Common General Test specimen paper's "which observation
- * would most weaken the credibility of this statement" item. Built as a
- * fixed causal-argument template (extra exam practice sessions correlating
- * with higher marks) with only the numbers and weaken/strengthen mode
- * varying per row, not freeform generated prose - this keeps correctness
+ * Passage-based weaken/strengthen critical reasoning. Built as a fixed
+ * causal-argument template (extra exam practice sessions correlating
+ * with higher marks), with only the numbers and weaken/strengthen mode
+ * varying per row - not freeform generated prose. This keeps correctness
  * guaranteed by construction: a genuine confound always weakens a
- * correlation-implies-causation claim, and ruling out that confound always
- * strengthens it, regardless of the specific numbers used, so the correct
- * option's *logical role* is fixed rather than judged case by case.
+ * correlation-implies-causation claim, and ruling it out always
+ * strengthens it, so the correct option's logical role is fixed rather
+ * than judged case by case.
  */
 class CriticalReasoningPassageSeeder extends Seeder
 {

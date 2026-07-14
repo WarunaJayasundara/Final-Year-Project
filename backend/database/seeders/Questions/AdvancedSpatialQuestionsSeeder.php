@@ -5,11 +5,9 @@ namespace Database\Seeders\Questions;
 use Illuminate\Database\Seeder;
 
 /**
- * Harder spatial-reasoning questions modelled on the "logical sequence of
- * diagrams" style rotation puzzles from the reference exam papers (G.C.E.
- * A/L Common General Test Q19-style), using 8-direction arrows as a
- * text-safe stand-in for rotating shape diagrams. Layered on top of the
- * existing 80/level bank, concentrated at levels 3-5.
+ * Harder spatial-reasoning questions modelled on the rotating-diagram
+ * puzzles in reference exam papers, using 8-direction arrows as a
+ * text-safe stand-in for rotating shapes. Concentrated at levels 3-5.
  */
 class AdvancedSpatialQuestionsSeeder extends Seeder
 {
@@ -23,9 +21,8 @@ class AdvancedSpatialQuestionsSeeder extends Seeder
     {
         $rows = [];
 
-        // One shared shuffled pool consumed by a cursor across ALL levels -
-        // per-level pools could re-draw the same (start, step) combo in two
-        // levels, producing duplicate questions (this actually happened).
+        // One shared shuffled pool across all levels, so the same
+        // (start, step) combo can't be drawn twice and produce a duplicate.
         $combos = $this->buildCombos();
         $cursor = 0;
 

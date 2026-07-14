@@ -40,6 +40,7 @@
     "placementCompleted": "Placement completed",
     "sessionsCompleted": "Sessions completed",
     "averageScore": "Average score",
+    "averageAttendance": "Average attendance",
     "accuracyByCategory": "Accuracy by category (cohort-wide)",
     "studentsPerLevel": "Students per level"
   },
@@ -114,6 +115,11 @@
       "name": "Name",
       "email": "Email",
       "role": "Role",
+      "progress": "Progress",
+      "placementDone": "Placement done",
+      "placementPending": "Placement not started",
+      "dailySessions_one": "{{count}} daily session done",
+      "dailySessions_other": "{{count}} daily sessions done",
       "joined": "Joined",
       "actions": "Actions"
     },

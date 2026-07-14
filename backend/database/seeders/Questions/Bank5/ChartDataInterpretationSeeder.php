@@ -8,13 +8,10 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Chart-based data interpretation - the archetype confirmed present in the
- * uploaded Environmental Officer exam guide's own "Data Interpretation"
- * chapter (bar/pie/line charts, percentage-share and comparison questions)
- * but previously unavailable as an IMAGE question in MindRise (Bank3's
- * existing DataInterpretationSeeder is text-table-only). Uses the new
- * SvgFigureBuilder chart panel type added this session. Every answer is
- * computed directly from the real generated series - never asserted.
+ * Chart-based data interpretation (bar/pie/line), rendered as images rather
+ * than tables - Bank3's DataInterpretationSeeder only covers text tables.
+ * Every answer is computed directly from the generated data series, never
+ * asserted independently.
  */
 class ChartDataInterpretationSeeder extends Seeder
 {

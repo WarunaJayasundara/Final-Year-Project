@@ -21,11 +21,15 @@ class DashboardController extends Controller
         $user = $request->user();
 
         $categories = Category::orderBy('name_en')->get();
-        $categoryStrengths = $categories->map(function (Category $category) use ($user) {
-            $latest = UserProgressSnapshot::where('user_id', $user->id)
-                ->where('category_id', $category->id)
-                ->orderByDesc('snapshot_date')
-                ->first();
+
+        $latestSnapshotsByCategory = UserProgressSnapshot::where('user_id', $user->id)
+            ->whereIn('category_id', $categories->pluck('id'))
+            ->orderByDesc('snapshot_date')
+            ->get()
+            ->groupBy('category_id');
+
+        $categoryStrengths = $categories->map(function (Category $category) use ($latestSnapshotsByCategory) {
+            $latest = $latestSnapshotsByCategory->get($category->id)?->first();
 
             return [
                 'category_id' => $category->id,

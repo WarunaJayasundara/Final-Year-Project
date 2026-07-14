@@ -7,20 +7,16 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Venn-diagram consistency reasoning - "which relationship description is
- * NOT contradicted by the given premises," the archetype seen in the
- * uploaded Common General Test specimen paper's "which diagram does not
- * contradict the relationship between Teachers, Males and Females" item.
- * Deliberately built via concrete set construction rather than general
- * categorical-syllogism inference rules (which have real edge cases that
- * are easy to get subtly wrong): three categories are modelled as actual
- * PHP sets over a small universe, category A and C are each built to
- * satisfy a chosen relation (subset/disjoint/overlap) against the shared
- * middle category B, and the true relation between A and C is then
- * computed directly from real set operations - never asserted. The 4
- * answer options are 4 mutually exclusive, jointly exhaustive relation
- * descriptions, so exactly one is guaranteed correct for the constructed
- * sets and the rest are automatically wrong for that instance.
+ * Venn-diagram consistency reasoning: "which relationship description is
+ * NOT contradicted by the given premises." Built via concrete set
+ * construction rather than general categorical-syllogism inference rules,
+ * which have edge cases that are easy to get subtly wrong: three
+ * categories are modelled as real PHP sets over a small universe, A and C
+ * are each built to satisfy a chosen relation (subset/disjoint/overlap)
+ * against the shared middle category B, and the true relation between A
+ * and C is computed directly from set operations, never asserted. The 4
+ * answer options are mutually exclusive and jointly exhaustive, so
+ * exactly one is correct for the constructed sets.
  */
 class VennConsistencySeeder extends Seeder
 {
@@ -126,7 +122,7 @@ class VennConsistencySeeder extends Seeder
 
         $result = array_merge($insidePart, $outsidePart);
 
-        // Must genuinely be a partial overlap: not a subset of b, not disjoint from b.
+        // Reject if it's not a genuine partial overlap with b.
         if (empty(array_diff($result, $b)) || empty(array_intersect($result, $b))) {
             return null;
         }

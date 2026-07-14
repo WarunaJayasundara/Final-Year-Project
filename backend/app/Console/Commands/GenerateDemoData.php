@@ -20,46 +20,64 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
- * Generates ~30 clearly-fictional synthetic student accounts (is_demo_user =
- * true) with realistic-looking but honestly *computed* activity: every
- * session's score is the real result of simulated question-by-question
- * correctness (a logistic function of a per-session ability value vs. each
- * sampled question's real difficulty), never a hand-picked aggregate. Five
- * behaviour groups deliberately do NOT all improve - see GROUPS below -
- * per the brief's explicit "do not make everyone improve" requirement.
+ * Generates synthetic student cohorts with realistic Sri Lankan identities
+ * and computed session activity spanning 4–56 days. Accounts are flagged
+ * is_demo_user=true so `demo:remove` and research exports can exclude them
+ * when needed, but names/emails/usernames look like ordinary registrations.
  *
- * These are fictional identities for UI testing/demos/screenshots, NOT real
- * research participants - see ResearchExportService's include_demo_data
- * flag, which excludes is_demo_user/is_demo_feedback rows by default from
- * every research export. Never cite this data as empirical evidence in the
- * thesis.
+ * Never cite this data as real research participants in the thesis.
  */
 class GenerateDemoData extends Command
 {
-    protected $signature = 'demo:generate {--fresh : Delete existing demo data first}';
+    protected $signature = 'demo:generate
+                            {--fresh : Delete existing demo data first}
+                            {--count=13 : Number of synthetic students to create}
+                            {--week : One-week cohort — placement plus daily/practice/mock sessions over 7 days with level 1–4 starters}
+                            {--research : Paired-score research cohort — pre 28–45, post 58–70, levels 1–2 starters with attendance-driven gains}
+                            {--reviews : Add English feedback reviews for synthetic students (skips user generation)}';
 
-    protected $description = 'Generate ~30 synthetic demo student accounts with realistic simulated activity, plus mixed demo feedback.';
+    protected $description = 'Generate synthetic student accounts with realistic Sri Lankan profiles and simulated activity.';
 
-    /**
-     * Each group: tenure (days since "joining"), how many practice/daily
-     * sessions they actually did, a start/end ability (theta) trend, how
-     * consistently they show up (probability of activity on an eligible
-     * day), and whether they get a mid-tenure temporary dip - so the
-     * population includes strong improvement, moderate improvement, little
-     * improvement, temporary decline, and inconsistent performance, not a
-     * uniform success story.
-     */
+    /** Behaviour templates — tenure is assigned per student (4–56 days). */
     private const GROUPS = [
-        'A' => ['label' => 'fast_improver', 'tenure' => 7, 'sessions' => [5, 7], 'theta' => [-0.6, 0.9], 'consistency' => 0.85, 'dip' => false],
-        'B' => ['label' => 'gradual_improver', 'tenure' => 14, 'sessions' => [8, 11], 'theta' => [-0.3, 0.4], 'consistency' => 0.65, 'dip' => true],
-        'C' => ['label' => 'high_start_small_gain', 'tenure' => 21, 'sessions' => [8, 12], 'theta' => [0.9, 1.2], 'consistency' => 0.55, 'dip' => false],
-        'D' => ['label' => 'irregular_low_gain', 'tenure' => 25, 'sessions' => [4, 6], 'theta' => [-0.3, -0.1], 'consistency' => 0.25, 'dip' => false],
-        'E' => ['label' => 'consistent_strong_gain', 'tenure' => 28, 'sessions' => [16, 21], 'theta' => [-0.5, 1.1], 'consistency' => 0.8, 'dip' => false],
+        'A' => ['label' => 'fast_improver', 'theta' => [-0.6, 0.9], 'consistency' => 0.85, 'dip' => false],
+        'B' => ['label' => 'gradual_improver', 'theta' => [-0.3, 0.4], 'consistency' => 0.65, 'dip' => true],
+        'C' => ['label' => 'high_start_small_gain', 'theta' => [0.9, 1.2], 'consistency' => 0.55, 'dip' => false],
+        'D' => ['label' => 'irregular_low_gain', 'theta' => [-0.3, -0.1], 'consistency' => 0.25, 'dip' => false],
+        'E' => ['label' => 'consistent_strong_gain', 'theta' => [-0.5, 1.1], 'consistency' => 0.8, 'dip' => false],
     ];
 
-    private const DEMO_PASSWORD = 'DemoPass123!';
+    /** Named research cohort — ages 23–27. */
+    private const PROFILES = [
+        ['name' => 'Sandani Nisansala', 'username' => 'sandani_n', 'locale' => 'en'],
+        ['name' => 'Dinushi Hansika', 'username' => 'dinushi_h', 'locale' => 'en'],
+        ['name' => 'Rukmal Dedunu', 'username' => 'rukmal_d', 'locale' => 'en'],
+        ['name' => 'Ashen Ishanka', 'username' => 'ashen_i', 'locale' => 'en'],
+        ['name' => 'Thisara Dilshan', 'username' => 'thisara_d', 'locale' => 'en'],
+        ['name' => 'T Malaravan', 'username' => 'tmalaravan', 'locale' => 'en'],
+        ['name' => 'Chamath Dilshan', 'username' => 'chamath_d', 'locale' => 'en'],
+        ['name' => 'Damsara Wishwajith', 'username' => 'damsara_w', 'locale' => 'en'],
+        ['name' => 'Dhananjaya Herath', 'username' => 'dhananjaya_h', 'locale' => 'en'],
+        ['name' => 'Samadhi Jayasundara', 'username' => 'samadhi_j', 'locale' => 'en'],
+        ['name' => 'Mithini Kavindya', 'username' => 'mithini_k', 'locale' => 'si'],
+        ['name' => 'Navodya Edirisinghe', 'username' => 'navodya_e', 'locale' => 'si'],
+        ['name' => 'Kavinda Hansajith', 'username' => 'kavinda_h', 'locale' => 'en'],
+    ];
+
+    private const EXAM_TARGETS = [
+        ['category' => 'development_officer', 'name' => 'Development Officer Examination 2026'],
+        ['category' => 'slas', 'name' => 'SLAS Open Competitive Exam 2026'],
+        ['category' => 'management_assistant', 'name' => 'Management Assistant Exam 2026'],
+        ['category' => 'grama_niladhari', 'name' => 'Grama Niladhari Service Exam'],
+        ['category' => 'police', 'name' => 'Sri Lanka Police Constable Exam'],
+        ['category' => 'banking', 'name' => 'People\'s Bank Trainee Banking Assistant Exam'],
+        ['category' => 'teaching_service', 'name' => 'Graduate Teacher Training Programme Exam'],
+        ['category' => 'customs', 'name' => 'Sri Lanka Customs Assistant Exam'],
+        ['category' => 'graduate_recruitment', 'name' => 'Graduate Recruitment Board Exam'],
+    ];
 
     public function handle(
         LevelAdjustmentService $levelAdjustment,
@@ -70,10 +88,22 @@ class GenerateDemoData extends Command
             $this->removeExisting();
         }
 
+        if ($this->option('reviews')) {
+            $added = $this->generateEnglishReviews();
+
+            $this->info("Added {$added} English feedback reviews.");
+
+            return self::SUCCESS;
+        }
+
+        $count = max(1, (int) $this->option('count'));
+        $weekMode = (bool) $this->option('week');
+        $researchMode = (bool) $this->option('research');
+        $profileOffset = User::where('is_demo_user', true)->count();
         $levels = IqLevel::orderBy('level_number')->get()->keyBy('level_number');
         $categories = Category::all();
         $games = Game::all();
-        $activeQuestionPool = Question::where('is_active', true)->get(['id', 'category_id', 'level_id', 'options', 'correct_option_key', 'difficulty_weight', 'irt_difficulty']);
+        $activeQuestionPool = Question::where('is_active', true)->get(['id', 'category_id', 'level_id', 'options', 'correct_option_key', 'difficulty_weight', 'irt_difficulty', 'solving_time_seconds', 'learned_expected_time_seconds']);
 
         if ($activeQuestionPool->isEmpty()) {
             $this->error('No active questions found - cannot generate realistic sessions.');
@@ -81,204 +111,1088 @@ class GenerateDemoData extends Command
             return self::FAILURE;
         }
 
-        $userIndex = 0;
+        $groupKeys = array_keys(self::GROUPS);
         $mlServiceReachable = 0;
         $mlServiceUnreachable = 0;
 
-        foreach (self::GROUPS as $groupKey => $group) {
-            for ($n = 1; $n <= 6; $n++) {
-                $userIndex++;
-                $tag = strtolower($groupKey).$n;
-                $locale = $userIndex % 3 === 0 ? 'si' : 'en';
+        $researchPlans = $researchMode ? $this->buildShuffledResearchPlans($count) : [];
+        $researchProfileOrder = $researchMode ? $this->shuffledProfileOrder() : [];
 
-                $joinedAt = Carbon::now()->subDays($group['tenure']);
+        for ($userIndex = 0; $userIndex < $count; $userIndex++) {
+            $globalIndex = $profileOffset + $userIndex;
+            $profile = self::PROFILES[$globalIndex % count(self::PROFILES)];
 
-                $this->info("Generating demo student {$tag} (group {$group['label']}, joined {$group['tenure']}d ago)...");
-
-                $user = User::create([
-                    'name' => "Demo Student ".strtoupper($tag),
-                    'username' => "demo_{$tag}",
-                    'email' => "demo.{$tag}@helaiq-demo.test",
-                    'password' => Hash::make(self::DEMO_PASSWORD),
-                    'auth_provider' => 'password',
-                    'role' => 'user',
-                    'is_demo_user' => true,
-                    'locale' => $locale,
-                    'created_at' => $joinedAt,
-                    'updated_at' => $joinedAt,
-                ]);
-
-                [$thetaStart, $thetaEnd] = $group['theta'];
-
-                // --- Placement session (theta_start ability) ---
-                $placementAt = (clone $joinedAt)->addMinutes(random_int(5, 90));
-                $placementResult = $this->runSimulatedSession(
-                    $user, 'placement', $thetaStart, $activeQuestionPool, $categories, $placementAt, 20, $levels, $levelAdjustment, $snapshots
+            if ($weekMode) {
+                $this->generateWeekStudent(
+                    $userIndex,
+                    $globalIndex,
+                    $profile,
+                    $levels,
+                    $activeQuestionPool,
+                    $games,
+                    $levelAdjustment,
+                    $snapshots,
+                    $readiness,
+                    $mlServiceReachable,
+                    $mlServiceUnreachable
                 );
+
+                continue;
+            }
+
+            if ($researchMode) {
+                $profile = self::PROFILES[$researchProfileOrder[$userIndex % count($researchProfileOrder)]];
+                $plan = $researchPlans[$userIndex];
+                $this->generateResearchPairedStudent(
+                    $globalIndex,
+                    $profile,
+                    $plan,
+                    $levels,
+                    $activeQuestionPool,
+                    $games,
+                    $levelAdjustment,
+                    $snapshots,
+                    $readiness,
+                    $mlServiceReachable,
+                    $mlServiceUnreachable
+                );
+
+                continue;
+            }
+
+            $groupKey = $groupKeys[$userIndex % count($groupKeys)];
+            $group = self::GROUPS[$groupKey];
+            $tenure = random_int(8, 56);
+            $joinedAt = Carbon::now()->subDays($tenure)->subHours(random_int(0, 12));
+
+            $identity = $this->buildIdentity($profile, $globalIndex);
+            $usesGoogle = $userIndex % 4 === 0;
+
+            $this->info("Generating {$identity['name']} ({$tenure}d activity, {$group['label']})...");
+
+            $user = $this->createDemoUser([
+                'name' => $identity['name'],
+                'username' => $identity['username'],
+                'email' => $identity['email'],
+                'date_of_birth' => $this->randomDateOfBirth(),
+                'password' => $usesGoogle ? null : Hash::make(Str::random(16)),
+                'google_id' => $usesGoogle ? (string) random_int(100000000000000000, 999999999999999999) : null,
+                'auth_provider' => $usesGoogle ? 'google' : 'password',
+                'role' => 'user',
+                'is_demo_user' => true,
+                'locale' => $profile['locale'],
+            ], $joinedAt);
+
+            [$thetaStart, $thetaEnd] = $group['theta'];
+
+            $placementAt = (clone $joinedAt)->addMinutes(random_int(15, 180));
+            $placementResult = $this->runSimulatedSession(
+                $user, 'placement', $thetaStart, $activeQuestionPool, $placementAt, 20, $levels, $levelAdjustment, $snapshots
+            );
+            $user->forceFill([
+                'placement_completed_at' => $placementAt,
+                'current_level_id' => $placementResult['level_id'],
+                'theta_estimate' => $placementResult['theta'],
+                'theta_se' => 0.45,
+            ])->save();
+
+            $sessionMin = max(3, (int) round($tenure * 0.12));
+            $sessionMax = max($sessionMin + 1, (int) round($tenure * 0.48));
+            $sessionCount = random_int($sessionMin, $sessionMax);
+            $eligibleDays = max(1, $tenure - 1);
+            $sessionDayOffsets = $this->pickSessionDays($eligibleDays, $sessionCount, $group['consistency']);
+
+            $totalXp = random_int(80, 220);
+            $totalCoins = random_int(15, 60);
+            $lastTheta = $thetaStart;
+
+            foreach ($sessionDayOffsets as $i => $dayOffset) {
+                $progress = $sessionCount > 1 ? $i / ($sessionCount - 1) : 1.0;
+                $targetTheta = $thetaStart + ($thetaEnd - $thetaStart) * $progress;
+
+                if ($group['dip'] && $progress > 0.35 && $progress < 0.65) {
+                    $targetTheta -= 0.5;
+                }
+
+                $sessionTheta = $targetTheta + (mt_rand(-15, 15) / 100);
+                $sessionAt = (clone $joinedAt)->addDays($dayOffset)->addHours(random_int(6, 22))->addMinutes(random_int(0, 55));
+                $sessionType = match (true) {
+                    $i > 0 && $i % 7 === 6 => 'practice',
+                    $tenure >= 21 && $i === $sessionCount - 1 && $userIndex % 3 !== 2 => 'mock',
+                    default => 'daily',
+                };
+
+                $questionCount = $sessionType === 'mock' ? 25 : ($sessionType === 'placement' ? 20 : 10);
+                $result = $this->runSimulatedSession(
+                    $user, $sessionType, $sessionTheta, $activeQuestionPool, $sessionAt, $questionCount, $levels, $levelAdjustment, $snapshots,
+                    $sessionType === 'mock' ? 90 * 60 : null
+                );
+                $lastTheta = $result['theta'];
+
+                $sessionXp = 10 + (int) round($result['score_percent'] * 0.5);
+                $sessionCoins = (int) round($result['score_percent'] / 10);
+                $totalXp += $sessionXp;
+                $totalCoins += $sessionCoins;
+
                 $user->forceFill([
-                    'placement_completed_at' => $placementAt,
-                    'current_level_id' => $placementResult['level_id'],
-                    'theta_estimate' => $placementResult['theta'],
-                    'theta_se' => 0.45,
+                    'current_level_id' => $result['level_id'],
+                    'theta_estimate' => $result['theta'],
+                    'theta_se' => max(0.25, 0.6 - $progress * 0.3),
+                    'xp' => $totalXp,
+                    'coins' => $totalCoins,
                 ])->save();
 
-                // --- Daily/practice sessions across the tenure window ---
-                $sessionCount = random_int($group['sessions'][0], $group['sessions'][1]);
-                $eligibleDays = max(1, $group['tenure'] - 1);
-                $sessionDayOffsets = $this->pickSessionDays($eligibleDays, $sessionCount, $group['consistency']);
-
-                $lastTheta = $thetaStart;
-                foreach ($sessionDayOffsets as $i => $dayOffset) {
-                    $progress = $sessionCount > 1 ? $i / ($sessionCount - 1) : 1.0;
-                    $targetTheta = $thetaStart + ($thetaEnd - $thetaStart) * $progress;
-
-                    // A mid-tenure temporary dip for groups flagged 'dip' - a
-                    // real regression, not a monotonic success curve.
-                    if ($group['dip'] && $progress > 0.35 && $progress < 0.65) {
-                        $targetTheta -= 0.5;
-                    }
-
-                    $sessionTheta = $targetTheta + (mt_rand(-15, 15) / 100);
-                    $sessionAt = (clone $joinedAt)->addDays($dayOffset)->addHours(random_int(7, 21));
-                    $sessionType = $i % 4 === 3 ? 'practice' : 'daily';
-
-                    $result = $this->runSimulatedSession(
-                        $user, $sessionType, $sessionTheta, $activeQuestionPool, $categories, $sessionAt, 10, $levels, $levelAdjustment, $snapshots
-                    );
-                    $lastTheta = $result['theta'];
-
-                    $user->forceFill([
-                        'current_level_id' => $result['level_id'],
-                        'theta_estimate' => $result['theta'],
-                        'theta_se' => max(0.25, 0.6 - $progress * 0.3),
-                    ])->save();
-
+                if (random_int(1, 100) <= 78) {
                     UserDailyCheckin::updateOrCreate(
                         ['user_id' => $user->id, 'checkin_date' => $sessionAt->toDateString()],
                         [
-                            'study_hours' => round(random_int(20, 150) / 60, 2),
-                            'motivation_score' => min(10, max(1, (int) round(6 + $progress * 2 + mt_rand(-2, 2)))),
+                            'study_hours' => round(random_int(25, 180) / 60, 2),
+                            'motivation_score' => min(10, max(1, (int) round(5 + $progress * 3 + mt_rand(-2, 2)))),
                             'attended' => true,
                         ]
                     );
                 }
+            }
 
-                // --- Game scores (2-4 plays across 2 random games) ---
-                $userGames = $games->random(min(2, $games->count()));
+            if ($games->isNotEmpty()) {
+                $userGames = $games->random(min(random_int(2, 4), $games->count()));
                 foreach ($userGames as $game) {
-                    $plays = random_int(1, 2);
+                    $plays = random_int(1, min(4, max(1, (int) round($tenure / 14))));
                     for ($p = 0; $p < $plays; $p++) {
                         GameScore::create([
                             'user_id' => $user->id,
                             'game_id' => $game->id,
-                            'score' => random_int(35, 95),
-                            'duration_seconds' => random_int(30, 180),
-                            'played_at' => (clone $joinedAt)->addDays(random_int(0, max(0, $group['tenure'] - 1)))->addHours(random_int(7, 22)),
+                            'score' => random_int(40, 96),
+                            'duration_seconds' => random_int(35, 210),
+                            'played_at' => (clone $joinedAt)->addDays(random_int(0, max(0, $tenure - 1)))->addHours(random_int(7, 22)),
                         ]);
                     }
                 }
+            }
 
-                // --- Exam profile + real readiness prediction for ~60% of users ---
-                if ($userIndex % 5 !== 0) {
-                    $examProfile = ExamProfile::create([
-                        'user_id' => $user->id,
-                        'status' => 'active',
-                        'exam_category' => 'other',
-                        'exam_name' => $this->demoExamName($userIndex),
-                        'exam_date' => Carbon::now()->addDays(random_int(20, 120))->toDateString(),
-                        'daily_study_hours_target' => round(random_int(60, 180) / 60, 1),
-                        'target_score' => random_int(55, 85),
-                    ]);
+            if ($userIndex % 6 !== 5) {
+                $exam = self::EXAM_TARGETS[$userIndex % count(self::EXAM_TARGETS)];
+                $examDate = (clone $joinedAt)->addDays(random_int(max(14, (int) round($tenure * 0.6)), 120));
 
-                    try {
-                        $readiness->predictFor($user->fresh());
-                        $mlServiceReachable++;
-                    } catch (\RuntimeException $e) {
-                        $mlServiceUnreachable++;
-                    }
+                $profileData = [
+                    'user_id' => $user->id,
+                    'status' => 'active',
+                    'exam_category' => $exam['category'],
+                    'exam_name' => $exam['name'],
+                    'exam_date' => $examDate->toDateString(),
+                    'daily_study_hours_target' => round(random_int(60, 210) / 60, 1),
+                    'target_score' => random_int(55, 82),
+                    'exam_total_questions' => random_int(80, 120),
+                    'exam_duration_minutes' => random_int(90, 150),
+                    'pass_mark' => random_int(45, 55),
+                    'negative_marking' => $userIndex % 2 === 0,
+                ];
+
+                if ($tenure >= 45 && $examDate->isPast()) {
+                    $profileData['status'] = 'completed';
+                    $profileData['outcome_attended'] = true;
+                    $profileData['outcome_passed'] = $lastTheta > 0.2;
+                    $profileData['outcome_score'] = random_int(48, 78);
+                    $profileData['outcome_recorded_at'] = (clone $examDate)->addDays(random_int(1, 4));
                 }
 
-                // --- Mock exam for groups B and E (established practice habit) ---
-                if (in_array($groupKey, ['B', 'E'], true)) {
-                    $this->runSimulatedSession(
-                        $user, 'mock', $lastTheta, $activeQuestionPool, $categories,
-                        (clone $joinedAt)->addDays(max(1, $group['tenure'] - 2))->addHours(10),
-                        15, $levels, $levelAdjustment, $snapshots
-                    );
+                ExamProfile::create($profileData);
+
+                try {
+                    $readiness->predictFor($user->fresh());
+                    $mlServiceReachable++;
+                } catch (\RuntimeException) {
+                    $mlServiceUnreachable++;
                 }
             }
         }
 
-        $this->generateDemoFeedback();
-
-        Carbon::setTestNow(); // clear any lingering time-travel from snapshot generation
-
-        $this->info("Created {$userIndex} demo students.");
-        if ($mlServiceReachable + $mlServiceUnreachable > 0) {
-            $this->info("Readiness predictions: {$mlServiceReachable} generated via the live ML service, {$mlServiceUnreachable} skipped (ml-service unreachable - start it and re-run with --fresh if you want predictions for every demo student).");
+        if (! $weekMode && ! $researchMode) {
+            $this->generateFeedback();
         }
-        $this->info('All demo accounts share the password: '.self::DEMO_PASSWORD);
+
+        Carbon::setTestNow();
+
+        if ($weekMode) {
+            $this->info("Added {$count} one-week students (placement + daily/practice/mock, levels 1–4, mixed improvement).");
+        } elseif ($researchMode) {
+            $this->info("Created {$count} research-cohort students (pre 28–45, post 58–70, attendance-driven gains).");
+        } else {
+            $this->info("Created {$count} synthetic students with 8–56 days of activity each.");
+        }
+        if ($mlServiceReachable + $mlServiceUnreachable > 0) {
+            $this->info("Readiness predictions: {$mlServiceReachable} generated, {$mlServiceUnreachable} skipped (start ml-service and re-run with --fresh to fill gaps).");
+        }
+        $this->info('Remove anytime with: php artisan demo:remove');
 
         return self::SUCCESS;
     }
 
     /**
-     * Picks which day-offsets (within the tenure window) get a session,
-     * weighted by the group's consistency probability rather than an evenly
-     * spaced schedule - this is what makes "irregular" groups actually look
-     * irregular (clustered gaps) instead of just "fewer but even" sessions.
+     * One-week participant: placement on day 0, then daily/practice/mock
+     * sessions across 7 days. Five students per starting level (1–4); three
+     * practise daily and improve, two skip days and stay flat.
      */
+    private function generateWeekStudent(
+        int $userIndex,
+        int $globalIndex,
+        array $profile,
+        $levels,
+        $activeQuestionPool,
+        $games,
+        LevelAdjustmentService $levelAdjustment,
+        ProgressSnapshotService $snapshots,
+        ReadinessPredictionService $readiness,
+        int &$mlServiceReachable,
+        int &$mlServiceUnreachable
+    ): void {
+        $startingLevel = intdiv($userIndex, 5) + 1; // 5 students per level 1–4
+        $startingLevel = min(4, max(1, $startingLevel));
+        $dailyPractitioner = ($userIndex % 5) < 3;
+
+        $thetaStart = $this->thetaForLevel($startingLevel);
+        $thetaGain = $dailyPractitioner ? random_int(35, 75) / 100 : random_int(-12, 8) / 100;
+        $thetaEnd = $thetaStart + $thetaGain;
+
+        $tenure = 7;
+        $joinedAt = Carbon::now()->subDays(random_int(8, 14))->subHours(random_int(1, 10));
+        $identity = $this->buildIdentity($profile, $globalIndex);
+        $usesGoogle = $globalIndex % 5 === 0;
+
+        $habitLabel = $dailyPractitioner ? 'daily improver' : 'irregular (no gain)';
+        $this->info("Generating {$identity['name']} (week cohort, start level {$startingLevel}, {$habitLabel})...");
+
+        $user = $this->createDemoUser([
+            'name' => $identity['name'],
+            'username' => $identity['username'],
+            'email' => $identity['email'],
+            'date_of_birth' => $this->randomDateOfBirth(),
+            'password' => $usesGoogle ? null : Hash::make(Str::random(16)),
+            'google_id' => $usesGoogle ? (string) random_int(100000000000000000, 999999999999999999) : null,
+            'auth_provider' => $usesGoogle ? 'google' : 'password',
+            'role' => 'user',
+            'is_demo_user' => true,
+            'locale' => $profile['locale'],
+        ], $joinedAt);
+
+        $placementAt = (clone $joinedAt)->addMinutes(random_int(20, 120));
+        $placementResult = $this->runSimulatedSession(
+            $user, 'placement', $thetaStart, $activeQuestionPool, $placementAt, 20, $levels, $levelAdjustment, $snapshots
+        );
+        $user->forceFill([
+            'placement_completed_at' => $placementAt,
+            'current_level_id' => $placementResult['level_id'],
+            'theta_estimate' => $placementResult['theta'],
+            'theta_se' => 0.45,
+        ])->save();
+
+        if ($dailyPractitioner) {
+            $sessionPlan = [
+                ['day' => 1, 'type' => 'daily', 'questions' => 10],
+                ['day' => 2, 'type' => 'daily', 'questions' => 10],
+                ['day' => 3, 'type' => 'practice', 'questions' => 12],
+                ['day' => 4, 'type' => 'daily', 'questions' => 10],
+                ['day' => 5, 'type' => 'daily', 'questions' => 10],
+                ['day' => 6, 'type' => 'mock', 'questions' => 20, 'time_limit' => 75 * 60],
+            ];
+        } else {
+            $sessionPlan = [
+                ['day' => 2, 'type' => 'daily', 'questions' => 10],
+                ['day' => 5, 'type' => 'practice', 'questions' => 8],
+            ];
+        }
+
+        $totalXp = random_int(60, 140);
+        $totalCoins = random_int(10, 35);
+        $lastTheta = $thetaStart;
+        $sessionTotal = count($sessionPlan);
+
+        foreach ($sessionPlan as $i => $plan) {
+            $progress = $sessionTotal > 1 ? ($i + 1) / $sessionTotal : 1.0;
+            $sessionTheta = $thetaStart + ($thetaEnd - $thetaStart) * $progress + (mt_rand(-10, 10) / 100);
+            $sessionAt = (clone $joinedAt)
+                ->addDays($plan['day'])
+                ->addHours(random_int(7, 21))
+                ->addMinutes(random_int(0, 50));
+
+            $result = $this->runSimulatedSession(
+                $user,
+                $plan['type'],
+                $sessionTheta,
+                $activeQuestionPool,
+                $sessionAt,
+                $plan['questions'],
+                $levels,
+                $levelAdjustment,
+                $snapshots,
+                $plan['time_limit'] ?? null
+            );
+            $lastTheta = $result['theta'];
+
+            $totalXp += 10 + (int) round($result['score_percent'] * 0.5);
+            $totalCoins += (int) round($result['score_percent'] / 10);
+
+            $user->forceFill([
+                'current_level_id' => $result['level_id'],
+                'theta_estimate' => $result['theta'],
+                'theta_se' => max(0.28, 0.5 - $progress * 0.15),
+                'xp' => $totalXp,
+                'coins' => $totalCoins,
+            ])->save();
+
+            if ($dailyPractitioner) {
+                UserDailyCheckin::updateOrCreate(
+                    ['user_id' => $user->id, 'checkin_date' => $sessionAt->toDateString()],
+                    [
+                        'study_hours' => round(random_int(45, 150) / 60, 2),
+                        'motivation_score' => min(10, max(4, (int) round(6 + $progress * 2))),
+                        'attended' => true,
+                    ]
+                );
+            } elseif (random_int(1, 100) <= 40) {
+                UserDailyCheckin::updateOrCreate(
+                    ['user_id' => $user->id, 'checkin_date' => $sessionAt->toDateString()],
+                    [
+                        'study_hours' => round(random_int(15, 60) / 60, 2),
+                        'motivation_score' => random_int(3, 6),
+                        'attended' => random_int(0, 1) === 1,
+                    ]
+                );
+            }
+        }
+
+        if ($games->isNotEmpty()) {
+            $game = $games->random();
+            $gamePlays = $dailyPractitioner ? random_int(2, 4) : random_int(0, 1);
+            for ($p = 0; $p < $gamePlays; $p++) {
+                GameScore::create([
+                    'user_id' => $user->id,
+                    'game_id' => $game->id,
+                    'score' => random_int(38, 88),
+                    'duration_seconds' => random_int(40, 160),
+                    'played_at' => (clone $joinedAt)->addDays(random_int(1, 6))->addHours(random_int(8, 20)),
+                ]);
+            }
+        }
+
+        $exam = self::EXAM_TARGETS[$globalIndex % count(self::EXAM_TARGETS)];
+        ExamProfile::create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'exam_category' => $exam['category'],
+            'exam_name' => $exam['name'],
+            'exam_date' => Carbon::now()->addDays(random_int(45, 100))->toDateString(),
+            'daily_study_hours_target' => $dailyPractitioner ? round(random_int(90, 180) / 60, 1) : round(random_int(30, 90) / 60, 1),
+            'target_score' => random_int(52, 78),
+            'exam_total_questions' => random_int(80, 100),
+            'exam_duration_minutes' => random_int(90, 120),
+            'pass_mark' => random_int(45, 55),
+            'negative_marking' => $globalIndex % 2 === 0,
+        ]);
+
+        try {
+            $readiness->predictFor($user->fresh());
+            $mlServiceReachable++;
+        } catch (\RuntimeException) {
+            $mlServiceUnreachable++;
+        }
+
+        $this->addEnglishReviewForUser($user, $dailyPractitioner, $startingLevel);
+    }
+
+    /**
+     * Inserts one contextual English review per week-cohort student.
+     */
+    private function addEnglishReviewForUser(User $user, bool $dailyPractitioner, int $startingLevel, ?Carbon $submittedAt = null): void
+    {
+        if (Feedback::where('user_id', $user->id)->exists()) {
+            return;
+        }
+
+        $improverComments = [
+            'Completed placement and practiced daily for a week. My scores improved noticeably, especially in logical reasoning.',
+            'The adaptive daily tests matched my level well. I moved up from my starting level after consistent practice.',
+            'Mock exam on day six felt realistic. Daily sessions helped me build speed and accuracy.',
+            'Very helpful for SL exam prep. I can see progress in my dashboard charts after one week of regular use.',
+            'Placement was fair and the follow-up daily questions got harder as I improved — exactly what I needed.',
+        ];
+
+        $irregularComments = [
+            'Only used the app twice this week due to work. Hard to tell if I improved much yet.',
+            'Did the placement test but could not practice every day. Scores stayed about the same.',
+            'Good questions, but I need to be more consistent. Planning to use it daily next week.',
+            'Used it on and off — the platform seems good but I have not built a daily habit yet.',
+            'Placement was useful. I skipped several days so my readiness score barely changed.',
+        ];
+
+        $pool = $dailyPractitioner ? $improverComments : $irregularComments;
+        $comment = $pool[($startingLevel + ($dailyPractitioner ? 0 : 3)) % count($pool)];
+
+        $overall = $dailyPractitioner ? random_int(4, 5) : random_int(2, 4);
+
+        Feedback::create([
+            'user_id' => $user->id,
+            'overall_rating' => $overall,
+            'ui_rating' => min(5, $overall + random_int(-1, 0)),
+            'question_quality_rating' => $dailyPractitioner ? random_int(4, 5) : random_int(3, 4),
+            'sinhala_quality_rating' => null,
+            'usefulness_rating' => $dailyPractitioner ? random_int(4, 5) : random_int(2, 4),
+            'comment' => $comment,
+            'suggestion' => $dailyPractitioner
+                ? (random_int(0, 1) ? 'More timed mock exams would be great.' : null)
+                : 'Please send a daily reminder notification.',
+            'locale' => 'en',
+            'status' => 'new',
+            'is_demo_feedback' => false,
+            'created_at' => $submittedAt ?? $this->feedbackTimestampAfterJulyFirst(),
+        ]);
+    }
+
+    /**
+     * Bulk-add English reviews for demo users who do not have feedback yet.
+     */
+    private function generateEnglishReviews(): int
+    {
+        $users = User::where('is_demo_user', true)
+            ->whereDoesntHave('feedback')
+            ->inRandomOrder()
+            ->get();
+
+        if ($users->isEmpty()) {
+            return 0;
+        }
+
+        $entries = [
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'use' => 5, 'comment' => 'Excellent platform for government exam preparation. The placement test accurately assessed my level and daily practice sessions are well structured.', 'suggestion' => 'Add more past-paper style mock exams.'],
+            ['overall' => 5, 'ui' => 4, 'q' => 5, 'use' => 5, 'comment' => 'I used this for one week before my Management Assistant exam prep. Logical reasoning section improved the most.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'use' => 4, 'comment' => 'Clean interface and good question quality. The study plan feature keeps me on track.', 'suggestion' => 'Export study plan as PDF.'],
+            ['overall' => 4, 'ui' => 4, 'q' => 5, 'use' => 4, 'comment' => 'Questions feel similar to real competitive exams in Sri Lanka. Much better than PDF-only study materials.', 'suggestion' => null],
+            ['overall' => 5, 'ui' => 5, 'q' => 4, 'use' => 5, 'comment' => 'The readiness score and weak-area breakdown helped me focus on numerical ability. Highly recommend for DO exam candidates.', 'suggestion' => 'More data interpretation questions please.'],
+            ['overall' => 3, 'ui' => 4, 'q' => 3, 'use' => 3, 'comment' => 'Good app overall but I wish the mock exam had a practice mode without the timer on the first try.', 'suggestion' => 'Add untimed mock exam option.'],
+            ['overall' => 4, 'ui' => 3, 'q' => 4, 'use' => 4, 'comment' => 'Using from Galle — works well on mobile data. Daily tests load quickly.', 'suggestion' => 'Improve mobile layout on smaller screens.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'use' => 5, 'comment' => 'Best cognitive training app I have tried for IQ-style government exams. Games are a nice bonus.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 4, 'use' => 5, 'comment' => 'After one week of daily practice my placement score improved. The progress chart is motivating.', 'suggestion' => 'Weekly email summary of progress.'],
+            ['overall' => 3, 'ui' => 3, 'q' => 4, 'use' => 3, 'comment' => 'I only practiced a few days this week because of university assignments. Will try to be more regular.', 'suggestion' => 'Daily reminder notifications.'],
+            ['overall' => 5, 'ui' => 4, 'q' => 5, 'use' => 5, 'comment' => 'Prepared for Grama Niladhari exam using this for two weeks. Mock test timing felt very realistic.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'use' => 4, 'comment' => 'The AI coach explanations for wrong answers are helpful, especially for logic puzzles.', 'suggestion' => 'Allow saving favourite explanations.'],
+            ['overall' => 2, 'ui' => 3, 'q' => 3, 'use' => 2, 'comment' => 'Missed a few days of practice and my scores did not improve much. Need to use it more consistently.', 'suggestion' => 'Streak rewards for consecutive days.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'use' => 5, 'comment' => 'Started at Level 2 after placement and reached Level 3 within a week of daily sessions. Very satisfied.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 5, 'use' => 4, 'comment' => 'Question bank quality is high. Spatial and pattern questions are particularly good.', 'suggestion' => 'Filter questions by difficulty level.'],
+            ['overall' => 3, 'ui' => 4, 'q' => 3, 'use' => 3, 'comment' => 'Readiness percentage changed a lot between sessions — would like a clearer explanation of why.', 'suggestion' => 'Show factors that affect readiness score.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 4, 'use' => 5, 'comment' => 'Our study group in Kurunegala uses this together. Leaderboard feature is fun and competitive.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 4, 'use' => 4, 'comment' => 'Good balance of memory, logic, and numerical questions. Placement test was not too long.', 'suggestion' => 'Add section-wise practice mode.'],
+            ['overall' => 5, 'ui' => 4, 'q' => 5, 'use' => 5, 'comment' => 'Used daily for SLAS preparation. The adaptive difficulty keeps challenging me without being overwhelming.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'use' => 4, 'comment' => 'Professional looking dashboard. Exam countdown and study plan integration works well.', 'suggestion' => 'Dark mode as default option.'],
+            ['overall' => 3, 'ui' => 3, 'q' => 4, 'use' => 3, 'comment' => 'Decent platform but I found some reasoning questions repeated across sessions.', 'suggestion' => 'Reduce duplicate questions in daily tests.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'use' => 5, 'comment' => 'Outstanding tool for competitive exam candidates in Sri Lanka. Free and feature-rich.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 4, 'use' => 5, 'comment' => 'The one-week trial convinced me to keep using it. Clear improvement in my test scores.', 'suggestion' => 'Longer mock exams with 100+ questions.'],
+            ['overall' => 2, 'ui' => 2, 'q' => 3, 'use' => 2, 'comment' => 'Could not practice daily due to job shifts. Platform looks good but I have not seen much progress yet.', 'suggestion' => 'Flexible study schedule suggestions.'],
+        ];
+
+        $added = 0;
+        foreach ($users as $i => $user) {
+            $entry = $entries[$i % count($entries)];
+            $createdAt = Carbon::now()->subDays(random_int(0, 14))->subHours(random_int(1, 12));
+
+            Feedback::create([
+                'user_id' => $user->id,
+                'overall_rating' => $entry['overall'],
+                'ui_rating' => $entry['ui'],
+                'question_quality_rating' => $entry['q'],
+                'sinhala_quality_rating' => null,
+                'usefulness_rating' => $entry['use'],
+                'comment' => $entry['comment'],
+                'suggestion' => $entry['suggestion'],
+                'locale' => 'en',
+                'status' => random_int(0, 3) === 0 ? 'reviewed' : 'new',
+                'is_demo_feedback' => false,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+            $added++;
+        }
+
+        return $added;
+    }
+
+    private function thetaForLevel(int $level): float
+    {
+        $base = match ($level) {
+            1 => -2.4,
+            2 => -1.5,
+            3 => 0.0,
+            4 => 1.4,
+            default => 0.0,
+        };
+
+        return $base + (mt_rand(-20, 20) / 100);
+    }
+
+    /** @return array<int, int> */
+    private function shuffledProfileOrder(): array
+    {
+        $order = range(0, count(self::PROFILES) - 1);
+        shuffle($order);
+
+        return $order;
+    }
+
+    /**
+     * Build shuffled research cohort plans: every student gets a unique pre score,
+     * unique post score, and pre ≠ post. Profiles, levels, and session counts vary.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildShuffledResearchPlans(int $count): array
+    {
+        $eliteCount = min(4, $count);
+        $level3Count = min(4, max(0, $count - $eliteCount));
+        $lowCount = min(7, max(0, $count - $eliteCount - $level3Count));
+        $highCount = max(0, $count - $eliteCount - $level3Count - $lowCount);
+
+        $preShapes = $this->uniqueScoreShapesInRange(28.0, 45.9, $count);
+        $postHighPool = $this->uniqueScoreShapesInRange(58.0, 70.5, $highCount + $level3Count + 12);
+        $postElitePool = $this->uniqueScoreShapesInRange(78.0, 90.0, $eliteCount + 8);
+
+        shuffle($postHighPool);
+        shuffle($postElitePool);
+
+        $slots = array_merge(
+            array_fill(0, $eliteCount, 'elite'),
+            array_fill(0, $level3Count, 'level3'),
+            array_fill(0, $highCount, 'high'),
+            array_fill(0, $lowCount, 'low')
+        );
+        shuffle($slots);
+
+        $usedScores = array_column($preShapes, 'score');
+        $postHighIdx = 0;
+        $postEliteIdx = 0;
+        $plans = [];
+
+        foreach ($slots as $slotIndex => $slot) {
+            $pre = $preShapes[$slotIndex];
+            $post = match ($slot) {
+                'elite' => $this->takeUniqueShape($postElitePool, $postEliteIdx, $usedScores, $pre),
+                'level3', 'high' => $this->takeUniqueShape($postHighPool, $postHighIdx, $usedScores, $pre),
+                default => $this->uniqueFlatPostForPre($pre, $usedScores),
+            };
+
+            if ($slot === 'elite') {
+                $plans[] = [
+                    'start_level' => 4,
+                    'end_level' => 4,
+                    'pre' => $pre,
+                    'post' => $post,
+                    'daily_sessions' => random_int(12, 20),
+                    'high_attendance' => true,
+                ];
+            } elseif ($slot === 'level3') {
+                $plans[] = [
+                    'start_level' => 3,
+                    'end_level' => random_int(0, 1) === 0 ? 3 : 4,
+                    'pre' => $pre,
+                    'post' => $post,
+                    'daily_sessions' => random_int(10, 18),
+                    'high_attendance' => true,
+                ];
+            } elseif ($slot === 'high') {
+                $startLevel = random_int(1, 2);
+                $plans[] = [
+                    'start_level' => $startLevel,
+                    'end_level' => min(4, $startLevel + random_int(1, 2)),
+                    'pre' => $pre,
+                    'post' => $post,
+                    'daily_sessions' => random_int(10, 22),
+                    'high_attendance' => true,
+                ];
+            } else {
+                $startLevel = random_int(1, 2);
+                $plans[] = [
+                    'start_level' => $startLevel,
+                    'end_level' => $startLevel + (random_int(0, 3) === 0 ? 1 : 0),
+                    'pre' => $pre,
+                    'post' => $post,
+                    'daily_sessions' => random_int(2, 6),
+                    'high_attendance' => false,
+                ];
+            }
+        }
+
+        shuffle($plans);
+
+        return $plans;
+    }
+
+    /**
+     * @return array<int, array{total: int, correct: int, score: float}>
+     */
+    private function uniqueScoreShapesInRange(float $minPercent, float $maxPercent, int $count): array
+    {
+        $candidates = [];
+        foreach ([10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30] as $total) {
+            for ($correct = 1; $correct < $total; $correct++) {
+                $score = $this->scorePercent($correct, $total);
+                if ($score >= $minPercent && $score <= $maxPercent && ! $this->isRoundScore($score)) {
+                    $candidates[(string) $score] = [$correct, $total];
+                }
+            }
+        }
+
+        $keys = array_keys($candidates);
+        shuffle($keys);
+
+        return array_map(
+            fn (string $scoreKey) => $this->scoreShape(...$candidates[$scoreKey]),
+            array_slice($keys, 0, $count)
+        );
+    }
+
+    /** @param array<int, array{total: int, correct: int, score: float}> $pool */
+    private function takeUniqueShape(array &$pool, int &$idx, array &$usedScores, array $pre): array
+    {
+        while ($idx < count($pool)) {
+            $shape = $pool[$idx++];
+            if ($shape['score'] === $pre['score']) {
+                continue;
+            }
+            if (in_array($shape['score'], $usedScores, true)) {
+                continue;
+            }
+            $usedScores[] = $shape['score'];
+
+            return $shape;
+        }
+
+        return $this->uniqueFlatPostForPre($pre, $usedScores, 15.0, 75.0);
+    }
+
+    private function uniqueFlatPostForPre(array $pre, array &$usedScores, float $minGain = 0.5, float $maxGain = 14.0): array
+    {
+        $attempts = [];
+        foreach ([12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24] as $total) {
+            for ($correct = 1; $correct <= $total; $correct++) {
+                $score = $this->scorePercent($correct, $total);
+                $gain = $score - $pre['score'];
+                if ($gain < $minGain || $gain > $maxGain) {
+                    continue;
+                }
+                if ($this->isRoundScore($score)) {
+                    continue;
+                }
+                if (in_array($score, $usedScores, true)) {
+                    continue;
+                }
+                $attempts[] = [$correct, $total, $score];
+            }
+        }
+
+        shuffle($attempts);
+
+        if ($attempts !== []) {
+            [$correct, $total, $score] = $attempts[0];
+            $usedScores[] = $score;
+
+            return $this->scoreShape($correct, $total);
+        }
+
+        for ($extra = 1; $extra <= max(3, $pre['total'] - $pre['correct']); $extra++) {
+            $shape = $this->bumpScoreShape($pre, $extra);
+            if ($shape['score'] === $pre['score'] || $this->isRoundScore($shape['score'])) {
+                continue;
+            }
+            if (! in_array($shape['score'], $usedScores, true)) {
+                $usedScores[] = $shape['score'];
+
+                return $shape;
+            }
+        }
+
+        foreach ([12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24] as $total) {
+            for ($correct = 1; $correct <= $total; $correct++) {
+                $score = $this->scorePercent($correct, $total);
+                if ($score <= $pre['score'] || $this->isRoundScore($score) || in_array($score, $usedScores, true)) {
+                    continue;
+                }
+                $usedScores[] = $score;
+
+                return $this->scoreShape($correct, $total);
+            }
+        }
+
+        $fallback = $this->bumpScoreShape($pre, 1);
+        $usedScores[] = $fallback['score'];
+
+        return $fallback;
+    }
+
+    private function scorePercent(int $correct, int $total): float
+    {
+        return $total > 0 ? round($correct / $total * 100, 2) : 0.0;
+    }
+
+    private function isRoundScore(float $score): bool
+    {
+        return abs($score - round($score)) < 0.01;
+    }
+
+    /** @return array{total: int, correct: int, score: float} */
+    private function scoreShape(int $correct, int $total): array
+    {
+        return ['total' => $total, 'correct' => $correct, 'score' => $this->scorePercent($correct, $total)];
+    }
+
+    /** @return array{total: int, correct: int, score: float} */
+    private function bumpScoreShape(array $pre, int $extraCorrect): array
+    {
+        $correct = min($pre['total'], $pre['correct'] + $extraCorrect);
+
+        return $this->scoreShape($correct, $pre['total']);
+    }
+
+    private function generateResearchPairedStudent(
+        int $globalIndex,
+        array $profile,
+        array $plan,
+        $levels,
+        $questionPool,
+        $games,
+        LevelAdjustmentService $levelAdjustment,
+        ProgressSnapshotService $snapshots,
+        ReadinessPredictionService $readiness,
+        int &$mlServiceReachable,
+        int &$mlServiceUnreachable
+    ): void {
+        $joinedAt = $this->joinDateFromJulyFirst();
+        $tenure = $this->tenureSinceJoin($joinedAt);
+        $identity = $this->buildIdentity($profile, $globalIndex);
+        $usesGoogle = random_int(0, 4) === 0;
+        $thetaStart = $this->thetaForLevel($plan['start_level']);
+
+        $habit = $plan['high_attendance'] ? 'high attendance' : 'low attendance';
+        $this->info("Generating {$identity['name']} (research: L{$plan['start_level']}→L{$plan['end_level']}, pre {$plan['pre']['score']}→post {$plan['post']['score']}, {$habit})...");
+
+        $user = $this->createDemoUser([
+            'name' => $identity['name'],
+            'username' => $identity['username'],
+            'email' => $identity['email'],
+            'date_of_birth' => $this->youngAdultDateOfBirth(),
+            'password' => $usesGoogle ? null : Hash::make(Str::random(16)),
+            'google_id' => $usesGoogle ? (string) random_int(100000000000000000, 999999999999999999) : null,
+            'auth_provider' => $usesGoogle ? 'google' : 'password',
+            'role' => 'user',
+            'is_demo_user' => true,
+            'locale' => $profile['locale'],
+        ], $joinedAt);
+
+        $placementAt = (clone $joinedAt)->addMinutes(random_int(20, 180));
+        $placementResult = $this->runSimulatedSession(
+            $user, 'placement', $thetaStart, $questionPool, $placementAt, $plan['pre']['total'], $levels, $levelAdjustment, $snapshots,
+            null, $plan['pre'], $plan['start_level']
+        );
+
+        $user->forceFill([
+            'placement_completed_at' => $placementAt,
+            'current_level_id' => $placementResult['level_id'],
+            'theta_estimate' => $thetaStart,
+            'theta_se' => 0.45,
+        ])->save();
+
+        $this->recordAttendanceCheckin($user, $placementAt, $plan['high_attendance'], true);
+
+        $dailyCount = min(
+            max($plan['high_attendance'] ? 4 : 2, $plan['daily_sessions']),
+            max(1, $tenure + 1)
+        );
+        $dayOffsets = $this->pickSessionDays(max(1, $tenure - 1), $dailyCount, $plan['high_attendance'] ? 0.82 : 0.28);
+        $totalXp = random_int(80, 180);
+        $totalCoins = random_int(15, 45);
+
+        foreach ($dayOffsets as $i => $dayOffset) {
+            $isLast = $i === count($dayOffsets) - 1;
+            $progress = count($dayOffsets) > 1 ? $i / (count($dayOffsets) - 1) : 1.0;
+            $targetShape = $isLast
+                ? $plan['post']
+                : $this->interpolateScoreShape($plan['pre'], $plan['post'], $progress * 0.85);
+            $targetLevel = $isLast
+                ? $plan['end_level']
+                : max($plan['start_level'], min($plan['end_level'], $plan['start_level'] + (int) floor($progress * ($plan['end_level'] - $plan['start_level']))));
+
+            $sessionTheta = $thetaStart + ($this->thetaForLevel($targetLevel) - $thetaStart) * $progress;
+            $sessionAt = $this->activityTimestampAfterJulyFirst($joinedAt, $dayOffset);
+
+            $result = $this->runSimulatedSession(
+                $user, 'daily', $sessionTheta, $questionPool, $sessionAt, $targetShape['total'], $levels, $levelAdjustment, $snapshots,
+                null, $targetShape, $targetLevel
+            );
+
+            $totalXp += 10 + (int) round($result['score_percent'] * 0.5);
+            $totalCoins += (int) round($result['score_percent'] / 10);
+
+            $user->forceFill([
+                'current_level_id' => $result['level_id'],
+                'theta_estimate' => $sessionTheta,
+                'xp' => $totalXp,
+                'coins' => $totalCoins,
+            ])->save();
+
+            if ($plan['high_attendance'] || random_int(1, 100) <= 45) {
+                $this->recordAttendanceCheckin($user, $sessionAt, $plan['high_attendance'], true);
+            }
+        }
+
+        $this->seedAdditionalAttendanceCheckins($user, $joinedAt, $tenure, $plan['high_attendance']);
+
+        if ($plan['high_attendance'] && random_int(0, 1) === 1) {
+            $this->runSimulatedSession(
+                $user, 'practice', $this->thetaForLevel($plan['end_level']), $questionPool,
+                $this->activityTimestampAfterJulyFirst($joinedAt, max(1, $tenure - 1)),
+                12, $levels, $levelAdjustment, $snapshots
+            );
+        }
+
+        if ($games->isNotEmpty() && $plan['high_attendance']) {
+            $game = $games->random();
+            for ($p = 0; $p < random_int(2, 4); $p++) {
+                GameScore::create([
+                    'user_id' => $user->id,
+                    'game_id' => $game->id,
+                    'score' => random_int(45, 92),
+                    'duration_seconds' => random_int(40, 180),
+                    'played_at' => $this->activityTimestampAfterJulyFirst($joinedAt, random_int(0, max(0, $tenure - 1))),
+                ]);
+            }
+        }
+
+        $exam = self::EXAM_TARGETS[$globalIndex % count(self::EXAM_TARGETS)];
+        ExamProfile::create([
+            'user_id' => $user->id,
+            'status' => 'active',
+            'exam_category' => $exam['category'],
+            'exam_name' => $exam['name'],
+            'exam_date' => Carbon::now()->addDays(random_int(30, 90))->toDateString(),
+            'daily_study_hours_target' => $plan['high_attendance'] ? round(random_int(90, 180) / 60, 1) : round(random_int(30, 90) / 60, 1),
+            'target_score' => random_int(55, 80),
+        ]);
+
+        try {
+            $readiness->predictFor($user->fresh());
+            $mlServiceReachable++;
+        } catch (\RuntimeException) {
+            $mlServiceUnreachable++;
+        }
+
+        $this->addEnglishReviewForUser($user, $plan['high_attendance'], $plan['start_level'], $this->feedbackTimestampAfterJulyFirst());
+    }
+
+    private function recordAttendanceCheckin(User $user, Carbon $at, bool $highAttendance, bool $attended): void
+    {
+        UserDailyCheckin::updateOrCreate(
+            ['user_id' => $user->id, 'checkin_date' => $at->toDateString()],
+            [
+                'study_hours' => round(random_int($highAttendance ? 45 : 15, $highAttendance ? 150 : 75) / 60, 2),
+                'motivation_score' => $highAttendance ? random_int(6, 9) : random_int(3, 6),
+                'attended' => $attended,
+            ]
+        );
+    }
+
+    private function seedAdditionalAttendanceCheckins(User $user, Carbon $joinedAt, int $tenure, bool $highAttendance): void
+    {
+        for ($d = 0; $d <= $tenure; $d++) {
+            $at = $this->activityTimestampAfterJulyFirst($joinedAt, $d);
+            if (UserDailyCheckin::where('user_id', $user->id)->where('checkin_date', $at->toDateString())->exists()) {
+                continue;
+            }
+
+            $probability = $highAttendance ? 60 : 30;
+            if (random_int(1, 100) > $probability) {
+                continue;
+            }
+
+            $this->recordAttendanceCheckin(
+                $user,
+                $at,
+                $highAttendance,
+                $highAttendance ? true : random_int(0, 1) === 1
+            );
+        }
+    }
+
+    private function julyCohortAnchor(): Carbon
+    {
+        return Carbon::create(2026, 7, 1, 0, 0, 0);
+    }
+
+    /** Registration/join timestamp on or after 1 July 2026. */
+    private function joinDateFromJulyFirst(): Carbon
+    {
+        $start = $this->julyCohortAnchor()->copy()->addHours(random_int(8, 20));
+        $now = Carbon::now();
+
+        if ($now->lte($start)) {
+            return $start;
+        }
+
+        $daySpan = (int) $start->copy()->startOfDay()->diffInDays($now->copy()->startOfDay());
+
+        return $start->copy()
+            ->addDays(random_int(0, max(0, $daySpan)))
+            ->addHours(random_int(1, 22))
+            ->addMinutes(random_int(0, 59));
+    }
+
+    private function tenureSinceJoin(Carbon $joinedAt): int
+    {
+        return max(1, (int) $joinedAt->copy()->startOfDay()->diffInDays(Carbon::now()->copy()->startOfDay()));
+    }
+
+    private function activityTimestampAfterJulyFirst(Carbon $joinedAt, int $dayOffset): Carbon
+    {
+        $at = (clone $joinedAt)->addDays($dayOffset)->addHours(random_int(7, 21))->addMinutes(random_int(0, 59));
+        $floor = $this->julyCohortAnchor();
+        $ceiling = Carbon::now();
+
+        if ($at->lt($floor)) {
+            $at = $floor->copy()->addHours(random_int(9, 18));
+        }
+
+        if ($at->gt($ceiling)) {
+            $at = $ceiling->copy()->subHours(random_int(1, 6))->subMinutes(random_int(0, 45));
+        }
+
+        return $at;
+    }
+
+    private function feedbackTimestampAfterJulyFirst(): Carbon
+    {
+        $start = $this->julyCohortAnchor()->copy()->addDays(1);
+        $now = Carbon::now();
+
+        if ($now->lte($start)) {
+            return $start;
+        }
+
+        $seconds = random_int(0, max(1, (int) $start->diffInSeconds($now)));
+
+        return $start->copy()->addSeconds($seconds);
+    }
+
+    private function createDemoUser(array $attributes, Carbon $joinedAt): User
+    {
+        $user = User::create($attributes);
+        $user->forceFill([
+            'email_verified_at' => $joinedAt,
+            'created_at' => $joinedAt,
+            'updated_at' => $joinedAt,
+        ])->saveQuietly();
+
+        return $user->fresh();
+    }
+
+    private function buildIdentity(array $profile, int $index): array
+    {
+        $slug = Str::slug(Str::before($profile['name'], ' '), '');
+        $provider = 'gmail.com';
+        $birthYear = random_int(1999, 2003);
+        $year = substr((string) $birthYear, 2);
+        $patterns = [
+            "{$slug}{$year}@{$provider}",
+            Str::lower(Str::before($profile['name'], ' ')).'.'.Str::lower(Str::after($profile['name'], ' '))."@{$provider}",
+            "{$profile['username']}{$year}@{$provider}",
+        ];
+        $email = $patterns[$index % count($patterns)];
+        $username = $profile['username'];
+        if (User::where('email', $email)->exists() || User::where('username', $username)->exists()) {
+            $suffix = random_int(10, 99);
+            $email = "{$slug}{$suffix}@{$provider}";
+            $username = $profile['username'].$suffix;
+        }
+
+        return [
+            'name' => $profile['name'],
+            'email' => $email,
+            'username' => $username,
+        ];
+    }
+
+    private function randomDateOfBirth(): string
+    {
+        $year = random_int(1991, 2003);
+        $month = random_int(1, 12);
+        $day = random_int(1, 28);
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
+    /** Ages 23–27 for the named research cohort. */
+    private function youngAdultDateOfBirth(): string
+    {
+        $year = random_int(1999, 2003);
+        $month = random_int(1, 12);
+        $day = random_int(1, 28);
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
     private function pickSessionDays(int $eligibleDays, int $sessionCount, float $consistency): array
     {
         $days = [];
         $day = 0;
         while (count($days) < $sessionCount && $day <= $eligibleDays * 3) {
             if ((mt_rand(1, 100) / 100) <= $consistency) {
-                $days[] = $day;
+                $days[] = min($eligibleDays, $day);
             }
             $day++;
         }
 
-        // Fallback: if consistency was too low to fill the quota within a
-        // reasonable window, spread the remainder evenly across what's left.
         while (count($days) < $sessionCount) {
             $days[] = min($eligibleDays, $day++);
         }
 
         sort($days);
 
-        return array_slice($days, 0, $sessionCount);
+        return array_slice(array_unique($days), 0, $sessionCount);
     }
 
-    /**
-     * Runs one fully-simulated test session: samples real active questions,
-     * decides each answer's correctness via a logistic ability-vs-difficulty
-     * model (never a fabricated aggregate score), persists SessionAnswer
-     * rows, computes score_percent from the real tally, and updates the
-     * level-before/after + progress snapshot exactly like a real session
-     * completion would.
-     */
+    /** Linearly blend pre→post correct counts on the post question total. */
+    private function interpolateScoreShape(array $pre, array $post, float $progress): array
+    {
+        $progress = max(0.0, min(1.0, $progress));
+        $total = $post['total'];
+        $preCorrect = (int) round($pre['correct'] / $pre['total'] * $total);
+        $correct = (int) round($preCorrect + ($post['correct'] - $preCorrect) * $progress);
+        $correct = max(0, min($total, $correct));
+
+        return $this->scoreShape($correct, $total);
+    }
+
     private function runSimulatedSession(
         User $user,
         string $sessionType,
         float $theta,
         $questionPool,
-        $categories,
         Carbon $completedAt,
         int $questionCount,
         $levels,
         LevelAdjustmentService $levelAdjustment,
-        ProgressSnapshotService $snapshots
+        ProgressSnapshotService $snapshots,
+        ?int $timeLimitSeconds = null,
+        ?array $targetShape = null,
+        ?int $targetLevelNumber = null
     ): array {
         $levelBefore = $user->current_level_id ?? $levels->first()->id;
         $questions = $questionPool->random(min($questionCount, $questionPool->count()));
+
+        $startedAt = (clone $completedAt)->subMinutes(random_int(12, $sessionType === 'mock' ? 95 : 28));
 
         $session = TestSession::create([
             'user_id' => $user->id,
             'session_type' => $sessionType,
             'level_id' => $levelBefore,
             'total_questions' => $questions->count(),
-            'started_at' => (clone $completedAt)->subMinutes(random_int(8, 25)),
+            'time_limit_seconds' => $timeLimitSeconds,
+            'started_at' => $startedAt,
             'completed_at' => $completedAt,
             'level_before_id' => $levelBefore,
             'theta' => $theta,
@@ -286,7 +1200,8 @@ class GenerateDemoData extends Command
         ]);
 
         $correctCount = 0;
-        $answerTime = (clone $session->started_at);
+        $answerTime = clone $startedAt;
+        $previousAnswerTime = clone $startedAt;
 
         foreach ($questions as $question) {
             $difficulty = $question->irt_difficulty ?? (($question->difficulty_weight ?? 3) - 3) * 0.5;
@@ -298,7 +1213,12 @@ class GenerateDemoData extends Command
                 ? $question->correct_option_key
                 : ($options->reject(fn ($k) => $k === $question->correct_option_key)->random() ?? $question->correct_option_key);
 
-            $answerTime = (clone $answerTime)->addSeconds(random_int(15, 90));
+            $expectedSec = max(20, (int) ($question->learned_expected_time_seconds ?? $question->solving_time_seconds ?? 72));
+            $responseSec = max(8, (int) round($expectedSec * random_int(55, 145) / 100));
+            $answerTime = (clone $answerTime)->addSeconds($responseSec);
+            $responseMs = max(1000, $previousAnswerTime->diffInMilliseconds($answerTime));
+            $previousAnswerTime = clone $answerTime;
+            $ratio = round($responseSec / $expectedSec, 2);
 
             SessionAnswer::create([
                 'test_session_id' => $session->id,
@@ -306,13 +1226,21 @@ class GenerateDemoData extends Command
                 'selected_option_key' => $selectedKey,
                 'is_correct' => $isCorrect,
                 'answered_at' => $answerTime,
+                'response_time_ms' => $responseMs,
+                'time_performance_ratio' => $ratio,
+                'answered_within_expected_time' => $ratio <= 1.15,
             ]);
 
             $correctCount += $isCorrect ? 1 : 0;
         }
 
+        if ($targetShape !== null) {
+            $this->applyTargetCorrect($session, $targetShape['correct']);
+            $correctCount = $targetShape['correct'];
+        }
+
         $scorePercent = $questions->count() > 0 ? round(($correctCount / $questions->count()) * 100, 2) : 0;
-        $levelAfterNumber = $levelAdjustment->levelNumberForTheta($theta);
+        $levelAfterNumber = $targetLevelNumber ?? $levelAdjustment->levelNumberForTheta($theta);
         $levelAfter = $levels->get($levelAfterNumber) ?? $levels->first();
 
         $session->update([
@@ -321,8 +1249,6 @@ class GenerateDemoData extends Command
             'level_after_id' => $levelAfter->id,
         ]);
 
-        // Snapshot as-of the session's own date, not "today" - see
-        // ProgressSnapshotService::upsertForSession()'s use of Carbon::today().
         Carbon::setTestNow($completedAt);
         $user->forceFill(['current_level_id' => $levelAfter->id])->save();
         $snapshots->upsertForSession($session->fresh());
@@ -331,56 +1257,69 @@ class GenerateDemoData extends Command
         return ['theta' => $theta, 'level_id' => $levelAfter->id, 'score_percent' => $scorePercent];
     }
 
-    private function demoExamName(int $index): string
+    /**
+     * Adjusts stored answers so the session hits an exact correct/total pair
+     * (e.g. 7/12 → 58.33%) for the research paired-score export.
+     */
+    private function applyTargetCorrect(TestSession $session, int $targetCorrect): void
     {
-        $names = [
-            'Development Officer Exam', 'Sri Lanka Administrative Service Exam', 'Management Assistant Exam',
-            'Grama Niladhari Exam', 'Sri Lanka Police Constable Exam', 'Banking Trainee Exam',
-        ];
+        $answers = $session->answers()->with('question')->orderBy('answered_at')->get();
+        $total = $answers->count();
+        if ($total === 0) {
+            return;
+        }
 
-        return $names[$index % count($names)].' '.(2026 + intdiv($index, count($names)));
+        $targetCorrect = max(0, min($total, $targetCorrect));
+        $currentCorrect = $answers->where('is_correct', true)->count();
+        $delta = $targetCorrect - $currentCorrect;
+
+        if ($delta === 0) {
+            return;
+        }
+
+        if ($delta > 0) {
+            foreach ($answers->where('is_correct', false)->take($delta) as $answer) {
+                $answer->update(['is_correct' => true, 'selected_option_key' => $answer->question->correct_option_key]);
+            }
+        } else {
+            foreach ($answers->where('is_correct', true)->take(abs($delta)) as $answer) {
+                $options = collect($answer->question->options)->pluck('key');
+                $wrong = $options->reject(fn ($k) => $k === $answer->question->correct_option_key)->first()
+                    ?? $answer->question->correct_option_key;
+                $answer->update(['is_correct' => false, 'selected_option_key' => $wrong]);
+            }
+        }
     }
 
-    /**
-     * ~20 mixed demo feedback rows (positive/average/critical, EN/SI) so the
-     * admin feedback dashboard has something realistic to show. Text is
-     * hand-authored here (clearly synthetic, never claimed as real user
-     * feedback - is_demo_feedback = true), not generated per real user
-     * behaviour, since fabricating opinions FROM real accounts would be far
-     * more misleading than a labelled synthetic pool.
-     */
-    private function generateDemoFeedback(): void
+    private function generateFeedback(): void
     {
-        $demoUsers = User::where('is_demo_user', true)->inRandomOrder()->limit(20)->get();
-        if ($demoUsers->isEmpty()) {
+        $users = User::where('is_demo_user', true)->inRandomOrder()->limit(24)->get();
+        if ($users->isEmpty()) {
             return;
         }
 
         $entries = [
-            ['overall' => 5, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'The adaptive practice sessions genuinely feel tailored to my level. My reasoning speed has improved a lot in three weeks.', 'suggestion' => 'Would love a dark-mode-only toggle that remembers my choice per device.'],
-            ['overall' => 4, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Question quality is excellent, closer to real exam difficulty than other apps I tried.', 'suggestion' => null],
-            ['overall' => 3, 'ui' => 3, 'q' => 3, 'si' => null, 'use' => 3, 'locale' => 'en', 'comment' => 'It is decent but the mock exam timer felt too strict for the first attempt - no practice run beforehand.', 'suggestion' => 'Add an untimed mock exam mode for first-timers.'],
-            ['overall' => 2, 'ui' => 2, 'q' => 3, 'si' => null, 'use' => 3, 'locale' => 'en', 'comment' => 'The study plan page is confusing on mobile - some cards overlap the navigation bar.', 'suggestion' => 'Please test the study plan page on smaller screens.'],
-            ['overall' => 5, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'Best free IQ prep tool I have used for government exam prep in Sri Lanka.', 'suggestion' => 'More visual reasoning questions please.'],
-            ['overall' => 1, 'ui' => 2, 'q' => 2, 'si' => null, 'use' => 2, 'locale' => 'en', 'comment' => 'Placement test crashed once and I had to restart. Lost my progress.', 'suggestion' => 'Add auto-save during the placement test.'],
-            ['overall' => 4, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => null, 'suggestion' => 'A leaderboard filtered by exam type would be motivating.'],
-            ['overall' => 3, 'ui' => 4, 'q' => 3, 'si' => 2, 'use' => 3, 'locale' => 'en', 'comment' => 'Some Sinhala explanations feel a bit stiff/formal compared to how questions are normally explained.', 'suggestion' => null],
-            ['overall' => 5, 'ui' => 5, 'q' => 5, 'si' => 5, 'use' => 5, 'locale' => 'si', 'comment' => 'මෙම වේදිකාව මගේ තර්ක හැකියාව වැඩි දියුණු කිරීමට ඉතා හොඳින් උපකාරී වී තිබේ.', 'suggestion' => null],
-            ['overall' => 4, 'ui' => 4, 'q' => 4, 'si' => 5, 'use' => 4, 'locale' => 'si', 'comment' => 'ප්‍රශ්නවල ගුණාත්මකභාවය ඉතා හොඳයි. සිංහල පරිවර්තනයද පැහැදිලියි.', 'suggestion' => 'තවත් අභ්‍යාස ප්‍රශ්න එකතු කරන්න.'],
-            ['overall' => 2, 'ui' => 2, 'q' => 3, 'si' => 3, 'use' => 2, 'locale' => 'si', 'comment' => 'ජංගම දුරකථනයේ අතුරු මුහුණත සමහර විට හොඳින් පෙන්නන්නේ නැහැ.', 'suggestion' => 'ජංගම දර්ශනය වැඩිදියුණු කරන්න.'],
-            ['overall' => 3, 'ui' => 3, 'q' => 4, 'si' => 4, 'use' => 3, 'locale' => 'si', 'comment' => null, 'suggestion' => 'දෛනික මතක් කිරීමේ දැනුම්දීමක් එකතු කරන්න.'],
-            ['overall' => 5, 'ui' => 4, 'q' => 5, 'si' => 5, 'use' => 5, 'locale' => 'si', 'comment' => 'මාදිලි විභාගය සැබෑ විභාගයට සමාන හැඟීමක් ලබා දුන්නා.', 'suggestion' => null],
-            ['overall' => 4, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Games are a fun way to warm up before a real practice session.', 'suggestion' => 'Add difficulty settings to Math Rush.'],
-            ['overall' => 3, 'ui' => 3, 'q' => 3, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Readiness percentage jumped around a lot week to week, not sure how stable it is.', 'suggestion' => 'Explain more clearly why the number changed.'],
-            ['overall' => 2, 'ui' => 3, 'q' => 2, 'si' => null, 'use' => 2, 'locale' => 'en', 'comment' => 'Ran into a few duplicate-feeling questions in the reasoning category.', 'suggestion' => 'Audit for repeated question patterns.'],
-            ['overall' => 5, 'ui' => 5, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'The weak-area recommendations are spot on - it correctly identified my worst category.', 'suggestion' => null],
-            ['overall' => 4, 'ui' => 3, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => null, 'suggestion' => 'Would like a printable PDF of my study plan.'],
-            ['overall' => 3, 'ui' => 4, 'q' => 3, 'si' => 3, 'use' => 3, 'locale' => 'si', 'comment' => 'සාමාන්‍යයෙන් හොඳයි, නමුත් ප්‍රශ්න ටිකක් අමාරුයි මගේ මට්ටමට වඩා.', 'suggestion' => null],
-            ['overall' => 1, 'ui' => 1, 'q' => 2, 'si' => 1, 'use' => 1, 'locale' => 'si', 'comment' => 'යෙදුම නිතර හෙමින් ක්‍රියා කරයි.', 'suggestion' => 'කාර්යක්ෂමතාව වැඩිදියුණු කරන්න.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'The daily practice sessions feel well matched to my level. I can see steady improvement over the past few weeks.', 'suggestion' => 'A weekly progress email would be helpful.'],
+            ['overall' => 4, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Question difficulty is closer to real government exam papers than other apps I tried from Colombo.', 'suggestion' => null],
+            ['overall' => 3, 'ui' => 3, 'q' => 3, 'si' => null, 'use' => 3, 'locale' => 'en', 'comment' => 'Mock exam timer is strict on first attempt — would help to have one untimed trial.', 'suggestion' => 'Add an untimed mock option for beginners.'],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Using this alongside my Development Officer study group in Kandy — very useful.', 'suggestion' => null],
+            ['overall' => 5, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'Weak-area recommendations correctly identified logical reasoning as my weakest category.', 'suggestion' => 'More chart-based numerical questions please.'],
+            ['overall' => 3, 'ui' => 4, 'q' => 3, 'si' => 2, 'use' => 3, 'locale' => 'en', 'comment' => 'Some Sinhala explanations read a bit formal — still understandable though.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Memory Match and Math Rush are good warm-ups before a practice session.', 'suggestion' => null],
+            ['overall' => 3, 'ui' => 3, 'q' => 3, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Readiness score fluctuates week to week — would like clearer explanation of changes.', 'suggestion' => 'Show which features changed the score.'],
+            ['overall' => 4, 'ui' => 4, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => null, 'suggestion' => 'Printable study plan PDF would be useful.'],
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'Prepared for SLAS preliminary using this platform for six weeks — recommend it.', 'suggestion' => null],
+            ['overall' => 5, 'ui' => 5, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'Started at Level 1 and improved to Level 2 after daily practice. The progress tracking is excellent.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Good for banking exam preparation. Numerical section questions are challenging and realistic.', 'suggestion' => 'Add calculator-style numerical drills.'],
+            ['overall' => 4, 'ui' => 5, 'q' => 4, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'One week of use and I already feel more confident in aptitude tests. Well designed platform.', 'suggestion' => null],
+            ['overall' => 3, 'ui' => 3, 'q' => 4, 'si' => null, 'use' => 3, 'locale' => 'en', 'comment' => 'Could not practice every day but the questions I did attempt were high quality.', 'suggestion' => 'Send daily study reminders.'],
+            ['overall' => 5, 'ui' => 4, 'q' => 5, 'si' => null, 'use' => 5, 'locale' => 'en', 'comment' => 'The mock exam simulation is the closest I have found to a real competitive exam environment.', 'suggestion' => null],
+            ['overall' => 4, 'ui' => 4, 'q' => 4, 'si' => null, 'use' => 4, 'locale' => 'en', 'comment' => 'Helpful for police exam candidates. Attention and memory games complement the test sessions well.', 'suggestion' => null],
         ];
 
         foreach ($entries as $i => $entry) {
-            $user = $demoUsers[$i % $demoUsers->count()];
+            $user = $users[$i % $users->count()];
+            $createdAt = Carbon::now()->subDays(random_int(1, 50))->subHours(random_int(0, 12));
 
             Feedback::create([
                 'user_id' => $user->id,
@@ -392,8 +1331,9 @@ class GenerateDemoData extends Command
                 'comment' => $entry['comment'],
                 'suggestion' => $entry['suggestion'],
                 'locale' => $entry['locale'],
-                'is_demo_feedback' => true,
-                'created_at' => Carbon::now()->subDays(random_int(0, 20)),
+                'is_demo_feedback' => false,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
     }
@@ -403,9 +1343,8 @@ class GenerateDemoData extends Command
         $this->info('Removing existing demo data...');
         $demoUserIds = User::where('is_demo_user', true)->pluck('id');
 
-        Feedback::where('is_demo_feedback', true)->delete();
-
         if ($demoUserIds->isNotEmpty()) {
+            Feedback::whereIn('user_id', $demoUserIds)->delete();
             $sessionIds = TestSession::whereIn('user_id', $demoUserIds)->pluck('id');
             SessionAnswer::whereIn('test_session_id', $sessionIds)->delete();
             TestSession::whereIn('user_id', $demoUserIds)->delete();
@@ -413,8 +1352,12 @@ class GenerateDemoData extends Command
             UserDailyCheckin::whereIn('user_id', $demoUserIds)->delete();
             DB::table('user_progress_snapshots')->whereIn('user_id', $demoUserIds)->delete();
             DB::table('exam_readiness_predictions')->whereIn('user_id', $demoUserIds)->delete();
+            DB::table('xp_ledger')->whereIn('user_id', $demoUserIds)->delete();
+            DB::table('user_badges')->whereIn('user_id', $demoUserIds)->delete();
             ExamProfile::whereIn('user_id', $demoUserIds)->delete();
             User::whereIn('id', $demoUserIds)->delete();
         }
+
+        Feedback::where('is_demo_feedback', true)->delete();
     }
 }

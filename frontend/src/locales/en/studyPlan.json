@@ -12,8 +12,9 @@
   "minutes": "{{count}} min",
   "start": "Start",
   "daysLeft": "{{count}} days left",
+  "prepDayOfTotal": "Day {{day}} of your {{total}}-day plan",
   "streakChip": "{{count}}-day streak",
-  "levelChip": "Level {{level}}",
+  "rankChip": "Rank {{level}}",
   "phaseNames": {
     "foundation": "Foundation",
     "practice": "Practice",

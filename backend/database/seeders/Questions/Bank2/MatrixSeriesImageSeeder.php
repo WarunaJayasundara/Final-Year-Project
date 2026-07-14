@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Abstract-reasoning image bank: Raven-style 3x3 matrix reasoning and
  * figure-series completion, rendered as composite SVGs (question figure +
- * labelled A-D answer tiles). Every answer is derived from the generating
- * rule and every distractor is a single-attribute mutation of the correct
- * spec, checked for visual distinctness (including rotational symmetry of
- * the shape) before the question is accepted - a violation throws rather
- * than silently seeding a broken item.
+ * labelled A-D answer tiles). Each answer comes from the generating rule,
+ * and each distractor is a single-attribute mutation checked for visual
+ * distinctness (including shape rotational symmetry) before being
+ * accepted - a bad item throws instead of seeding silently.
  */
 class MatrixSeriesImageSeeder extends Seeder
 {

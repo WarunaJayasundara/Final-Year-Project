@@ -42,11 +42,7 @@ class ExamProfile extends Model
         'outcome_recorded_at' => 'datetime',
     ];
 
-    /**
-     * Common Sri Lankan competitive government examinations, shown as fixed
-     * options in the exam-profile setup form. "other" allows a free-text
-     * exam_name for anything not on this list.
-     */
+    /** Common Sri Lankan competitive government exams; "other" covers a free-text exam_name. */
     public const EXAM_CATEGORIES = [
         'slas' => 'Sri Lanka Administrative Service (SLAS)',
         'development_officer' => 'Development Officer',
@@ -64,10 +60,8 @@ class ExamProfile extends Model
     ];
 
     /**
-     * Documented heuristic, not measured data: a rough relative-difficulty
-     * weight per exam category used only to lightly tune how intensive
-     * StudyPlanService's recommendations are (more mock tests / weak-area
-     * drilling for exams generally considered more competitive/rigorous).
+     * A heuristic, not measured data: relative-difficulty weight per exam
+     * category, used only to lightly tune StudyPlanService's intensity.
      */
     public const DIFFICULTY_WEIGHT = [
         'slas' => 1.2,
@@ -105,22 +99,17 @@ class ExamProfile extends Model
     }
 
     /**
-     * True once the exam date has passed (strictly before today). Distinct
-     * from `status === 'completed'`: a profile becomes past-due the moment
-     * the date passes, but stays 'active' (and keeps showing the "did you
-     * attend?" prompt) until the student records an outcome or starts a new
-     * exam profile - see ExamProfileController::store()/outcome().
+     * True once the exam date has passed. Distinct from status='completed':
+     * a profile stays 'active' (still prompting for an outcome) until the
+     * student records one or starts a new profile - see
+     * ExamProfileController::store()/outcome().
      */
     public function isPastDue(): bool
     {
         return $this->exam_date !== null && $this->exam_date->startOfDay()->isBefore(Carbon::now()->startOfDay());
     }
 
-    /**
-     * The "72 seconds/question" pace target from the real exam's own
-     * structure - null unless the student supplied both duration and
-     * question count (both optional/skippable fields).
-     */
+    /** Pace target derived from the real exam's duration/question count - null unless both were supplied. */
     public function targetSecondsPerQuestion(): ?float
     {
         if (! $this->exam_duration_minutes || ! $this->exam_total_questions) {
@@ -128,5 +117,65 @@ class ExamProfile extends Model
         }
 
         return round(($this->exam_duration_minutes * 60) / $this->exam_total_questions, 1);
+    }
+
+    /**
+     * Raw signed day-count from profile creation to exam date - can be zero
+     * or negative if the exam is on/before the creation day. Private: callers
+     * want one of the three clamped views below, not this raw value.
+     */
+    private function prepTotalDaysRaw(): ?int
+    {
+        if (! $this->exam_date) {
+            return null;
+        }
+
+        return (int) $this->created_at->startOfDay()->diffInDays($this->exam_date, false);
+    }
+
+    /**
+     * How many days this student's own prep window actually spans (from the
+     * day they set up this exam profile to the exam date) - always at least
+     * 1. This is deliberately independent of daysRemaining()/StudyPlanService's
+     * phase boundaries (which only look at time left until the exam): two
+     * students with the same daysRemaining but different prepTotalDays are on
+     * genuinely different journeys - one set a short-notice exam, the other
+     * has been preparing for a while - and the frontend surfaces this
+     * separately as "Day X of your Y-day plan" rather than folding it into
+     * the phase name.
+     */
+    public function prepTotalDays(): ?int
+    {
+        $totalDays = $this->prepTotalDaysRaw();
+
+        return $totalDays !== null ? max(1, $totalDays) : null;
+    }
+
+    /** 1-indexed day-of-plan: the day the profile was created is day 1. */
+    public function prepDayNumber(): ?int
+    {
+        if (! $this->exam_date) {
+            return null;
+        }
+
+        $elapsedDays = (int) $this->created_at->startOfDay()->diffInDays(Carbon::now()->startOfDay(), false);
+
+        return max(1, $elapsedDays + 1);
+    }
+
+    /** Percentage of this student's own prep window elapsed - for the dashboard countdown ring and the study-plan "Day X of Y" line. */
+    public function prepProgressPercent(): ?float
+    {
+        $totalDays = $this->prepTotalDaysRaw();
+        if ($totalDays === null) {
+            return null;
+        }
+        if ($totalDays <= 0) {
+            return 100.0;
+        }
+
+        $elapsedDays = $this->created_at->startOfDay()->diffInDays(Carbon::now(), false);
+
+        return round(max(0, min(100, ($elapsedDays / $totalDays) * 100)), 1);
     }
 }

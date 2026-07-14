@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiAiCoachService implements AiCoachServiceInterface
 {
-    private const MODEL = 'gemini-1.5-flash';
+    private const MODEL = 'gemini-2.5-flash';
 
     private StudentContextService $context;
 

@@ -1,5 +1,5 @@
 """
-The 18 advanced behavioural/learning features requested for the research
+The 19 advanced behavioural/learning features requested for the research
 upgrade, each with an exact mathematical definition below. Every feature
 falls into one of two groups (see docs/ML_RESEARCH_METHODOLOGY.md Sec 4 for
 the full table with worked examples):
@@ -137,7 +137,7 @@ ADVANCED_FEATURE_ORDER = [
 def synthesize(theta: np.ndarray, motivation_latent: np.ndarray, consistency_latent: np.ndarray,
                rng: np.random.Generator) -> dict:
     """
-    Generates plausible values for all 18 advanced features for the
+    Generates plausible values for all 19 advanced features for the
     synthetic-calibrated portion of the hybrid dataset, driven by the same
     three latent traits (theta/motivation/consistency) as every other
     platform-only field - see structural_model.py's module docstring for

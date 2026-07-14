@@ -31,3 +31,11 @@ logs/
 # Raw third-party dataset downloads (regenerate via ml-service/data_pipeline/fetch_datasets.py) -
 # the OULAD studentVle.csv alone is ~450MB and must never be committed.
 ml-service/data/raw/
+
+# CatBoost's own auto-generated per-run training log/cache - regenerated every
+# training run, not source code or data.
+ml-service/catboost_info/
+
+# One-off dataset backup taken before a mid-session regeneration - not needed
+# going forward, the live dataset is ml-service/data/hybrid_student_dataset.csv.
+ml-service/data/*.bak

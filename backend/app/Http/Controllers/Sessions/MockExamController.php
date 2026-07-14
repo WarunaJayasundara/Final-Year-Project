@@ -13,15 +13,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * Personalized mock-exam generator (brief §13): a student-configured
- * question count/duration/scope/difficulty-mode, generated with weak
- * categories over-represented (QuestionSamplingService::sampleForMockExam())
- * while still covering the full requested scope realistically. Reuses
- * test_sessions/session_answers and the existing generic
- * /sessions/{session}/answers, /complete, /report endpoints in
- * TestSessionController for everything after creation - a mock exam is a
- * TestSession like any other, just with session_type='mock' and a real
- * time_limit_seconds, not a parallel data model.
+ * Personalized mock-exam generator: student-configured question
+ * count/duration/scope/difficulty, with weak categories over-represented
+ * (QuestionSamplingService::sampleForMockExam()). A mock exam is a
+ * TestSession like any other (session_type='mock', a real
+ * time_limit_seconds) - everything after creation reuses
+ * TestSessionController's generic answers/complete/report endpoints rather
+ * than a parallel data model.
  */
 class MockExamController extends Controller
 {
@@ -127,12 +125,15 @@ class MockExamController extends Controller
     /** @return array<int,float> category_id => accuracy_percent */
     private function categoryAccuracyMap(int $userId, $categoryIds): array
     {
+        $latestByCategory = UserProgressSnapshot::where('user_id', $userId)
+            ->whereIn('category_id', $categoryIds)
+            ->orderByDesc('snapshot_date')
+            ->get()
+            ->groupBy('category_id');
+
         $map = [];
         foreach ($categoryIds as $categoryId) {
-            $latest = UserProgressSnapshot::where('user_id', $userId)
-                ->where('category_id', $categoryId)
-                ->orderByDesc('snapshot_date')
-                ->value('accuracy_percent');
+            $latest = $latestByCategory->get($categoryId)?->first()?->accuracy_percent;
             $map[$categoryId] = $latest !== null ? (float) $latest : 50.0;
         }
 

@@ -5,13 +5,9 @@ namespace Database\Seeders\Questions;
 use Illuminate\Database\Seeder;
 
 /**
- * Harder numerical-ability questions modelled directly on real Sri Lankan
- * competitive exam papers (G.C.E. A/L Common General Test, SLAS aptitude
- * tests, university entrance tests) supplied as reference material: work &
- * time, simple interest, age problems, relative speed, and ratio-increase
- * problems. These are layered on top of the existing 80/level bank,
- * concentrated at levels 3-5 for the 20-30 year old competitive-exam
- * candidate audience.
+ * Harder numerical-ability questions modelled on real Sri Lankan
+ * competitive exam papers: work & time, simple interest, age problems,
+ * relative speed, and ratio-increase problems. Concentrated at levels 3-5.
  */
 class AdvancedNumericalQuestionsSeeder extends Seeder
 {
@@ -69,8 +65,8 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
             }
         }
 
-        // Independent per-level RNG streams can occasionally draw identical
-        // parameters at two levels - keep the first occurrence of each text.
+        // Per-level RNG streams can occasionally draw identical parameters
+        // at two levels - keep only the first occurrence of each text.
         $seen = [];
         $rows = array_values(array_filter($rows, function (array $row) use (&$seen) {
             if (isset($seen[$row[2]])) {
@@ -90,11 +86,8 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
 
     private function distractorsAround(int $answer, int $spread): array
     {
-        // When $spread is small (e.g. 1 for a small integer answer like a
-        // 2-year loan term), answer±1 only yields 2 distinct candidate
-        // values, so the loop could never reach 4 unique entries and would
-        // silently under-fill the option set. Widening the delta range by
-        // $guard once stuck guarantees termination with exactly 4 values.
+        // A small $spread can run out of distinct nearby values, so the
+        // delta range widens the longer the loop runs, guaranteeing 4 values.
         $set = [$answer];
         $guard = 0;
         while (count($set) < 4 && $guard < 50) {
@@ -130,8 +123,8 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
     {
         mt_srand($level * 910000 + $variant * 89 + 31);
 
-        // Search for a clean integer-days pair (a,b) whose combined rate is also
-        // a whole number of days, scaled up a bit for higher levels.
+        // Find an integer-days pair (a,b) whose combined rate is also a
+        // whole number, scaled up a bit for higher levels.
         $maxDays = 10 + $level * 6;
         do {
             $a = mt_rand(4, $maxDays);

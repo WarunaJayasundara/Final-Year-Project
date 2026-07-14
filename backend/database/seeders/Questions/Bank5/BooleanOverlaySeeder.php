@@ -8,15 +8,12 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Boolean visual-overlay reasoning (AND/OR/XOR of two overlapping shapes) -
- * one of the visual archetypes confirmed missing from the bank by the
- * adult-content audit. Uses the new SvgFigureBuilder::combineCells() panel
- * type added this session. The correct answer tile and all 3 distractor
- * tiles are each an ACTUAL boolean combination (AND, OR, XOR, and a
- * decoy "union minus a corner" tile) of the same two source cell sets -
- * never hand-drawn - so correctness is guaranteed by construction and a
- * signature-uniqueness check rejects any instance where two of the 4
- * resulting tiles would look identical.
+ * Boolean visual-overlay reasoning: AND/OR/XOR of two overlapping shapes,
+ * built with SvgFigureBuilder::combineCells(). The answer tile and all 3
+ * distractor tiles are each a real boolean combination of the same two
+ * source cell sets, never hand-drawn, so correctness is guaranteed by
+ * construction. A signature-uniqueness check rejects any instance where
+ * two of the 4 resulting tiles would look identical.
  */
 class BooleanOverlaySeeder extends Seeder
 {
@@ -83,8 +80,7 @@ class BooleanOverlaySeeder extends Seeder
                 $otherOps = array_values(array_diff($ops, [$op]));
                 $distractor1 = $this->svg->combineCells($cellsA, $cellsB, $otherOps[0]);
                 $distractor2 = $this->svg->combineCells($cellsA, $cellsB, $otherOps[1]);
-                // Third distractor: cellsA alone (a plausible-looking but
-                // wrong "forgot to combine" tile).
+                // Third distractor: cellsA alone, a "forgot to combine" tile.
                 $distractor3 = $cellsA;
 
                 $sig = fn ($cells) => $this->svg->polySignature($cells);
@@ -100,10 +96,8 @@ class BooleanOverlaySeeder extends Seeder
                 $this->seen[$signature] = true;
                 $made++;
 
-                // Rendered via the plain 'poly' spec (displays an arbitrary
-                // precomputed cell set as-is) - NOT the 'bool' spec, which
-                // would recompute a combination from cellsA/cellsB rather
-                // than just drawing the already-combined cells.
+                // Uses the plain 'poly' spec to draw the precomputed cells
+                // as-is, not 'bool', which would recompute the combination.
                 $tiles = [
                     ['poly' => $answerCells],
                     ['poly' => $distractor1],

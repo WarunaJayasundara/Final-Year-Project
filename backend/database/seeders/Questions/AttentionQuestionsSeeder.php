@@ -63,9 +63,8 @@ class AttentionQuestionsSeeder extends Seeder
 
     /**
      * Picks $needed unique (word-subset, letter) combinations via rejection
-     * sampling rather than materializing the full C(20, wordCount) x 8
-     * combinatorial space (which for wordCount=7 is 77,520 x 8 - too big to
-     * hold in memory for no real benefit when only ~27 are ever used).
+     * sampling instead of building the full combinatorial space, which is
+     * far larger than the ~27 combos actually needed.
      *
      * @return array<int,array{0:array<int,int>,1:int}> [wordIndices, letterIndex]
      */

@@ -11,14 +11,13 @@ use Illuminate\Support\Facades\Validator;
 
 /**
  * Admin "Knowledge & Question Source Library": upload a reference PDF,
- * extract its text and suggest topics (keyword-frequency heuristic, see
- * PdfIngestionService), then hand off to QuestionDraftService::generateDrafts()
- * (via AiQuestionController::generate, passing source_document_id) to
- * produce reviewable drafts grounded in the selected document.
+ * extract its text and suggest topics (see PdfIngestionService), then hand
+ * off to QuestionDraftService::generateDrafts() (via
+ * AiQuestionController::generate, passing source_document_id) for drafts
+ * grounded in the selected document.
  *
- * Files are stored on the private `local` disk (storage/app/source_documents)
- * - never publicly served, since several uploaded reference works are
- * copyrighted commercial books/past-paper compilations.
+ * Files live on the private `local` disk, never publicly served - several
+ * uploaded reference works are copyrighted commercial books/past papers.
  */
 class SourceDocumentController extends Controller
 {

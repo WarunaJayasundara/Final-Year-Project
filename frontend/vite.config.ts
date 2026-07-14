@@ -36,4 +36,30 @@ export default defineConfig({
       },
     },
   },
+  // `vite preview` (serves the production build) needs its own host/proxy
+  // config - used for the public tunnel, since a bundled production build is
+  // far more robust over a free tunnel than the dev server's hundreds of
+  // small unbundled module requests.
+  preview: {
+    port: 4173,
+    host: true,
+    // ngrok's reserved static domain is now the primary stable public URL
+    // (fixed across restarts, unlike the .loca.lt/.trycloudflare.com quick
+    // tunnels tried earlier - kept in the list in case those are used again).
+    allowedHosts: ['.loca.lt', '.trycloudflare.com', '.ngrok-free.dev', '.ngrok-free.app'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/sanctum': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

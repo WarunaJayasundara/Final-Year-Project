@@ -1392,13 +1392,14 @@ machine via XAMPP + native Python venv + Node.
 
 ## 15. Documentation Map (`docs/`)
 
+**Consolidated (this session)**: all 23 prior files in `docs/` (SYSTEM_DOCUMENTATION.md,
+ML_RESEARCH_METHODOLOGY.md, THESIS_METHODOLOGY_DRAFT.md, IRT_ADAPTIVE_TESTING_EXPLAINED.md,
+and 19 others) were merged into a single file and the originals deleted, per explicit
+user request ("remove all unnecessary files, make one single doc"):
+
 | File | Purpose |
 |---|---|
-| `SYSTEM_DOCUMENTATION.md` | The platform-wide reference — 19 numbered sections, cross-referenced (§ numbers matter, keep them consistent when editing). §7 = ML module, §18.1 = ML deployment/retraining guide, §19 = this session's Time-Aware/mock-exam/Sinhala-glossary upgrade. |
-| `ML_RESEARCH_METHODOLOGY.md` | **New this session** — thesis-grade full methodology: dataset selection+exclusion rationale, hybrid strategy, feature math, model comparison, HPO, evaluation, XAI, multi-output scoping, recommendation engine, continual learning, threats-to-validity/bias/fairness/privacy/limitations. Has a `<!-- FINAL_RESULTS_PLACEHOLDER -->` marker still needing the exact evaluate.py/explain.py numbers (§12). |
-| `ML_EXAM_READINESS_EXPLAINED.md` | Plain-language walkthrough (viva-friendly), updated this session to match the Phase 7 pipeline. |
-| `THESIS_METHODOLOGY_DRAFT.md` | Formal thesis chapter draft (IRT §3.x + ML §3.y), updated this session with 10 subsections covering the full Phase 7 upgrade; has one "populated after training" table to fill (§12). |
-| `IRT_ADAPTIVE_TESTING_EXPLAINED.md` | Pre-existing, unchanged this session — the Rasch/IRT engine's own plain-language doc. |
+| `HELAIQ_THESIS_DOCUMENT.md` | The single authoritative doc — project overview, full feature list, architecture, all core methodologies (IRT, ML, time-aware analytics, question generation, personalized learning, mock exams, games, Sinhala), testing/validation, current dev/testing infrastructure vs. planned real hosting, a full user guide, pre/post-test evaluation methodology **and real (small-sample, honestly reported) results**, known limitations, viva prep, and a formal thesis methodology chapter draft. Read this first for anything thesis- or documentation-related. |
 
 ---
 

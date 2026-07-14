@@ -1,0 +1,13 @@
+.git
+**/node_modules
+backend/vendor
+backend/.env
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+frontend/dist
+ml-service/venv
+ml-service/data/raw
+ml-service/catboost_info
+*.log

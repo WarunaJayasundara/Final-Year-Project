@@ -5,10 +5,10 @@ namespace Database\Seeders\Questions;
 use Illuminate\Database\Seeder;
 
 /**
- * Harder logical-reasoning questions modelled on real Sri Lankan competitive
- * exam papers supplied as reference material: coding-decoding ciphers, blood
- * relations, custom-defined-operator arithmetic, and letter series. Layered
- * on top of the existing 80/level bank, concentrated at levels 3-5.
+ * Harder logical-reasoning questions modelled on real Sri Lankan
+ * competitive exam papers: coding-decoding ciphers, blood relations,
+ * custom-operator arithmetic, and letter series. Concentrated at
+ * levels 3-5.
  */
 class AdvancedLogicalQuestionsSeeder extends Seeder
 {
@@ -98,7 +98,7 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
             }
         }
 
-        // Same cross-level RNG-collision guard as the numerical seeder.
+        // Guards against the same question text appearing across levels.
         $seen = [];
         $rows = array_values(array_filter($rows, function (array $row) use (&$seen) {
             if (isset($seen[$row[2]])) {

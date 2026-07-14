@@ -14,11 +14,11 @@ import { useCategories, useStartMockExam } from '@/features/sessions/useSessions
 import type { SessionData } from '@/features/sessions/types';
 
 /**
- * Intelligent personalized mock exam builder (brief §13): the student picks
- * question count/duration/scope/difficulty-mode, and MockExamController
- * (backed by QuestionSamplingService::sampleForMockExam()) generates a set
- * that over-represents weak categories while still covering the requested
- * scope realistically - not a plain random draw.
+ * Mock exam builder: the student picks question count/duration/scope/
+ * difficulty-mode, and MockExamController (backed by
+ * QuestionSamplingService::sampleForMockExam()) generates a set that
+ * over-represents weak categories while still covering the requested scope
+ * - not a plain random draw.
  */
 export function MockExamSetupPage() {
   const { t, i18n } = useTranslation(['common', 'sessions']);

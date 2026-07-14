@@ -8,17 +8,14 @@ use Illuminate\Database\Seeder;
 
 /**
  * Multi-constraint reasoning combining two independent orderings (height
- * rank + age rank across 4 people) - the archetype Bank3's own
- * SeatingArrangementSeeder docblock explicitly declined to attempt
- * ("deliberately restricted to closed-form rank arithmetic... rather than
- * multi-constraint puzzles that risk generating an ambiguous... arrangement").
+ * rank + age rank across 4 people) - the kind of puzzle Bank3's
+ * SeatingArrangementSeeder deliberately avoided due to ambiguity risk.
  * This seeder solves that risk directly: a ground-truth (height, age)
- * permutation pair is generated first, clues true under that pair are
- * revealed one at a time, and after each addition ALL 576 possible
- * (height, age) permutation-pairs for 4 people are brute-force checked -
- * a puzzle is only kept once its revealed clue set is satisfied by EXACTLY
- * ONE permutation pair (guaranteed non-ambiguous by construction and
- * verified by exhaustive search, not by hand-checking).
+ * permutation pair is generated first, true clues are revealed one at a
+ * time, and after each addition all 576 possible permutation-pairs are
+ * brute-force checked. A puzzle is only kept once its clue set is
+ * satisfied by exactly one pair - non-ambiguous by exhaustive search,
+ * not by hand-checking.
  */
 class MultiConstraintSeatingSeeder extends Seeder
 {
@@ -149,8 +146,8 @@ class MultiConstraintSeatingSeeder extends Seeder
             }
 
             if ($matches === 1) {
-                // Found a uniquely-determining clue set. Pick a target fact
-                // not already revealed as the question.
+                // Clue set now uniquely determines the answer - pick a
+                // target fact that wasn't already revealed as the question.
                 $target = $this->pickUnrevealedTarget($heightPerm, $agePerm, $usedFacts, $seed);
                 if ($target === null) {
                     return null;
@@ -166,7 +163,7 @@ class MultiConstraintSeatingSeeder extends Seeder
             }
 
             if (count($selected) >= 10) {
-                return null; // couldn't reach uniqueness within a reasonable clue budget
+                return null; // gave up reaching uniqueness within the clue budget
             }
         }
 

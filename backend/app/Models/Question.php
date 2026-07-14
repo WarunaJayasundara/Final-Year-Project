@@ -77,10 +77,8 @@ class Question extends Model
     }
 
     /**
-     * Expected solving time for this item: prefers the platform-learned
-     * value once calibrated, falls back to the author/AI-authored baseline,
-     * then a generic default - same fallback order used when scoring a
-     * live answer's time_performance_ratio.
+     * Learned time (once calibrated) > authored baseline > generic default -
+     * same fallback order used when scoring time_performance_ratio.
      */
     public function expectedTimeSeconds(): float
     {
@@ -110,13 +108,10 @@ class Question extends Model
     }
 
     /**
-     * Question data safe to send to the client before it's answered (never
-     * includes correct_option_key or explanations) - UNLESS $includeExplanation
-     * is explicitly passed true, which only the completed-session report
-     * endpoints do (TestSessionController::reportPayload()). Every other
-     * call site (live placement/daily/practice/mock question payloads)
-     * must keep the default false, or a student could read the explanation
-     * of why an option is correct before answering.
+     * Client-safe question data - never includes correct_option_key or the
+     * explanation unless $includeExplanation is true, which only the
+     * completed-session report endpoint should pass. Live question payloads
+     * must keep the default false or a student could see the answer early.
      */
     public function toClientArray(string $locale = 'en', bool $includeExplanation = false): array
     {

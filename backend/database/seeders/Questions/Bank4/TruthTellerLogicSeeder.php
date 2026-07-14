@@ -7,16 +7,12 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Multi-statement truth-count reasoning - the "interrogation"/"how many
- * answers could be true" archetype confirmed present in the uploaded
- * GCE A/L Common General Test specimen paper but absent from MindRise's
- * bank (the existing StatementSufficiencyReasoningSeeder asks a different
- * question: whether statements pin down a single value, not how many of
- * several independent threshold claims about a value are true). Every
- * instance is evaluated by direct integer comparison against the generated
- * X - never asserted. Two tiers: Level 3 reveals X directly (single-step
- * evaluation of 3 claims); Level 4-5 derives X from one linear clue first
- * (multi-step: solve for X, then evaluate).
+ * Multi-statement truth-count reasoning: "how many of these statements
+ * are true" rather than StatementSufficiencyReasoningSeeder's "do these
+ * statements pin down a single value" question. Every instance is
+ * evaluated by direct integer comparison against the generated X, never
+ * asserted. Level 3 reveals X directly (single-step evaluation of 3
+ * claims); Level 4-5 derives X from one linear clue first.
  */
 class TruthTellerLogicSeeder extends Seeder
 {
@@ -116,9 +112,8 @@ class TruthTellerLogicSeeder extends Seeder
     {
         mt_srand($seed * 7 + 3);
         $offsets = [random_int(-20, 20), random_int(-20, 20), random_int(-20, 20)];
-        // Guarantee no offset is 0 (would make a claim's boundary equal to X,
-        // an edge case this simple 3-kind claim set isn't designed to phrase
-        // unambiguously).
+        // No offset can be 0, or a claim's boundary would equal X, which
+        // this claim set can't phrase unambiguously.
         foreach ($offsets as &$o) {
             if ($o === 0) {
                 $o = 5;

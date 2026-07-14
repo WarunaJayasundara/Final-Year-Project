@@ -76,9 +76,7 @@ class QuestionController extends Controller
         return response()->json(['message' => 'Question deleted.']);
     }
 
-    /**
-     * Upload/replace the image for an image-type (spatial pattern) question.
-     */
+    /** Upload/replace the image for an image-type (spatial pattern) question. */
     public function uploadImage(Request $request, Question $question)
     {
         $validator = Validator::make($request->all(), [
@@ -100,16 +98,11 @@ class QuestionController extends Controller
     }
 
     /**
-     * Pattern/visual question generator (brief #11.C): generates one
-     * question from an explicit logical rule (not decorative random shapes)
-     * via VisualQuestionGeneratorService, writes the SVG to storage so it's
-     * immediately previewable, and returns everything the admin needs to
-     * either regenerate (call again) or save (POST the same payload,
-     * including this response's image_path, to the normal store() endpoint
-     * - no separate creation path, this only ever produces a preview).
-     * Only 'shape_rotation' is wired up so far; other SvgFigureBuilder
-     * archetypes (matrix reasoning, paper folding, cube nets, counting)
-     * remain seeder-only - a documented scope cut, not an oversight.
+     * Generates a preview-only visual question via VisualQuestionGeneratorService
+     * and writes its SVG to storage. To actually save it, POST the same
+     * payload (incl. this response's image_path) to store() - there's no
+     * separate creation path. Only 'shape_rotation' is wired up; other
+     * SvgFigureBuilder archetypes remain seeder-only (documented scope cut).
      */
     public function generateVisualPreview(Request $request, VisualQuestionGeneratorService $generator)
     {

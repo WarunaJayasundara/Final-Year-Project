@@ -6,17 +6,13 @@ use Illuminate\Database\Seeder;
 
 /**
  * Spatial & pattern-recognition questions rendered as Unicode shape/emoji
- * sequences (question_type = mcq_text) rather than raster images - this
- * keeps the seeded bank fully text-based and immediately usable without
- * needing generated image assets. The mcq_image type + image upload
- * endpoint (Admin\QuestionController::uploadImage) is fully built if an
- * admin wants to add real Raven's-matrix-style images later.
+ * sequences (mcq_text) rather than raster images, keeping the bank
+ * text-based with no generated image assets needed. The mcq_image type
+ * and its upload endpoint (Admin\QuestionController::uploadImage) are
+ * still available if real images are wanted later.
  *
- * Combo pools are built ONCE as a single shuffled list per question type
- * (not per level) and sliced into disjoint chunks per level. Building pools
- * per-level independently would let the same underlying combo be re-drawn
- * by two different levels (each level's own shuffle can't see what other
- * levels already used), producing cross-level duplicate questions.
+ * Combo pools are built once as a single shuffled list per question type,
+ * then sliced per level, so the same combo can't be reused across levels.
  */
 class SpatialPatternQuestionsSeeder extends Seeder
 {
@@ -120,8 +116,8 @@ class SpatialPatternQuestionsSeeder extends Seeder
         [$setIdx, $rotation, $repeats] = $combo;
         $set = self::SHAPE_SETS[$setIdx];
 
-        // Rotate the pattern's starting phase so the same shape-set produces
-        // visibly different sequences depending on rotation offset.
+        // Rotate the starting phase so the same shape-set can still produce
+        // visibly different sequences.
         $basePattern = array_slice($set, 0, $periodLength);
         $pattern = array_merge(array_slice($basePattern, $rotation), array_slice($basePattern, 0, $rotation));
 

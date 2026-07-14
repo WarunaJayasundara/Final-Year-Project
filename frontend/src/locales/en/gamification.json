@@ -5,7 +5,7 @@
   },
   "widget": {
     "title": "Your Progress",
-    "level": "Level {{level}}",
+    "rank": "Rank {{level}}",
     "xpToNext": "{{current}}/{{target}} XP to next level",
     "coins": "Coins",
     "streak": "Day streak",

@@ -18,7 +18,7 @@ function get(obj: unknown, path: string[]): unknown {
 
 export function AdminMlResearchPage() {
   const { t } = useTranslation('admin');
-  const [includeDemo, setIncludeDemo] = useState(false);
+  const [includeDemo, setIncludeDemo] = useState(true);
   const { data: overview, isLoading: overviewLoading } = useMlOverview(includeDemo);
   const { data: reports, isLoading: reportsLoading } = useMlResearchReports();
 

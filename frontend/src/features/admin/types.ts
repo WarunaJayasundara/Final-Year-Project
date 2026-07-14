@@ -155,5 +155,8 @@ export interface AdminUser {
   role: 'super_admin' | 'admin' | 'user';
   auth_provider: 'google' | 'password';
   current_level_id: number | null;
+  current_level: { level_number: number; name_en: string; name_si: string } | null;
+  placement_completed_at: string | null;
+  daily_sessions_completed_count: number;
   created_at: string;
 }

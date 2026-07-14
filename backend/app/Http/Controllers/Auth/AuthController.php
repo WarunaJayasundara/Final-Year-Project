@@ -26,23 +26,22 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle the callback from Google, find-or-create the user, log them in,
-     * then redirect back to the frontend SPA.
+     * Find-or-create the user from Google's callback, log them in, redirect
+     * back to the SPA.
      *
-     * Account linking: matched by google_id first, then by email. The email
-     * Socialite returns here comes from Google's own OAuth consent flow, so
-     * it is already provider-verified - matching a pre-existing password
-     * account by that email and attaching google_id to it is safe (the
-     * brief's "verified Google email" requirement). We deliberately do NOT
-     * do the reverse (auto-attach a password to a Google-only account from
-     * an unverified string anywhere else) - only this direction, only from
-     * this OAuth callback.
+     * Account linking: matched by google_id first, then by email. Since the
+     * email Socialite returns is already provider-verified by Google, it's
+     * safe to attach google_id to a matching password account. We never do
+     * the reverse (auto-attaching a password to a Google-only account) -
+     * only this direction, only from this callback.
      */
     public function handleGoogleCallback(Request $request)
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Google OAuth callback failed.', ['error' => $e->getMessage()]);
+
             return redirect(env('FRONTEND_URL').'/login?error=google_auth_failed');
         }
 
@@ -73,9 +72,8 @@ class AuthController extends Controller
     }
 
     /**
-     * Student self-registration with username + email + password. Google
-     * accounts remain untouched by this path - if the email later signs in
-     * with Google, handleGoogleCallback() links it (see docblock there)
+     * Student self-registration with username + email + password. If this
+     * email later signs in with Google, handleGoogleCallback() links it
      * rather than creating a duplicate account.
      */
     public function register(Request $request)

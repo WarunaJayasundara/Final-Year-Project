@@ -14,13 +14,13 @@ import type { VisualQuestionPreview } from '@/features/admin/types';
 const PATTERN_TYPES = [{ value: 'shape_rotation' as const, labelKey: 'questions.visualGen.patternShapeRotation' }];
 
 /**
- * Pattern/visual question generator (brief #11.C): generates from an
- * explicit logical rule (VisualQuestionGeneratorService, reusing the same
- * chirality-verified correctness check the seeders use), not decorative
- * random shapes. Only "shape rotation" is wired up - other SvgFigureBuilder
- * archetypes (matrix reasoning, paper folding, cube nets, counting) are
- * seeder-only for now; shown as disabled options below rather than hidden,
- * so the scope cut is visible, not silent.
+ * Pattern/visual question generator: generates from an explicit logical
+ * rule (VisualQuestionGeneratorService, reusing the same chirality-verified
+ * correctness check the seeders use), not decorative random shapes. Only
+ * "shape rotation" is wired up - other SvgFigureBuilder archetypes (matrix
+ * reasoning, paper folding, cube nets, counting) are seeder-only for now;
+ * shown as disabled options below rather than hidden, so the scope cut is
+ * visible.
  */
 export function AdminVisualGeneratorPage() {
   const { t } = useTranslation('admin');

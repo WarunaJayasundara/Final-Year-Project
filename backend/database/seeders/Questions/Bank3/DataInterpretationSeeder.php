@@ -7,18 +7,14 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
 /**
- * Data interpretation (reading a small dataset and computing a numeric
- * answer) - an archetype confirmed missing from MindRise's existing
- * categories by the Phase-1 PDF analysis (the official CommonGeneralTest
- * specimen paper includes bar-chart data-interpretation items). Presented
- * as an inline text dataset (letter-labelled categories) rather than a
- * rendered chart image in this batch - a deliberate, documented scope
- * decision: SvgFigureBuilder's chart-rendering integration is a natural
- * follow-up, not attempted here to keep every answer a directly-verifiable
- * arithmetic computation on the exact numbers shown to the student. Only
- * sum and difference questions are included (not "highest/lowest category"
- * or percentage phrasing), matching the Sinhala vocabulary this project's
- * corpus has actually verified - see validate_sinhala.py's review log.
+ * Data interpretation: reading a small dataset and computing a numeric
+ * answer, an archetype missing from the question bank. Presented as an
+ * inline text dataset (letter-labelled categories) rather than a
+ * rendered chart image - a real chart is a natural follow-up, left out
+ * here so every answer stays a directly verifiable computation on the
+ * numbers shown. Only sum and difference questions are included, since
+ * those match the Sinhala vocabulary this project's corpus has verified
+ * (see validate_sinhala.py's review log).
  */
 class DataInterpretationSeeder extends Seeder
 {

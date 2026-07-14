@@ -188,6 +188,17 @@ APPROVED_NOVEL_WORDS: set[str] = {
     # "ප්‍රශ්නවලට" (dative-plural of the already-approved ප්‍රශ්න
     # "questions"), "සොයා" ("search/find", gerund of සොයනවා).
     "අනුපිළිවෙලක්", "ඉවර", "තරම්", "ප්‍රශ්නවලට", "සොයා",
+    # Admin dashboard pre/post-test + attendance chart (frontend/src/locales/si/
+    # admin.json dashboard.averageAttendance/attendance) - "පැමිණීම"
+    # ("attendance/arrival") is the standard gerund noun form of the same root
+    # already approved as the conjugated verb forms "පැමිණියා"/"පැමිණියේ"
+    # (dashboard.json exam-outcome copy), not a new root.
+    "පැමිණීම",
+    # Study-plan "Day X of your Y-day plan" personalization line
+    # (frontend/src/locales/si/studyPlan.json prepDayOfTotal) - "සැලැස්මේ"
+    # is the locative/genitive inflection of the already-approved root
+    # "සැලැස්ම" ("plan", already used e.g. "අධ්‍යයන සැලැස්මක්" in common.json).
+    "සැලැස්මේ",
 }
 
 SINHALA_RE = re.compile(r"[඀-෿‍]+")

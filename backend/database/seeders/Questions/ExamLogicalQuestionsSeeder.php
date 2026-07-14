@@ -190,8 +190,8 @@ class ExamLogicalQuestionsSeeder extends Seeder
         $rows = [];
         $index = 0;
 
-        // Valid form ("All A are B; X is an A") and undetermined form ("Some A are B; X is an A")
-        // alternate across the curated triples; each triple is used exactly twice, once per form.
+        // Alternates between a valid form ("All A are B") and an
+        // undetermined form ("Some A are B"), each triple used once per form.
         $slots = [];
         foreach ([3 => 10, 4 => 10, 5 => 12] as $level => $count) {
             for ($i = 0; $i < $count; $i++) {

@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterface
 {
-    private const MODEL = 'gemini-1.5-flash';
+    private const MODEL = 'gemini-2.5-flash';
 
     private const MAX_EXCERPT_CHARS = 6000;
 

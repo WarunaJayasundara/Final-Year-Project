@@ -8,15 +8,13 @@ use Illuminate\Database\Seeder;
 
 /**
  * Direction-sense reasoning (compass movement + shortest-distance
- * calculation) - an archetype confirmed missing from MindRise's existing
- * categories by the Phase-1 PDF analysis (appeared in the official
- * CommonGeneralTest specimen paper and several exam-prep guides). All
- * answers are computed via real coordinate geometry (Pythagorean distance
- * for the distance archetype; exact axis cancellation for the direction
- * archetype, so the net result is always a pure cardinal direction rather
- * than an intercardinal one this project has no verified Sinhala vocabulary
- * for) - never guessed. Subject is a letter label (P), avoiding any need
- * for a Sinhala "person" noun.
+ * calculation), an archetype missing from the question bank and common
+ * in real exam-prep guides. Answers are computed via real coordinate
+ * geometry: Pythagorean distance for the distance archetype, and exact
+ * axis cancellation for the direction archetype so the result is always
+ * a pure cardinal direction (no intercardinal Sinhala vocabulary is
+ * verified for this project). Subject is a letter label (P) to avoid
+ * needing a Sinhala "person" noun.
  */
 class DirectionSenseSeeder extends Seeder
 {

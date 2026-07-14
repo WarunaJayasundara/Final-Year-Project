@@ -18,22 +18,15 @@ use Database\Seeders\Questions\ExamNumericalQuestionsSeeder;
 use Illuminate\Database\Seeder;
 
 /**
- * Orchestrates the competitive-exam question bank (~5,300 questions):
- * the exam-authentic and advanced waves modelled on Sri Lankan aptitude
- * papers, plus the Bank2 generation layer (SVG matrix reasoning / figure
- * series / rotation / mirror / paper folding / cube nets, plus large
- * numerical, logical/verbal, memory and attention banks). The original
- * 2,000-question starter bank was retired (deactivated, kept only for
- * response-history integrity) after supervisor feedback that it was below
- * the target audience's level - see CompetitiveBankSeeder for the
- * deactivate-and-replace entry point used on an existing database.
+ * Orchestrates the competitive-exam question bank: the exam-authentic and
+ * advanced waves modelled on Sri Lankan aptitude papers, plus the Bank2
+ * generation layer (SVG matrix/rotation/mirror/folding/cube-net figures,
+ * plus large numerical, logical/verbal, memory and attention banks). The
+ * older starter bank was deactivated, not deleted, to keep response
+ * history intact - see CompetitiveBankSeeder for the replace entry point.
  *
- * Order matters: the Exam/Advanced waves run first so the Bank2 seeders'
- * run-time duplicate guard can see their question texts. Bank3 (blood
- * relations / direction sense / coding-decoding / calendar-clock / seating
- * arrangement / data interpretation / statement sufficiency - archetypes
- * confirmed missing by the Phase-1 PDF document analysis, see CLAUDE.md)
- * runs last for the same reason.
+ * Order matters: earlier waves run first so later seeders' duplicate
+ * guards can see their question texts before generating more.
  */
 class QuestionSeeder extends Seeder
 {

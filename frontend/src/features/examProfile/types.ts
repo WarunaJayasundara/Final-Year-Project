@@ -21,6 +21,8 @@ export interface ExamProfile {
   target_seconds_per_question: number | null;
   days_remaining: number | null;
   prep_progress_percent: number | null;
+  prep_day_number: number | null;
+  prep_total_days: number | null;
   is_past_due: boolean;
   // True when the exam date has passed and the student hasn't yet said
   // whether they attended - the dashboard shows an outcome prompt until this
@@ -105,6 +107,9 @@ export interface StudyPlan {
   exam_name: string | null;
   days_remaining: number | null;
   weeks_remaining: number | null;
+  prep_day_number: number | null;
+  prep_total_days: number | null;
+  prep_progress_percent: number | null;
   weak_categories: CategoryRef[];
   strongest_category: CategoryRef | null;
   recommended_daily_questions: number;

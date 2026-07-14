@@ -132,6 +132,7 @@ export function AdminUsersPage() {
                 <TableHead>{t('users.table.name')}</TableHead>
                 <TableHead>{t('users.table.email')}</TableHead>
                 <TableHead>{t('users.table.role')}</TableHead>
+                <TableHead>{t('users.table.progress')}</TableHead>
                 <TableHead>{t('users.table.joined')}</TableHead>
                 {isSuperAdmin && <TableHead className="text-right">{t('users.table.actions')}</TableHead>}
               </TableRow>
@@ -158,6 +159,22 @@ export function AdminUsersPage() {
                       </Select>
                     ) : (
                       <Badge variant="secondary">{t(`users.roles.${user.role}`)}</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {user.role === 'user' ? (
+                      <div className="flex flex-col gap-1 text-xs">
+                        <Badge variant={user.placement_completed_at ? 'secondary' : 'outline'}>
+                          {user.placement_completed_at
+                            ? (user.current_level?.name_en ?? t('users.table.placementDone'))
+                            : t('users.table.placementPending')}
+                        </Badge>
+                        <span className="text-muted-foreground">
+                          {t('users.table.dailySessions', { count: user.daily_sessions_completed_count })}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
