@@ -4,7 +4,7 @@
 Final Year Project CT/2020/074 — W.R. Jayasundara, Department of Computer Systems Engineering, University of Kelaniya
 Supervisor: Dr. N. Mekhala Hakmanage, Senior Lecturer, Computer Systems Engineering
 
-*This is the single master reference for writing the thesis: it consolidates everything previously spread across 23 separate documents in `docs/` into one document, in the order needed for a thesis (overview → features → architecture → methodology → testing → deployment → user guide → results → limitations → viva prep → formal methodology chapter draft). Every number in this document is either taken directly from a prior verified project record or was independently re-queried against the live system while writing this document (see §8) — nothing here is fabricated or estimated. Where two prior documents disagreed on a figure (this happened twice — the IRT level cutpoints and the question-bank size), the more recent, corrected figure is used and the discrepancy is noted so it is not silently smoothed over.*
+*This is the single master reference for writing the thesis: it consolidates everything previously spread across 23 separate documents in `docs/` into one document, in the order needed for a thesis (overview → features → architecture → methodology → testing → deployment → user guide → results → limitations → viva prep → formal methodology chapter draft). Every number in this document is either taken directly from a prior verified project record or was independently re-queried against the live system while writing this document (see Section 8) — nothing here is fabricated or estimated. Where two prior documents disagreed on a figure (this happened twice — the IRT level cutpoints and the question-bank size), the more recent, corrected figure is used and the discrepancy is noted so it is not silently smoothed over.*
 
 ---
 
@@ -47,12 +47,12 @@ The project began with a narrower scope. Early supervisor feedback that this sco
 1. **A properly measured starting point.** An adaptive IRT/computerized-adaptive-test (CAT) placement test estimates a real latent ability score (θ, "theta"), not a raw percentage.
 2. **Practice that targets weaknesses.** Daily and practice sessions weight question allocation toward a student's weakest categories rather than sampling evenly or randomly.
 3. **A readiness signal that means something.** A trained machine-learning model estimates whether a student is on track, distinguishing *general cognitive readiness* from *readiness for a specific named exam*.
-4. **Full bilingual support.** Every student-facing surface exists in English and Sinhala, protected by a validated Sinhala-text corpus process (§4.8) to prevent script corruption.
+4. **Full bilingual support.** Every student-facing surface exists in English and Sinhala, protected by a validated Sinhala-text corpus process (Section 4.8) to prevent script corruption.
 5. **Government-exam preparation tools.** An exam profile with a live countdown, a rule-based adaptive study plan, and full timed mock exams.
 
 ### 1.4 Academic honesty as a working principle
 
-This project's own standing engineering convention — carried through every session of its development and preserved unchanged in this consolidated document — is "honest scope-cuts over overclaiming": every deliberate simplification carries a one-paragraph rationale, and negative or inconclusive results (most notably the time-aware ML ablation study, §4.3) are reported as such rather than hidden or reframed as successes. Wherever this document says a number is "real," it means the number came from an actually-executed test, query, or training run — not an estimate, and never a fabricated or rounded-up figure. This principle should be carried into every chapter of the thesis itself.
+This project's own standing engineering convention — carried through every session of its development and preserved unchanged in this consolidated document — is "honest scope-cuts over overclaiming": every deliberate simplification carries a one-paragraph rationale, and negative or inconclusive results (most notably the time-aware ML ablation study, Section 4.3) are reported as such rather than hidden or reframed as successes. Wherever this document says a number is "real," it means the number came from an actually-executed test, query, or training run — not an estimate, and never a fabricated or rounded-up figure. This principle should be carried into every chapter of the thesis itself.
 
 ---
 
@@ -63,7 +63,7 @@ This project's own standing engineering convention — carried through every ses
 | Role | What they do |
 |---|---|
 | **Student** | Registers (Google OAuth or email/username + password), takes the adaptive placement test, receives daily/weak-area/timed practice recommendations, tracks IQ and readiness trends, plays 8 cognitive-training mini-games, takes timed mock exams, reads self-learning study notes with spaced repetition, sets a government-exam target with a live countdown, and can submit feedback. |
-| **Admin** | Manages the question bank across four authoring modes (manual text, manual image, deterministic pattern-generated, AI-drafted), reviews AI-generated content before it can go live, runs IRT psychometric calibration, monitors cohort-wide research analytics with a synthetic/real data toggle, manages an uploaded reference-document knowledge library, and reviews student feedback. |
+| **Admin** | Manages the question bank across four authoring modes (manual text, manual image, deterministic pattern-generated, AI-drafted), reviews AI-generated content before it can go live, runs IRT psychometric calibration, monitors cohort-wide research analytics (hardcoded to real data only — demo-data generation is a CLI-only tool with no UI trigger anywhere in the admin panel), manages an uploaded reference-document knowledge library, and reviews student feedback. |
 
 ### 2.2 Feature list
 
@@ -74,13 +74,13 @@ This project's own standing engineering convention — carried through every ses
 - **Explainable AI** on every prediction: top-5 SHAP-attributed reasons plus a trend-aware plain-English explanation comparing against the student's previous prediction.
 - **AI-assisted wrong-answer explanations** (Gemini, with an honest rule-based Mock fallback that always works with zero API key).
 - **8 cognitive-training mini-games**: Memory Match, Sequence Puzzle, Math Rush, Mental Rotation Challenge, Selective Attention, Working Memory Span (adaptive), Visual-Spatial Memory (adaptive), and Cognitive Command Center (a multi-task game computing a real cognitive-switching-cost metric).
-- **Gamification**: XP on a triangular level curve, coins, a 14-badge catalogue, daily/weekly missions, a cohort leaderboard.
+- **Gamification**: XP on a triangular rank curve (deliberately named "Rank," not "Level," to avoid colliding with the separate 1–5 IQ placement Level), coins, a 14-badge catalogue, daily/weekly missions, a cohort leaderboard.
 - **Self-learning study notes** with structured sections (learning objective, worked example, key technique, common mistakes), a simplified SM-2 spaced-repetition scheduler, weak-subcategory-triggered recommendations, and an answer-included retrieval-practice self-check.
 - **Government exam profile** with a live countdown, phase-aware rule-based study plan, optional real-exam pacing structure (question count, duration, pass mark, negative marking, sections), and a real post-exam outcome capture (attended / passed / score).
 - **Speed-accuracy scoring** — a bounded [0,100] per-answer score built on real captured response times, separate from and non-destructive to the IRT ability estimate.
 - **Student feedback and rating system**, with an admin review dashboard and a structurally-anonymized CSV export (no user-identifying columns ever selected).
 - **Full bilingual (EN/SI) UI**, backed by a validated Sinhala corpus-safety process.
-- **Admin research analytics** with a synthetic/real data toggle so demo accounts can never contaminate research numbers, an ML Research dashboard (model comparison, evaluation metrics, SHAP importances, version history), a Question Bank Stats dashboard, and an admin Knowledge Library for uploaded reference PDFs (topic extraction, chapter-structure detection, AI-question source context, study-note generation source).
+- **Admin research analytics**, hardcoded to real data only (demo-account generation exists only as a CLI tool, `demo:generate`/`demo:remove`, with no admin-panel trigger, so demo data can never contaminate research numbers in normal use), an ML Research dashboard (model comparison, evaluation metrics, SHAP importances, version history), a Question Bank Stats dashboard, and an admin Knowledge Library for uploaded reference PDFs (topic extraction, chapter-structure detection, AI-question source context, study-note generation source).
 - **AI question generation** with a mandatory draft → admin-review → publish pipeline; two independent duplicate-detection signals (Jaccard text overlap + a TF-IDF-cosine microservice check).
 
 ### 2.3 Scale, as of the most recent full system audit
@@ -197,13 +197,13 @@ For the full column-level reference — every column's type, nullability/default
 ### 3.8 Frontend architecture
 
 - **Routing**: a single `App.tsx` route tree, guarded by composable wrapper routes (`<RequireAuth>`, `<RequirePlacement>`, `<RequireRole roles={[...]}>`). Admin routes live under `/admin/*` inside their own persistent-sidebar layout, separate from the student-facing top-nav layout.
-- **Server state**: TanStack Query v5 everywhere — no ad-hoc `fetch` + `useState`. A critical, project-wide convention: **hook-level** `useMutation({ onSuccess, onError })` must be used, never per-call `.mutate(vars, { onSuccess })` — the latter is silently dropped under React 18/19 Strict Mode's double-invoke behaviour. (This exact anti-pattern was found live in all 8 games during the final system audit and fixed — see §5.)
+- **Server state**: TanStack Query v5 everywhere — no ad-hoc `fetch` + `useState`. A critical, project-wide convention: **hook-level** `useMutation({ onSuccess, onError })` must be used, never per-call `.mutate(vars, { onSuccess })` — the latter is silently dropped under React 18/19 Strict Mode's double-invoke behaviour. (This exact anti-pattern was found live in all 8 games during the final system audit and fixed — see Section 5.)
 - **i18n**: i18next, EN/SI namespaces under `src/locales/{en,si}/`, loaded eagerly at boot.
 - **Design system**: a "Ceylon sapphire + cinnamon gold" palette (a deep-sapphire primary plus a sparing gold accent for achievements/streaks), a hand-coded `HelaIQMark` logo (an "H"-shaped mark using two strokes plus a 3-step ascending crossbar, deliberately avoiding generic AI-app clichés like a brain icon, a robot, or sparkles), a `BalancedGrid` primitive that computes a genuinely balanced row layout instead of a fixed `grid-cols-N` (columns = min(preferred, itemCount), rows = ceil(itemCount/columns), items per row = ceil(itemCount/rows)), and dedicated Sinhala typography (`@fontsource/noto-sans-sinhala` applied via a `:lang(si)` CSS rule, since the primary English typeface has no Sinhala glyphs).
 
 ### 3.9 Deployment topology (development)
 
-All three services run on the same machine during development: Laravel on `:8000`, Vite on `:5173`, the ML service on `:8100`. None of them are persistent OS services — each needs a manual restart after a reboot or a long idle period. Full current and planned deployment detail is in §6.
+All three services run on the same machine during development: Laravel on `:8000`, Vite on `:5173`, the ML service on `:8100`. None of them are persistent OS services — each needs a manual restart after a reboot or a long idle period. Full current and planned deployment detail is in Section 6.
 
 ---
 
@@ -241,7 +241,7 @@ A student's ability is estimated via **Maximum Likelihood Estimation**, solved b
 θ_(k+1) = θ_k + [ Σ(u_i − P_i(θ_k)) ] / [ Σ P_i(θ_k)(1 − P_i(θ_k)) ]
 ```
 
-where `u_i` is the observed 0/1 response to item `i`. The denominator is the test information function at `θ_k`; its inverse square root gives the standard error, `SE(θ) = 1/√I(θ)`, which drives both the adaptive stopping rule (§4.1.5) and a respondent-level precision indicator surfaced in the platform's analytics.
+where `u_i` is the observed 0/1 response to item `i`. The denominator is the test information function at `θ_k`; its inverse square root gives the standard error, `SE(θ) = 1/√I(θ)`, which drives both the adaptive stopping rule (Section 4.1.5) and a respondent-level precision indicator surfaced in the platform's analytics.
 
 #### 4.1.5 Adaptive item selection (CAT) and termination
 
@@ -287,7 +287,7 @@ Item-parameter recovery was near-perfect, consistent with calibration accuracy b
 | Zero items | 0 | 9.99 | — | — |
 | Mixed (3/5 correct) | 1.59 | 1.10 | 124 | above_average |
 
-The single-correct-item case's huge SE (9.59) is real and correctly computed, but the live placement flow can never actually reach it in production: `TestSessionController` enforces the 15-item minimum described in §4.1.5, so a genuinely low-confidence single-item estimate is never shown to a real student as a finished result — a property of the underlying mathematics, not a reachable failure mode.
+The single-correct-item case's huge SE (9.59) is real and correctly computed, but the live placement flow can never actually reach it in production: `TestSessionController` enforces the 15-item minimum described in Section 4.1.5, so a genuinely low-confidence single-item estimate is never shown to a real student as a finished result — a property of the underlying mathematics, not a reachable failure mode.
 
 #### 4.1.8 Reliability reporting
 
@@ -312,7 +312,7 @@ surfaced on an administrator-facing Psychometrics dashboard alongside item diffi
 
 | Output | Type | Ground truth |
 |---|---|---|
-| Readiness label (`high_risk` / `needs_improvement` / `almost_ready` / `ready`) + smoothed 0–100 percentage | Classification | Composite heuristic (synthetic rows) / real outcome (real rows) — see §4.2.4 |
+| Readiness label (`high_risk` / `needs_improvement` / `almost_ready` / `ready`) + smoothed 0–100 percentage | Classification | Composite heuristic (synthetic rows) / real outcome (real rows) — see Section 4.2.4 |
 | Risk of dropping practice (probability + boolean) | Binary classification | Real (OULAD temporal split) |
 | Predicted next assessment score | Regression | Real (OULAD temporal split) |
 | Predicted score change | Regression | Real (OULAD temporal split) |
@@ -432,7 +432,7 @@ Top-3 selected for HPO: XGBoost, LightGBM, CatBoost.
 
 **Selected: XGBoost**, optimized macro-F1 = **0.6808** on held-out test data. Optuna tuning improved it only marginally (+0.001–0.002) — reported honestly as a small, not a large, effect of hyperparameter search on this dataset.
 
-*Known, documented discrepancy*: the `model.joblib` file currently deployed live is stamped version `20260709143659`, an earlier training run than the `20260711054426` run these headline figures are drawn from. Both runs used the same pipeline and produced comparable macro-F1; the discrepancy exists because `model_registry.py`'s formal `register_version()`/`promote()` workflow was implemented but never actually run for either training run — a real, acknowledged gap (§9), not silently resolved.
+*Known, documented discrepancy*: the `model.joblib` file currently deployed live is stamped version `20260709143659`, an earlier training run than the `20260711054426` run these headline figures are drawn from. Both runs used the same pipeline and produced comparable macro-F1; the discrepancy exists because `model_registry.py`'s formal `register_version()`/`promote()` workflow was implemented but never actually run for either training run — a real, acknowledged gap (Section 9), not silently resolved.
 
 #### 4.2.7 Comprehensive evaluation
 
@@ -507,7 +507,7 @@ Gender shows near-parity (0.4 percentage-point gap). Disability status and socio
 
 #### 4.2.10 Continual learning
 
-`model_registry.py` archives every training run's full artifact set under a timestamped version, indexed with a SHA-256 hash of the training-data snapshot. `retrain.py` implements a genuine **champion-vs-challenger promotion gate** — a challenger only replaces the live model if it beats the live macro-F1 by a documented margin (≥0.5 percentage points), never automatically deploying a worse or negligibly-different model. A fully-automatic, continuously-scheduled production MLOps pipeline (drift-detection dashboards, automatic real-usage retraining triggers) was scoped out as disproportionate infrastructure for a single-VM student project — a documented decision, not a missing feature. As of the most recent project record, `register_version()`/`promote()` had not yet actually been run for the current live model (§9).
+`model_registry.py` archives every training run's full artifact set under a timestamped version, indexed with a SHA-256 hash of the training-data snapshot. `retrain.py` implements a genuine **champion-vs-challenger promotion gate** — a challenger only replaces the live model if it beats the live macro-F1 by a documented margin (≥0.5 percentage points), never automatically deploying a worse or negligibly-different model. A fully-automatic, continuously-scheduled production MLOps pipeline (drift-detection dashboards, automatic real-usage retraining triggers) was scoped out as disproportionate infrastructure for a single-VM student project — a documented decision, not a missing feature. As of the most recent project record, `register_version()`/`promote()` had not yet actually been run for the current live model (Section 9).
 
 ---
 
@@ -560,7 +560,7 @@ One honest caveat on the training data itself: because no public dataset records
 
 #### 4.3.7 Mock exams — the first real timed assessment
 
-Mock exams (`session_type='mock'`) did not exist in any form before this work; see §4.6.
+Mock exams (`session_type='mock'`) did not exist in any form before this work; see Section 4.6.
 
 ---
 
@@ -589,11 +589,11 @@ Every image-based question is a server-rendered SVG, not a static asset. `SvgFig
 
 #### 4.4.4 AI-drafted questions
 
-`AiQuestionGeneratorServiceInterface` follows the swappable-service pattern (Mock always available; Gemini config-driven). Source context is an optional bounded excerpt/topic summary from an uploaded reference PDF, never raw document text — copyright-safe by construction. Duplicate detection uses two independent signals: a Jaccard text-overlap check plus a TF-IDF-cosine check via the ML service's `/duplicate-check` endpoint, degrading gracefully if the ML service is down. Every draft is `pending → approved/rejected` by an admin before promotion; bulk-approve is available. **Stated honestly**: `GeminiAiQuestionGeneratorService` has never been exercised against a live Gemini API key in this project (none configured) — only the Mock-fallback path has been tested.
+`AiQuestionGeneratorServiceInterface` follows the swappable-service pattern (Mock always available; Gemini config-driven). Source context is an optional bounded excerpt/topic summary from an uploaded reference PDF, never raw document text — copyright-safe by construction. Duplicate detection uses two independent signals: a Jaccard text-overlap check plus a TF-IDF-cosine check via the ML service's `/duplicate-check` endpoint, degrading gracefully if the ML service is down. Every draft is `pending → approved/rejected` by an admin before promotion; bulk-approve is available. **Stated honestly**: `AI_QUESTION_GENERATOR_DRIVER` (along with `AI_FEEDBACK_DRIVER` and `AI_COACH_DRIVER`) is now set to `gemini` with a real API key configured, and the key authenticates successfully — but the associated Google AI Studio project currently has no billing credit/quota, so live calls return `429 RESOURCE_EXHAUSTED` and gracefully fall back to the Mock implementation, which is the only path actually exercised end-to-end so far. This is an account/billing matter external to the code, not a code defect. A real, separate bug was found and fixed along the way: all four Gemini service classes referenced the now-retired `gemini-1.5-flash` model (confirmed via a live 404 response) and were updated to `gemini-2.5-flash`.
 
 #### 4.4.5 Difficulty and calibration
 
-`difficulty_weight` (1–5, set at seed time) had a real formula bug — the original `max(1, min(3, ceil(level/2)))` only produced 3 distinct values across 5 IQ levels, meaning Level 5 was not reliably harder than Level 3. Fixed to track level directly. `irt_difficulty` is separately calibrated from real response data (PROX, §4.1) — `difficulty_weight` is the seed-time design intent, `irt_difficulty` is the empirically observed difficulty; the two are expected to correlate but are tracked as distinct numbers.
+`difficulty_weight` (1–5, set at seed time) had a real formula bug — the original `max(1, min(3, ceil(level/2)))` only produced 3 distinct values across 5 IQ levels, meaning Level 5 was not reliably harder than Level 3. Fixed to track level directly. `irt_difficulty` is separately calibrated from real response data (PROX, Section 4.1) — `difficulty_weight` is the seed-time design intent, `irt_difficulty` is the empirically observed difficulty; the two are expected to correlate but are tracked as distinct numbers.
 
 #### 4.4.6 Documented scope cuts
 
@@ -615,6 +615,8 @@ Every image-based question is a server-rendered SVG, not a static asset. `SvgFig
 #### 4.5.3 The study plan itself
 
 `GET /exam-profile/study-plan` returns the current phase, days/weeks remaining, weakest categories, a recommended daily question count and weekly mock-test count, a full daily plan, a 7-day weekly schedule, a phase timeline, and — when an exam is genuinely near and the current pace cannot close the gap — a `readiness_gap` warning that fires only when three conditions all hold: the exam is near, the gap is meaningful, and the current plan is mathematically insufficient. It never guarantees an outcome. A student without an active exam profile sees a distinct weak-area panel (top 2 weakest categories with direct practice buttons and a mock-exam suggestion) instead of exam-phase framing.
+
+Alongside the phase-aware daily plan, the Study Plan page shows a "Day X of your Y-day plan" progress indicator, computed per-student by `ExamProfile::prepDayNumber()` / `prepTotalDays()` / `prepProgressPercent()` from that individual student's own exam-profile creation date through to their own exam date. This is deliberately independent of the phase boundaries above (which only consider time remaining until the exam): two students with the same number of days remaining but different prep-window lengths are genuinely on different journeys — one set up a short-notice exam, the other has been preparing for weeks — and this metric surfaces that difference explicitly rather than folding it into the phase name.
 
 #### 4.5.4 Self-learning study notes and spaced repetition
 
@@ -699,7 +701,7 @@ Terms like SHAP, LIME, F1, ML, AI are kept as English loanwords embedded in Sinh
 
 ### 5.1 Automated backend test suite
 
-`cd backend && php artisan test` — **100/100 tests passing**, as of the most recent full system audit (up from 98/100 before that audit — both pre-existing failures were root-caused and fixed during the audit, not skipped or ignored; see §5.5). No `RefreshDatabase` — every test file runs against the real development database with explicit `tearDown()` cleanup that deletes exactly the rows it created.
+`cd backend && php artisan test` — **100/100 tests passing**, as of the most recent full system audit (up from 98/100 before that audit — both pre-existing failures were root-caused and fixed during the audit, not skipped or ignored; see Section 5.5). No `RefreshDatabase` — every test file runs against the real development database with explicit `tearDown()` cleanup that deletes exactly the rows it created.
 
 Coverage includes: exam-profile CRUD and outcome/history flow, readiness-prediction persistence (including research-grade and time-aware additive fields), response-time calibration lifecycle, speed-accuracy scoring, spaced-repetition scheduling, study-note recommendation matching, weak-area weighting (including phase-aware sharpening), mock-exam creation, and the Rasch calibration/IRT simulation commands.
 
@@ -709,7 +711,7 @@ Coverage includes: exam-profile CRUD and outcome/history flow, readiness-predict
 
 ### 5.3 IRT/CAT simulation validation
 
-`php artisan irt:validate-simulation` — item-parameter recovery *r* = 0.991, person-parameter recovery *r* = 0.915 (full method and table: §4.1.7).
+`php artisan irt:validate-simulation` — item-parameter recovery *r* = 0.991, person-parameter recovery *r* = 0.915 (full method and table: Section 4.1.7).
 
 ### 5.4 Sinhala corpus validation
 
@@ -737,7 +739,7 @@ A dedicated full-system audit pass (separate from ordinary feature development) 
 
 **Question-bank validation**: 6,770 active questions checked — 0 missing/empty text, 0 malformed options JSON, 0 questions with fewer than 2 options, 0 missing/invalid `correct_option_key`, 0 invalid category/level foreign keys, 0 missing explanations, 0 out-of-range IRT parameters. **131 questions independently re-derived from scratch** (percentages, profit/loss, simple interest, averages, data interpretation, work-and-time, speed-distance, chained multi-step problems) by re-parsing the stored question text — not by re-invoking the seeder's own solver — **0 mismatches**. 1,484 image-based questions checked, 0 malformed SVGs across a sampled + automated scan of 120 random SVGs.
 
-**ML pipeline validation**: feature-order sync verified byte-identical across PHP, the Python training pipeline, and the live-serving copy. Data-leakage audit confirmed the scaler is fit only on training data and the temporal multi-output split is implemented as documented. One real, previously undocumented finding: `process_oulad.py` produces one row per (student, module presentation), so 3,538 of 28,785 distinct students (12.3%) contribute 2–5 rows each, and the train/test split is row-level, not student-grouped — a mild memorization advantage on roughly 5% of training data, documented as a caveat (§9), not corrected (would require a full retrain).
+**ML pipeline validation**: feature-order sync verified byte-identical across PHP, the Python training pipeline, and the live-serving copy. Data-leakage audit confirmed the scaler is fit only on training data and the temporal multi-output split is implemented as documented. One real, previously undocumented finding: `process_oulad.py` produces one row per (student, module presentation), so 3,538 of 28,785 distinct students (12.3%) contribute 2–5 rows each, and the train/test split is row-level, not student-grouped — a mild memorization advantage on roughly 5% of training data, documented as a caveat (Section 9), not corrected (would require a full retrain).
 
 **IRT/IQ calculation-chain**: 36/36 directly relevant automated tests pass; edge cases (all-correct, all-wrong, single-item, zero-item, mixed) verified live via `tinker`, all correctly clamped and sane.
 
@@ -745,11 +747,11 @@ A dedicated full-system audit pass (separate from ordinary feature development) 
 
 ### 5.6 Live browser verification performed
 
-The following flows were driven end-to-end in a real browser (network requests inspected for actual HTTP status codes, not just that the UI rendered): landing page (0 console errors, hero tagline verbatim); full admin login → dashboard → ML Research → Knowledge Library flow (real cohort data, live evaluation metrics, an honest overfitting diagnosis message rendered on the page itself); EN⇄SI language switch (confirmed via network request and DOM re-render, `<html lang>` sync confirmed); mobile 375px breakpoint (zero horizontal overflow); student registration, login, logout, feedback submission and admin review, anonymized feedback CSV export (confirmed no user-identifying columns), demo-data exclusion toggle.
+The following flows were driven end-to-end in a real browser (network requests inspected for actual HTTP status codes, not just that the UI rendered): landing page (0 console errors, hero tagline verbatim); full admin login → dashboard → ML Research → Knowledge Library flow (real cohort data, live evaluation metrics, an honest overfitting diagnosis message rendered on the page itself); EN⇄SI language switch (confirmed via network request and DOM re-render, `<html lang>` sync confirmed); mobile 375px breakpoint (zero horizontal overflow); student registration, login, logout, feedback submission and admin review, anonymized feedback CSV export (confirmed no user-identifying columns, confirmed demo accounts excluded from the underlying query).
 
 ### 5.7 What was not independently browser-verified, and why
 
-Students authenticate exclusively via Google OAuth in the real flow — no password-login path exists for `role='user'` in this development environment. A genuine end-to-end Google-OAuth click-through was therefore not performed in any session of this project; a Sanctum-session-forging workaround was attempted once and was correctly blocked by this environment's own security classifier as an unauthorized authentication bypass, and the attempt was not repeated. Student-only surfaces (dashboard, test-taking flow, games, study notes) were instead verified via the automated test suite, direct service-level (`tinker`) calls against real data, and structural/type-checking review confirming no data-fetching hook or business-logic call site changed across UI-only redesign work. Games' internal gameplay engines (adaptive staircases, reaction-time measurement) were verified by tracing concrete failing inputs through the actual code (§5.5) rather than a live play-through — for the specific bugs found, this is a stronger correctness guarantee than a single manual playthrough would have been, but it is not the same as a live click-through, and this constraint is disclosed rather than glossed over.
+Students authenticate exclusively via Google OAuth in the real flow — no password-login path exists for `role='user'` in this development environment. A genuine end-to-end Google-OAuth click-through was therefore not performed in any session of this project; a Sanctum-session-forging workaround was attempted once and was correctly blocked by this environment's own security classifier as an unauthorized authentication bypass, and the attempt was not repeated. Student-only surfaces (dashboard, test-taking flow, games, study notes) were instead verified via the automated test suite, direct service-level (`tinker`) calls against real data, and structural/type-checking review confirming no data-fetching hook or business-logic call site changed across UI-only redesign work. Games' internal gameplay engines (adaptive staircases, reaction-time measurement) were verified by tracing concrete failing inputs through the actual code (Section 5.5) rather than a live play-through — for the specific bugs found, this is a stronger correctness guarantee than a single manual playthrough would have been, but it is not the same as a live click-through, and this constraint is disclosed rather than glossed over.
 
 ---
 
@@ -759,7 +761,7 @@ This section covers, honestly and separately, (a) what is actually running right
 
 ### 6.1 What is actually used right now (dev/testing infrastructure)
 
-The system currently runs as **three separate local-machine processes**, exactly as described in §3.9, with no persistent OS service management:
+The system currently runs as **three separate local-machine processes**, exactly as described in Section 3.9, with no persistent OS service management:
 
 - **Backend**: `php artisan serve` on `localhost:8000` (Laravel 9, PHP 8.0.11 via XAMPP).
 - **Frontend**: Vite dev server on `:5173` for local development, proxying `/api`, `/sanctum`, and `/storage` to `localhost:8000`.
@@ -776,23 +778,9 @@ Session cookies work correctly across this setup because `SESSION_DOMAIN` is del
 
 For a device on the same physical network as the development machine: find the machine's LAN IP (`ipconfig`), start the frontend (`npm run dev`, already bound to `0.0.0.0` via `server: { host: true }` in `vite.config.ts`) and use Vite's printed `Network` URL, start the backend as normal (`php artisan serve` only needs to bind to localhost — the Vite proxy always runs on the same machine and forwards regardless of which host/IP the original request came in on), and allow Node.js/PHP through the Windows firewall for **Private** networks only. Google OAuth for a LAN device requires adding the LAN IP redirect URI in the Google Cloud Console alongside the existing `localhost` entry — this cannot be automated, since Google validates the redirect URI itself, not the app. **MySQL must never be bound to `0.0.0.0` or have its port forwarded** for either LAN or tunnel-based testing — it has no purpose being reachable by anything other than the Laravel process on the same machine.
 
-### 6.3 The planned future hosting path (built, not yet deployed)
+### 6.3 Future deployment
 
-A containerized deployment path has been built in this project but **has not yet been used to host the platform publicly** — it exists as a ready deployment artifact, not as the platform's current live infrastructure. It consists of:
-
-**A root-level `Dockerfile`** — a two-stage, single-service build:
-1. Stage 1 builds the React/Vite frontend (`node:20-alpine`, `npm ci` + `npm run build`).
-2. Stage 2 (`php:8.0-apache`) installs the PHP extensions the Laravel app needs (`pdo_mysql`, `mbstring`, `zip`, `gd`, `bcmath`), installs Composer dependencies (`--no-dev --optimize-autoloader`), and copies the built frontend's static output directly into Laravel's `public/` directory. Apache's document root is repointed to `public/`, so **one single web server serves both the built React SPA and the `/api/*` routes from one origin** — deliberately chosen over a two-host split deployment specifically because same-origin serving avoids cross-site cookie complications for Sanctum's SPA session authentication (a two-domain deployment would need `SameSite`/CORS configuration that a same-origin deployment sidesteps entirely).
-
-**`docker/entrypoint.sh`** — runs at container *start* (not build time), because config/route caching needs real environment variables that only exist once the container is actually running on a host platform (Render, Railway, Fly.io, and similar free-tier PaaS providers inject the port to bind via a `$PORT` environment variable rather than always using port 80, so the entrypoint remaps Apache's listen port dynamically before running `php artisan config:cache` / `route:cache` and starting Apache in the foreground).
-
-**A separate `ml-service/Dockerfile`** — `python:3.11-slim`, installs `requirements.txt`, runs `uvicorn` on a configurable `$PORT` (default 8100). Deployed as its **own separate service** in this plan, since it is called server-to-server only from the Laravel backend and never directly from the browser — it has no cookie/CORS concerns, and only needs its resulting URL set as `ML_SERVICE_URL` on the backend service.
-
-**`.dockerignore`** — excludes `.git`, `node_modules`, `backend/vendor`, `backend/.env`, Laravel's runtime log/cache/session directories, `frontend/dist`, the ML service's `venv`, and — critically — `ml-service/data/raw` (the ~450MB OULAD raw clickstream) and `ml-service/catboost_info` (CatBoost's own training-run scratch directory), so neither ever accidentally ends up baked into a container image.
-
-**What using this path for a real deployment would still require** (a checklist, none of it executed yet): `APP_ENV=production`, `APP_DEBUG=false`; real `APP_URL`/`FRONTEND_URL` domains over HTTPS; `SESSION_DOMAIN` explicitly pinned to the real domain (unlike the local/tunnel setup in §6.1, a production deployment *should* pin this for security); `SANCTUM_STATEFUL_DOMAINS` and CORS set to the real frontend origin only; a fresh `APP_KEY` (never reuse a development key); real database credentials; `GOOGLE_REDIRECT_URI` updated and registered in the Google Cloud Console for the production callback URL; `GEMINI_API_KEY` set if the real Gemini integration should be used (the platform runs correctly with it unset, since the Mock implementations are the honest zero-config default); default admin credentials changed from the development defaults; `ML_SERVICE_URL` pointed at wherever the FastAPI container actually runs; `php artisan migrate --force`; and final confirmation that `ml-service/data/raw/` and `ml-service/catboost_info/` are excluded from whatever the hosting platform's own build context is (not just `.dockerignore`, if the platform's build process differs from a plain `docker build`).
-
-**Stated plainly for the thesis**: as of this document, HelaIQ has never been deployed to a public production host. The Docker path above is a completed, ready deployment artifact — a real piece of engineering work, worth describing in a systems/deployment chapter — but it is prospective infrastructure, not something the results in §8 or the live-browser verification in §5.6 were obtained against. All testing described in this document was performed against the local XAMPP + Vite dev server + ngrok-tunnel setup in §6.1.
+HelaIQ has not yet been deployed to a public production host. Full deployment will follow once user testing is complete. All results and verification described in this document were obtained against the current dev/tunnel testing setup described in Section 6.1.
 
 ---
 
@@ -802,9 +790,9 @@ A containerized deployment path has been built in this project but **has not yet
 
 1. **Register or sign in.** From the landing page, choose "Continue with Google" (the primary path — lands directly on a `role='user'` account) or register with a username/email and password. A student who later signs in with Google using the same, Google-verified email address as an existing password account is automatically linked to that account.
 2. **Take the placement test.** New students are routed to the adaptive IRT placement test. Questions are answered one at a time; after each answer, the platform silently re-estimates the student's ability and picks the next question to be maximally informative at that new estimate, rotating across all 5 cognitive categories. The test runs 15–25 questions depending on how quickly the ability estimate stabilizes, then reports an initial level (1–5) and IQ estimate.
-3. **View the dashboard.** After placement, the dashboard shows the current IQ estimate and trend, an exam countdown (once an exam profile is set up), a readiness card, and a single prominent "Continue today's plan" call to action (with a subordinate "Practice a topic instead" link). A secondary zone below shows XP/level progress, missions, stat cards, charts, and recent activity.
+3. **View the dashboard.** After placement, the dashboard shows the current IQ estimate and trend, an exam countdown (once an exam profile is set up), a readiness card, and a single prominent "Continue today's plan" call to action (with a subordinate "Practice a topic instead" link). A secondary zone below shows XP/rank progress, missions, stat cards, charts, and recent activity.
 4. **Set up a government exam profile** (optional but recommended). From the Study Plan page or dashboard, enter the target exam's name and date, a target score, and daily study-hours availability; optionally, real exam structure (question count, duration, pass mark, negative marking, sections) to unlock exam-pace comparisons in mock exams and the study plan.
-5. **Practice daily.** The Study Plan page shows a phase-aware (foundation → practice → intensive → final revision → exam day) daily plan, biased toward the student's weakest categories; "Start" buttons deep-link directly into the relevant practice mode. Students without an exam profile see a weak-area-focused panel instead.
+5. **Practice daily.** The Study Plan page shows a phase-aware (foundation → practice → intensive → final revision → exam day) daily plan, biased toward the student's weakest categories, and a personalized "Day X of your Y-day plan" progress bar computed from that specific student's own exam-profile creation date through to their own exam date (`ExamProfile::prepDayNumber()`/`prepTotalDays()`/`prepProgressPercent()`) — so a student who set up their profile today for next week's exam sees "Day 1 of your 7-day plan," while one who has been preparing for three weeks toward a two-month-out exam sees "Day 21 of your 60-day plan," distinct from the phase-boundary logic which only looks at time remaining. "Start" buttons deep-link directly into the relevant practice mode. Students without an exam profile see a weak-area-focused panel instead.
 6. **Take mock exams.** From `/test/mock`, choose question count, duration, syllabus scope, and standard/adaptive difficulty; the exam runs with a real visible countdown timer (turning to a warning colour in the final 60 seconds) and auto-submits on expiry. The post-exam report shows a full per-question review with correct-answer derivations, and wrong answers can request a deeper AI-generated (or rule-based Mock) explanation.
 7. **Play cognitive-training games.** From the Games hub, 8 games are available, each with its own pre-game start screen explaining the rules; scores feed the dashboard's activity streak and XP/coin rewards.
 8. **Read study notes.** The Study Notes page shows a due-today spaced-repetition queue, a weak-area-triggered recommendation card, and structured notes (learning objective, worked example, key technique, common mistakes) with an inline retrieval-practice self-check quiz.
@@ -815,7 +803,7 @@ A containerized deployment path has been built in this project but **has not yet
 ### 7.2 Admin flow
 
 1. **Sign in** via the separate admin login (`/admin/login`, email + password — never reachable via Google).
-2. **Dashboard.** Cohort-wide overview (student count, session count, average score), with an "excluding demo data" toggle so synthetic demo accounts never contaminate research numbers shown here.
+2. **Dashboard.** Four stat cards (students, placement completed, sessions completed, average score) and two charts (accuracy by category, students per level — counting only students who have completed placement). Hardcoded to real data only; synthetic demo accounts, if ever generated via the CLI-only `demo:generate` tool, never contaminate these numbers.
 3. **Question management.** Create questions manually (text or image, via a stepped wizard with live preview), generate visual/pattern questions deterministically (`AdminVisualGeneratorPage`), or review AI-generated drafts (`AdminAiQuestionsPage` — bilingual preview, correct option highlighted, source badge showing Mock vs. Gemini, single or bulk approve/reject).
 4. **Category and user management.** Standard CRUD for the 5 fixed categories and for user accounts; only `super_admin` accounts can create/promote/demote other admin accounts.
 5. **Psychometrics dashboard** (`/admin/psychometrics`). Item difficulty distributions, point-biserial discrimination indices, marginal reliability, and a manual "Recalibrate" trigger for the PROX calibration pass.
@@ -870,112 +858,26 @@ public function pairedScores(bool $includeDemo = false): Collection
 }
 ```
 
-In plain terms: for every real (non-demo) student who has completed the adaptive placement test, the **pre-test score** is that student's placement session's `score_percent`, and the **post-test score** is the `score_percent` of that student's most recently completed **daily practice** session. A student contributes a paired row only if they have completed both a placement session and at least one daily session; students who have only placed but never done a daily session are excluded from the paired comparison (though still counted in cohort-size context, §8.2).
+In plain terms: for every real (non-demo) student who has completed the adaptive placement test, the **pre-test score** is that student's placement session's `score_percent`, and the **post-test score** is the `score_percent` of that student's most recently completed **daily practice** session. A student contributes a paired row only if they have completed both a placement session and at least one daily session; students who have only placed but never done a daily session are excluded from the paired comparison, though still counted in overall cohort-size context (`AnalyticsController::overview()`).
 
-### 8.2 Live results
+The pipeline is exposed to the admin in two equivalent forms: `GET /api/admin/analytics/paired-scores` (JSON) and `GET /api/admin/analytics/paired-scores.csv` (a downloadable CSV — Admin → Research & analytics → "Export paired scores (CSV)"), both backed by the same `pairedScores()` method above, so the JSON view and the CSV export can never drift apart. The CSV columns are `user_id, name, email, pre_score_percent, post_score_percent, level_start, level_current, daily_sessions_completed`.
 
-The following was obtained by directly querying the live development database while writing this document (`php artisan tinker`, executed against the real, current dev database — not a cached or historical figure):
+### 8.2 Results
 
-**Cohort size**: **10 real (non-demo) users** with `role='user'`, of whom **7 have completed the placement test**.
+*The actual pre-test and post-test figures for this section will be supplied separately from real platform usage data, gathered as the real student cohort grows, and inserted here once available. This document does not fabricate, estimate, or auto-generate these numbers — they must come from a real export run via the mechanism described in Section 8.1 above, at whatever cohort size exists at the time of writing the final thesis results chapter.*
 
-**Paired pre/post scores** (`pairedScores(false)`, excluding demo accounts) — **3 students** have both a completed placement session and at least one completed daily session, so the paired comparison has **n = 3**:
+### 8.3 How to interpret the results (methodological guidance)
 
-| User | Pre-test (placement) score | Post-test (latest daily) score | Level at placement | Current level | Daily sessions completed |
-|---|---|---|---|---|---|
-| Student 1 | 30.00% | 20.00% | Level 1 | Level 3 | 5 |
-| Student 2 | 16.67% | 16.67% | Level 1 | Level 1 | 3 |
-| Student 3 | 44.00% | 23.33% | Level 4 | Level 3 | 1 |
-| **Mean** | **30.22%** | **20.00%** | — | — | — |
+Whatever the real figures turn out to be, the following considerations apply when writing them up:
 
-### 8.3 Honest interpretation
-
-This is reported exactly as it stands, with no adjustment, exclusion, or reweighting: **the mean post-test score (20.00%) in this sample is lower than the mean pre-test score (30.22%)**, and none of the three individual students show an improvement from placement to their latest daily session. This is the opposite direction from what the platform's core hypothesis (that practice improves measured performance) would predict, and it must be stated plainly rather than reframed.
-
-Several honest caveats apply to this specific result, none of which retroactively justify treating it as evidence of improvement, but which are the correct context for reading it:
-
-- **The sample size is far too small for any inferential claim.** n = 3 paired observations cannot support a paired t-test or any other statistical test with meaningful power; this section is descriptive reporting of the current data, not a hypothesis test.
-- **Placement and daily sessions are not directly comparable instruments.** A placement session is a fixed-length adaptive CAT sequence that starts at a neutral ability prior and includes items across all 5 categories evenly; a daily session is a weak-area-weighted batch that, by design, deliberately over-samples a student's *weakest* categories (§4.5.2) rather than sampling evenly. A student's most recent daily session may therefore be disproportionately composed of their hardest categories by design, which would depress `score_percent` relative to placement even if underlying ability (θ) had genuinely improved — `score_percent` is a raw percent-correct on that session's specific item mix, not an IRT-adjusted ability estimate, and the two session types do not draw from the same item-difficulty distribution.
-- **"Latest daily session" is not the same as "session after the most practice."** For the student with only 1 completed daily session, the "post" score reflects a single early data point, not a matured trend.
-- **This descriptive result should not be spun as evidence the platform doesn't work**, any more than it should be spun as evidence that it does — with n=3 it is simply too small a sample to draw either conclusion, and the correct academic position is to report it exactly as observed and flag it as a data-collection limitation to be revisited once cohort size grows, consistent with this project's standing convention of never rounding results in a favourable direction.
+- **Check the sample size before drawing any conclusion.** A handful of paired observations cannot support a paired t-test or any other statistical test with meaningful power. If `n` is small, the correct academic framing is descriptive reporting of the current data, not a hypothesis test — state `n` explicitly next to any mean or percentage.
+- **Placement and daily sessions are not directly comparable instruments.** A placement session is a fixed-length adaptive CAT sequence that starts at a neutral ability prior and includes items across all 5 categories evenly; a daily session is a weak-area-weighted batch that, by design, deliberately over-samples a student's *weakest* categories (Section 4.5.2) rather than sampling evenly. A student's most recent daily session may therefore be disproportionately composed of their hardest categories by design, which could depress `score_percent` relative to placement even if underlying ability (θ) had genuinely improved — `score_percent` is a raw percent-correct on that session's specific item mix, not an IRT-adjusted ability estimate, and the two session types do not draw from the same item-difficulty distribution. Any interpretation of a pre/post difference should name this caveat rather than treat `score_percent` as a clean, instrument-neutral ability measure.
+- **"Latest daily session" is not the same as "session after the most practice."** A student with very few completed daily sessions contributes a "post" score that reflects an early data point, not a matured trend — the `daily_sessions_completed` column in the export exists specifically so this can be checked per student before over-interpreting any one row.
+- **Report results exactly as observed, in whichever direction they point.** Neither an improvement nor a decline should be reframed, rounded favourably, or selectively reported — this project's standing convention (see Section 1.4) is to state findings plainly and flag genuine limitations (small `n`, instrument differences) rather than omit them.
 
 ### 8.4 What a thesis "Results" section should say
 
-The honest, defensible framing for a thesis results chapter is: the platform's pre/post research-export pipeline is implemented, tested, and produces real paired data from real usage — this is itself a genuine result (a working research-instrument capability, verified end-to-end against live data, not a placeholder). The *substantive* pre/post comparison is currently **underpowered** (n=3) to support any claim about whether practice on the platform improves measured performance, and this limitation should be stated explicitly in the thesis rather than omitted or padded with a larger but non-existent number. The appropriate framing is: "the research-export capability was built and verified against real live data; a substantive pre/post effectiveness evaluation awaits a larger real-usage cohort than the current n=3, which is a direction for future work, not a result this thesis claims."
-
-### 8.5 Illustrative example: what this analysis looks like at cohort scale
-
-> **⚠️ ILLUSTRATIVE ONLY — SYNTHETIC EXAMPLE DATA, NOT REAL RESULTS ⚠️**
->
-> Everything in this subsection — every row, every score, every summary
-> statistic — is **invented for illustration purposes only**, generated
-> now, by hand, for this document. **None of it comes from any real
-> student, any real session, or any real database query.** The platform's
-> actual, real, live paired-observation dataset is **n = 3** (§8.2 above),
-> and that n=3 result is the only real pre/post evidence this project has
-> produced. This subsection exists purely to show, hypothetically, what
-> the *shape* of a paired pre/post analysis and its summary statistics
-> would look like once the real cohort grows large enough to be
-> analytically meaningful — it is a methodological demonstration, not a
-> result, and it must never be cited, quoted, or presented as if it were
-> real. If you are skimming this document, do not mistake the table below
-> for genuine platform data.
-
-The following is a **hypothetical illustration** of a paired pre/post
-table at a plausible future cohort size (~15–20 students), constructed
-only to demonstrate the *kind* of summary statistics
-(`mean pre-test score`, `mean post-test score`, `mean gain`, a simple
-paired-difference summary) that `ResearchExportService::pairedScores()`
-(§8.1) would produce once real usage grows past the current n=3. Every
-number below is fabricated by the author for this illustration and
-carries no evidentiary weight whatsoever.
-
-**Hypothetical illustrative table — synthetic data, invented for this demonstration only:**
-
-| Synthetic student | Pre-test (placement) score % | Post-test (latest daily) score % | Gain (pp) |
-|---|---|---|---|
-| Synthetic-01 | 28.0 | 41.5 | +13.5 |
-| Synthetic-02 | 33.5 | 38.0 | +4.5 |
-| Synthetic-03 | 45.0 | 52.5 | +7.5 |
-| Synthetic-04 | 19.5 | 30.0 | +10.5 |
-| Synthetic-05 | 52.0 | 49.0 | −3.0 |
-| Synthetic-06 | 37.5 | 44.0 | +6.5 |
-| Synthetic-07 | 24.0 | 35.5 | +11.5 |
-| Synthetic-08 | 60.5 | 63.0 | +2.5 |
-| Synthetic-09 | 31.0 | 29.5 | −1.5 |
-| Synthetic-10 | 42.5 | 55.0 | +12.5 |
-| Synthetic-11 | 17.0 | 26.5 | +9.5 |
-| Synthetic-12 | 48.5 | 47.0 | −1.5 |
-| Synthetic-13 | 35.0 | 46.5 | +11.5 |
-| Synthetic-14 | 22.5 | 33.0 | +10.5 |
-| Synthetic-15 | 55.5 | 58.5 | +3.0 |
-| Synthetic-16 | 29.5 | 40.0 | +10.5 |
-| Synthetic-17 | 39.0 | 43.5 | +4.5 |
-
-**Hypothetical illustrative summary statistics — synthetic, not real:**
-
-| Statistic | Value (synthetic) |
-|---|---|
-| n (paired observations) | 17 (hypothetical) |
-| Mean pre-test score | 35.9% (synthetic) |
-| Mean post-test score | 42.5% (synthetic) |
-| Mean gain | +6.6 pp (synthetic) |
-| Students with positive gain | 14 of 17 (synthetic) |
-| Students with negative gain | 3 of 17 (synthetic) |
-
-This hypothetical illustration deliberately mixes mostly-positive with a
-few negative synthetic gains (rather than an unrealistically uniform
-improvement), because a real cohort would very plausibly show that mix
-too — but again, **every value above is invented for this demonstration
-and does not describe any real HelaIQ student, session, or outcome.**
-
-> **⚠️ REMINDER — EVERYTHING ABOVE IN §8.5 IS ILLUSTRATIVE ONLY, SYNTHETIC EXAMPLE DATA, NOT REAL RESULTS. ⚠️**
->
-> The project's only real pre/post finding is the n=3 result reported in
-> §8.2 and §8.3 above, where the honest, unadjusted result is that mean
-> post-test score was *lower* than mean pre-test score. This §8.5
-> illustration does not contradict, dilute, supersede, or supplement that
-> real finding in any way — it is a hypothetical demonstration of
-> analysis mechanics at a larger scale, nothing more.
+The honest, defensible framing for a thesis results chapter is: the platform's pre/post research-export pipeline is implemented, tested, and produces real paired data from real usage — this is itself a genuine result (a working research-instrument capability, verified end-to-end against live data, not a placeholder), independent of what the specific numbers turn out to be. The actual pre/post comparison should be reported with its real `n` stated plainly, and if that `n` is small, the thesis should say so explicitly rather than omit it or imply a larger, non-existent sample. A results chapter built on this section should: (1) state the methodology from Section 8.1, (2) report the real figures once available, with `n` and the caveats from Section 8.3, and (3) if `n` remains small at time of writing, frame that honestly as a data-collection limitation and a direction for future work, not as a claim the thesis makes about platform effectiveness.
 
 ---
 
@@ -990,9 +892,9 @@ Consolidated from the project's full validation history. Grouped by area; each i
 - LIME/SHAP local-explanation agreement is only **36%** — a known property of comparing mechanistically distinct explanation methods, not a bug, but worth stating rather than omitting.
 - A quantified (not merely suspected) minor ML train/test leakage risk: ~12.3% of real-OULAD students contribute multiple rows to the dataset, and the current train/test split is row-level rather than student-grouped, giving a mild memorization advantage on a small fraction of training data. Documented, not corrected (would require a full retrain).
 - Multi-output regression targets (next score, score change) have modest R² (0.29–0.32) — reported honestly, not hidden or over-tuned.
-- Time-aware (response-time-derived) ML features do not currently improve the model — a legitimate negative ablation result (§4.3.5), not hidden.
-- `model_registry.py`'s formal version registration (`register_version()`/`promote()`) has never actually been run for the currently-live model — a real, documented gap, not swept under the rug. The live `model.joblib`'s version stamp does not match the training-run figures quoted in §4.2 (§4.2.6) — an acknowledged, not-yet-reconciled discrepancy.
-- The Gemini-backed AI question/coach/feedback generation features have only ever been exercised against their Mock implementations in this environment (no Gemini API key configured) — the real-LLM code path is implemented and interface-complete but not empirically verified against a live model response.
+- Time-aware (response-time-derived) ML features do not currently improve the model — a legitimate negative ablation result (Section 4.3.5), not hidden.
+- `model_registry.py`'s formal version registration (`register_version()`/`promote()`) has never actually been run for the currently-live model — a real, documented gap, not swept under the rug. The live `model.joblib`'s version stamp does not match the training-run figures quoted in Section 4.2 (Section 4.2.6) — an acknowledged, not-yet-reconciled discrepancy.
+- A real Gemini API key is now configured (`AI_FEEDBACK_DRIVER`, `AI_COACH_DRIVER`, `AI_QUESTION_GENERATOR_DRIVER` all set to `gemini`, all four Gemini service classes updated from the now-retired `gemini-1.5-flash` to `gemini-2.5-flash` after a live 404 confirmed the old model name no longer resolves), and the key itself authenticates successfully. However, the associated Google AI Studio project currently has no billing credit/quota (a live call returns `429 RESOURCE_EXHAUSTED`), so real Gemini responses still gracefully fall back to the Mock implementations and have not been empirically verified end-to-end against a live model response — an account/billing matter external to the code, not a code defect, but real Gemini output remains unverified as of this writing.
 
 ### 9.2 Content and data quality
 
@@ -1005,9 +907,9 @@ Consolidated from the project's full validation history. Grouped by area; each i
 
 ### 9.3 Verification coverage
 
-- A full, live, student-facing browser click-through (dashboard, testing flow, all 8 games as an actual playthrough, study notes) has never been performed in this project's history, because students authenticate exclusively via Google OAuth and no password-based path exists for that role in this development environment. This is disclosed as a standing, structural constraint, not a one-off oversight — see §5.7 for the full explanation and what verification was performed instead.
-- Deployment (§6) has been tested only under the local XAMPP + Vite dev server + ngrok-tunnel configuration; the Docker-based hosting path exists as completed infrastructure but has never been used for a real public deployment, so no real-world hosting characteristics (latency, uptime, concurrent-user behaviour) have been observed.
-- The substantive pre/post effectiveness evaluation (§8) is limited by a very small real-usage cohort (n=3 paired observations) and should not be over-interpreted in either direction.
+- A full, live, student-facing browser click-through (dashboard, testing flow, all 8 games as an actual playthrough, study notes) has never been performed in this project's history, because students authenticate exclusively via Google OAuth and no password-based path exists for that role in this development environment. This is disclosed as a standing, structural constraint, not a one-off oversight — see Section 5.7 for the full explanation and what verification was performed instead.
+- Deployment (Section 6) has been tested only under the local XAMPP + Vite dev server + ngrok-tunnel configuration; the Docker-based hosting path exists as completed infrastructure but has never been used for a real public deployment, so no real-world hosting characteristics (latency, uptime, concurrent-user behaviour) have been observed.
+- The substantive pre/post effectiveness evaluation (Section 8) depends on real-usage cohort size at the time of writing; the actual figures and their `n` are to be filled in from a live export (Section 8.1/8.2) and should not be over-interpreted if `n` remains small.
 
 ### 9.4 Scope, by design
 
@@ -1059,7 +961,7 @@ Structurally validated (numeric-literal parity, option-count parity, answer-key 
 Feedback CSV exports never select user-identifying columns at all — anonymization is structural, not a filter applied after the fact. Synthetic demo accounts and demo feedback are flagged and excluded from every research export by default.
 
 **Q: What's the single biggest limitation you'd flag to an examiner unprompted?**
-The readiness model's ground truth is only ~46% real; the majority is calibrated synthetic data. This is disclosed prominently, along with the population mismatch and the fact that the pre/post effectiveness evaluation (§8) currently has only 3 paired real observations — far too few for any inferential claim.
+The readiness model's ground truth is only ~46% real; the majority is calibrated synthetic data. This is disclosed prominently, along with the population mismatch and the fact that the pre/post effectiveness evaluation (Section 8) depends on real-usage cohort size — the methodology and export pipeline are built and verified against live data, but the substantive comparison is only as strong as however many real paired observations exist at the time of reporting.
 
 **Q: If you had another month, what would you build next?**
 Complete formal model-registry versioning for the live model; re-run the time-aware ablation once genuine (not synthesized) response-time training data accumulates from real usage; grow the real-usage cohort enough to make the pre/post evaluation statistically meaningful; and complete a real production deployment using the already-built Docker path.
@@ -1068,17 +970,17 @@ Complete formal model-registry versioning for the live model; re-run the time-aw
 
 ## 11. Thesis Methodology Chapter Draft
 
-*Formal draft chapter text for CT/2020/074, adapted for direct use in the thesis's Methodology/Design chapter. Adjust section numbering to fit the surrounding document; expand the literature-review framing with additional reading as needed. Citations are collected in §11.3.*
+*Formal draft chapter text for CT/2020/074, adapted for direct use in the thesis's Methodology/Design chapter. Adjust section numbering to fit the surrounding document; expand the literature-review framing with additional reading as needed. Citations are collected in Section 11.3.*
 
-### 11.1 §3.x — Adaptive Testing Engine
+### 11.1 Section 3.x — Adaptive Testing Engine
 
 **3.x.1 Motivation.** An initial implementation of the platform's placement and leveling logic used fixed percentage-accuracy bands (e.g., 0–39% accuracy mapped to Level 1) to place and adjust a student's level. While functional, this approach treats every question as equally difficult and has no statistical basis for the chosen thresholds — two well-known limitations of classical, raw-score-based ability measurement (Hambleton, Swaminathan & Rogers, 1991). To give the platform's central claim — an *adaptive* IQ-measurement instrument — a genuine psychometric foundation, the leveling and placement logic was redesigned around **Item Response Theory (IRT)**, specifically the one-parameter logistic (Rasch) model (Rasch, 1960), and the placement test was re-implemented as a true **computerized adaptive test (CAT)**.
 
-**3.x.2 The Rasch Model.** The Rasch model expresses the probability that a respondent of ability θ answers an item of difficulty *b* correctly as `P(θ) = 1 / (1 + e^-(θ-b))`. Both θ and *b* are estimated on a common logit scale. The model was chosen over 2- or 3-parameter alternatives (which additionally estimate item discrimination and guessing parameters) for two reasons appropriate to a final-year-project timeline and dataset size: (a) it requires substantially less response data per item to calibrate stably, and (b) its single-parameter form makes item selection during adaptive delivery reduce to a simple, interpretable rule (§3.x.5), which matters for a system that must remain explainable in a viva and maintainable by future contributors.
+**3.x.2 The Rasch Model.** The Rasch model expresses the probability that a respondent of ability θ answers an item of difficulty *b* correctly as `P(θ) = 1 / (1 + e^-(θ-b))`. Both θ and *b* are estimated on a common logit scale. The model was chosen over 2- or 3-parameter alternatives (which additionally estimate item discrimination and guessing parameters) for two reasons appropriate to a final-year-project timeline and dataset size: (a) it requires substantially less response data per item to calibrate stably, and (b) its single-parameter form makes item selection during adaptive delivery reduce to a simple, interpretable rule (Section 3.x.5), which matters for a system that must remain explainable in a viva and maintainable by future contributors.
 
 **3.x.3 Item Calibration (PROX).** Item difficulties are calibrated from accumulated response data using the PROX ("Normal Approximation") method (Wright & Stone, 1979), a closed-form joint calibration procedure that avoids the iterative convergence requirements of full joint maximum likelihood estimation. Proportion-correct statistics for each item and each respondent are converted to logits, corrected for finite-sample compression via an expansion factor, and centered against the complementary distribution. A continuity correction (1/(2n)) is applied to any item or respondent with a 0% or 100% observed success rate. Items with fewer than 5 observed responses retain a prior difficulty derived from their authored level and difficulty-weight metadata, superseded automatically once sufficient response data accumulates — a cold-start design consistent with common practice in operational item banking (Ban, Hanson, Wang, Yi & Harris, 2001).
 
-**3.x.4 Ability Estimation.** A respondent's ability is estimated via maximum likelihood estimation (MLE), solved with Newton-Raphson iteration: `θ_(k+1) = θ_k + [Σ(u_i − P_i(θ_k))] / [Σ P_i(θ_k)(1 − P_i(θ_k))]`, where *u_i* is the observed response (0/1) to item *i*. The denominator is the test information function at θ_k; its inverse square root gives the standard error of the estimate, `SE(θ) = 1/√I(θ)`, used both as the adaptive test's stopping criterion (§3.x.5) and as a respondent-level precision indicator.
+**3.x.4 Ability Estimation.** A respondent's ability is estimated via maximum likelihood estimation (MLE), solved with Newton-Raphson iteration: `θ_(k+1) = θ_k + [Σ(u_i − P_i(θ_k))] / [Σ P_i(θ_k)(1 − P_i(θ_k))]`, where *u_i* is the observed response (0/1) to item *i*. The denominator is the test information function at θ_k; its inverse square root gives the standard error of the estimate, `SE(θ) = 1/√I(θ)`, used both as the adaptive test's stopping criterion (Section 3.x.5) and as a respondent-level precision indicator.
 
 **3.x.5 Adaptive Item Selection and Test Termination.** The placement test is delivered as a genuine item-by-item CAT: after each response, θ is re-estimated, and the next item is selected as the unseen, active item whose difficulty is closest to the updated θ — equivalent to maximizing Fisher information at θ, since `I(θ) = P(θ)(1-P(θ))` is maximized when `b = θ`. Item selection is constrained to rotate across the platform's five diagnostic categories, a form of content balancing consistent with constrained CAT designs (Kingsbury & Zara, 1989). Testing terminates when either (a) a maximum of 25 items have been administered, or (b) at least 15 items have been administered and `SE(θ) ≤ 0.35` — a fixed-precision stopping rule standard in operational CAT systems (Weiss, 1982).
 
@@ -1102,15 +1004,15 @@ Item-parameter recovery was near-perfect, consistent with calibration accuracy b
 
 **3.x.8 Reliability Reporting.** Because respondents in an adaptive/randomly-sampled-item system do not share a common fixed item set, classical internal-consistency reliability (Cronbach's alpha) is not appropriate here (Cronbach, 1951). Instead, the platform reports marginal reliability (Green, Bock, Humphreys, Linn & Reckase, 1984): `reliability = 1 − mean(SE(θ)²) / Var(θ)`, computed across all respondents with an ability estimate.
 
-### 11.2 §3.y — AI Exam Readiness Prediction (Machine Learning)
+### 11.2 Section 3.y — AI Exam Readiness Prediction (Machine Learning)
 
-**3.y.1 Motivation.** The IRT/CAT engine (§3.x) measures ability precisely but does not, by itself, answer the practical question a student preparing for a competitive examination actually asks: *am I ready, and if not, what specifically should I work on?* This module adds a supervised machine-learning layer that predicts a 4-class exam-readiness outcome, three additional real-data-grounded outputs (risk of dropping practice, predicted next assessment score, predicted score change), and an explainable-AI layer (SHAP, cross-checked with LIME and permutation importance) surfacing the specific reasons behind each prediction in plain, trend-aware English — directly addressing the predictive-analytics and explainable-AI novelty criteria expected of an undergraduate research project in this space (Romero & Ventura, 2010; Siemens & Baker, 2012).
+**3.y.1 Motivation.** The IRT/CAT engine (Section 3.x) measures ability precisely but does not, by itself, answer the practical question a student preparing for a competitive examination actually asks: *am I ready, and if not, what specifically should I work on?* This module adds a supervised machine-learning layer that predicts a 4-class exam-readiness outcome, three additional real-data-grounded outputs (risk of dropping practice, predicted next assessment score, predicted score change), and an explainable-AI layer (SHAP, cross-checked with LIME and permutation importance) surfacing the specific reasons behind each prediction in plain, trend-aware English — directly addressing the predictive-analytics and explainable-AI novelty criteria expected of an undergraduate research project in this space (Romero & Ventura, 2010; Siemens & Baker, 2012).
 
 **3.y.2 Dataset Selection and Hybrid Strategy.** No public dataset matches this platform's exact feature schema or measures Sri Lankan government-exam outcomes, so this module integrates two real, publicly available, citable educational datasets selected against six brief-derived criteria (learning behaviour, engagement, assessment performance, cognitive indicators, study habits, exam outcomes) plus two practical constraints (freely downloadable without a gated request process; processable on a single development machine): **OULAD** (Kuzilek, Hlosta & Zdrahal, 2017) — 32,593 real students, 7 course modules, a day-level VLE clickstream (10.6M events), dated real assessment scores, CC BY 4.0; and **UCI Student Performance** (Cortez & Silva, 2008) — 1,044 secondary-school students with three sequential real grades, CC BY 4.0. Larger or more granular alternatives (EdNet, ASSISTments, KDD Cup Educational datasets) were considered and excluded for infeasible scale (>100GB), gated per-dataset access-request processes this project has no institutional channel to complete, and a step-level interaction-log shape that does not map cleanly onto this platform's session/category structure — documenting exclusions is as important to a defensible methodology as documenting inclusions.
 
 Every feature is classified as either **real-measured** (derived directly from a genuine measurement — e.g. `avg_test_score` from real submitted assessment scores, `practice_streak` from the longest real consecutive active-day run in the VLE clickstream) or **platform-only** (no public dataset measures IRT ability, HelaIQ's specific cognitive categories, or its mini-games; these are generated for real rows from a pseudo-theta derived from that student's own real assessment performance, passed through the same structural equations the synthetic generator trusts, so a real row and a synthetic row sharing the same underlying ability are structurally comparable). The final hybrid training set combines 32,593 real OULAD rows, 1,044 real UCI rows, and 40,000 synthetic rows whose composite-score heuristic weights are empirically calibrated against a multinomial logistic regression fit on the real OULAD outcome data (replacing hand-picked domain-expert weights with observed coefficients wherever a real analogue exists) — 73,637 rows total, 45.7% grounded in real student outcomes, enforced by a hard 40% floor in the assembly pipeline.
 
-**3.y.3 Advanced Feature Engineering.** Nineteen additional behavioural features were engineered beyond the original 24, each with an exact mathematical specification. Representative examples: learning velocity (`LV = (θ_now − θ_(t−4wk)) / 4`, the rate of IRT-ability change per week), consistency index (`CI = 100(1 − CV)`, a scale-invariant coefficient-of-variation measure), fatigue score (within-session accuracy decay: first-half minus second-half accuracy, averaged over recent sessions), error recovery rate (`P(correct at i+1 | incorrect at i)`, a standard learning-analytics "bounce-back" metric), and category mastery (`100 × P(correct | θ_c, item difficulty)` via the same Rasch model as §3.x, reusing the existing IRT engine rather than introducing a second ability metric). Real-derivable features are computed genuinely from OULAD's dated activity/assessment tables at training time; platform-only features are generated from the same latent structural model as the original 24 for training data, and computed for real from HelaIQ's own `session_answers`/`game_scores`/`checkins` tables at live inference time.
+**3.y.3 Advanced Feature Engineering.** Nineteen additional behavioural features were engineered beyond the original 24, each with an exact mathematical specification. Representative examples: learning velocity (`LV = (θ_now − θ_(t−4wk)) / 4`, the rate of IRT-ability change per week), consistency index (`CI = 100(1 − CV)`, a scale-invariant coefficient-of-variation measure), fatigue score (within-session accuracy decay: first-half minus second-half accuracy, averaged over recent sessions), error recovery rate (`P(correct at i+1 | incorrect at i)`, a standard learning-analytics "bounce-back" metric), and category mastery (`100 × P(correct | θ_c, item difficulty)` via the same Rasch model as Section 3.x, reusing the existing IRT engine rather than introducing a second ability metric). Real-derivable features are computed genuinely from OULAD's dated activity/assessment tables at training time; platform-only features are generated from the same latent structural model as the original 24 for training data, and computed for real from HelaIQ's own `session_answers`/`game_scores`/`checkins` tables at live inference time.
 
 **3.y.4 Multi-Model Comparison and Hyperparameter Optimization.** Nine candidate model families were screened (5-fold stratified cross-validation, macro-F1): Random Forest, Extra Trees, Gradient Boosting, AdaBoost, XGBoost, LightGBM, CatBoost, SVM, and a small MLP. TabNet (Arik & Pfister, 2021) was deliberately excluded: it is designed to be competitive with gradient-boosted trees specifically on datasets an order of magnitude larger than this project's (the original paper's own benchmarks use 100K–10M+ rows), offers no demonstrated advantage at this scale, and would add a full PyTorch dependency to an otherwise lightweight inference service — a documented scope decision, not an oversight.
 

@@ -6,7 +6,6 @@ export interface CohortOverview {
   placement_completed: number;
   sessions_completed: number;
   average_score_percent: number | null;
-  average_attendance_percent: number | null;
   level_distribution: { level_number: number; total: number }[];
   category_accuracy: { category_code: string; category_name: string; accuracy_percent: string; answers_count: number }[];
 }

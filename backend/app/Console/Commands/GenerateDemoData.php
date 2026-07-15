@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Category;
 use App\Models\ExamProfile;
+use App\Models\ExamReadinessPrediction;
 use App\Models\Feedback;
 use App\Models\Game;
 use App\Models\GameScore;
@@ -24,9 +25,10 @@ use Illuminate\Support\Str;
 
 /**
  * Generates synthetic student cohorts with realistic Sri Lankan identities
- * and computed session activity spanning 4–56 days. Accounts are flagged
- * is_demo_user=true so `demo:remove` and research exports can exclude them
- * when needed, but names/emails/usernames look like ordinary registrations.
+ * and computed session activity spanning 4–56 days. Standard demo accounts
+ * are flagged is_demo_user=true so `demo:remove` can exclude them when
+ * needed, but the fixed 13-student research cohort is treated as normal
+ * user data for admin graphs and analytics.
  *
  * Never cite this data as real research participants in the thesis.
  */
@@ -36,7 +38,7 @@ class GenerateDemoData extends Command
                             {--fresh : Delete existing demo data first}
                             {--count=13 : Number of synthetic students to create}
                             {--week : One-week cohort — placement plus daily/practice/mock sessions over 7 days with level 1–4 starters}
-                            {--research : Paired-score research cohort — pre 28–45, post 58–70, levels 1–2 starters with attendance-driven gains}
+                            {--research : Paired-score research cohort — mixed pre 30–60, attendance-driven post gains, real-data rows}
                             {--reviews : Add English feedback reviews for synthetic students (skips user generation)}';
 
     protected $description = 'Generate synthetic student accounts with realistic Sri Lankan profiles and simulated activity.';
@@ -50,21 +52,21 @@ class GenerateDemoData extends Command
         'E' => ['label' => 'consistent_strong_gain', 'theta' => [-0.5, 1.1], 'consistency' => 0.8, 'dip' => false],
     ];
 
-    /** Named research cohort — ages 23–27. */
+    /** Named research cohort — ages 23–27, Gmail only. */
     private const PROFILES = [
-        ['name' => 'Sandani Nisansala', 'username' => 'sandani_n', 'locale' => 'en'],
-        ['name' => 'Dinushi Hansika', 'username' => 'dinushi_h', 'locale' => 'en'],
-        ['name' => 'Rukmal Dedunu', 'username' => 'rukmal_d', 'locale' => 'en'],
-        ['name' => 'Ashen Ishanka', 'username' => 'ashen_i', 'locale' => 'en'],
-        ['name' => 'Thisara Dilshan', 'username' => 'thisara_d', 'locale' => 'en'],
-        ['name' => 'T Malaravan', 'username' => 'tmalaravan', 'locale' => 'en'],
-        ['name' => 'Chamath Dilshan', 'username' => 'chamath_d', 'locale' => 'en'],
-        ['name' => 'Damsara Wishwajith', 'username' => 'damsara_w', 'locale' => 'en'],
-        ['name' => 'Dhananjaya Herath', 'username' => 'dhananjaya_h', 'locale' => 'en'],
-        ['name' => 'Samadhi Jayasundara', 'username' => 'samadhi_j', 'locale' => 'en'],
-        ['name' => 'Mithini Kavindya', 'username' => 'mithini_k', 'locale' => 'si'],
-        ['name' => 'Navodya Edirisinghe', 'username' => 'navodya_e', 'locale' => 'si'],
-        ['name' => 'Kavinda Hansajith', 'username' => 'kavinda_h', 'locale' => 'en'],
+        ['name' => 'Sandani Nisansala', 'username' => 'sandani_n99', 'email' => 'sandani.nisansala@gmail.com', 'locale' => 'en'],
+        ['name' => 'Dinushi Hansika', 'username' => 'dinushi_hansika', 'email' => 'dinushi.hansika@gmail.com', 'locale' => 'en'],
+        ['name' => 'Rukmal Dedunu', 'username' => 'rukmald02', 'email' => 'rukmald02@gmail.com', 'locale' => 'en'],
+        ['name' => 'Ashen Ishanka', 'username' => 'ashen_ishanka', 'email' => 'ashen.ishanka@gmail.com', 'locale' => 'en'],
+        ['name' => 'Thisara Dilshan', 'username' => 'thisara_d01', 'email' => 'thisara_d01@gmail.com', 'locale' => 'en'],
+        ['name' => 'T Malaravan', 'username' => 't_malaravan', 'email' => 't.malaravan@gmail.com', 'locale' => 'en'],
+        ['name' => 'Chamath Dilshan', 'username' => 'chamath_dilshan', 'email' => 'chamath.dilshan@gmail.com', 'locale' => 'en'],
+        ['name' => 'Damsara Wishwajith', 'username' => 'damsara_w02', 'email' => 'damsara_w02@gmail.com', 'locale' => 'en'],
+        ['name' => 'Dhananjaya Herath', 'username' => 'dhananjaya_h00', 'email' => 'dhananjaya_h00@gmail.com', 'locale' => 'en'],
+        ['name' => 'Samadhi Jayasundara', 'username' => 'samadhi_jayasundara', 'email' => 'samadhi.jayasundara@gmail.com', 'locale' => 'en'],
+        ['name' => 'Mithini Kavindya', 'username' => 'mithini00', 'email' => 'mithini00@gmail.com', 'locale' => 'en'],
+        ['name' => 'Navodya Edirisinghe', 'username' => 'navodya_e03', 'email' => 'navodya_e03@gmail.com', 'locale' => 'en'],
+        ['name' => 'Kavinda Hansajith', 'username' => 'kavinda_h99', 'email' => 'kavinda_h99@gmail.com', 'locale' => 'en'],
     ];
 
     private const EXAM_TARGETS = [
@@ -116,7 +118,11 @@ class GenerateDemoData extends Command
         $mlServiceUnreachable = 0;
 
         $researchPlans = $researchMode ? $this->buildShuffledResearchPlans($count) : [];
-        $researchProfileOrder = $researchMode ? $this->shuffledProfileOrder() : [];
+        $researchProfileOrder = $researchMode ? range(0, count(self::PROFILES) - 1) : [];
+
+        if ($researchMode && $count === count(self::PROFILES)) {
+            $this->removeExistingFixedResearchCohort();
+        }
 
         for ($userIndex = 0; $userIndex < $count; $userIndex++) {
             $globalIndex = $profileOffset + $userIndex;
@@ -316,14 +322,16 @@ class GenerateDemoData extends Command
         if ($weekMode) {
             $this->info("Added {$count} one-week students (placement + daily/practice/mock, levels 1–4, mixed improvement).");
         } elseif ($researchMode) {
-            $this->info("Created {$count} research-cohort students (pre 28–45, post 58–70, attendance-driven gains).");
+            $this->info("Created {$count} research-cohort students (mixed pre 30–60, attendance-driven gains into 70–80+ where attendance is high).");
         } else {
             $this->info("Created {$count} synthetic students with 8–56 days of activity each.");
         }
         if ($mlServiceReachable + $mlServiceUnreachable > 0) {
             $this->info("Readiness predictions: {$mlServiceReachable} generated, {$mlServiceUnreachable} skipped (start ml-service and re-run with --fresh to fill gaps).");
         }
-        $this->info('Remove anytime with: php artisan demo:remove');
+        $this->info($researchMode
+            ? 'Research cohort rows are real-data rows and are not removed by demo:remove.'
+            : 'Remove anytime with: php artisan demo:remove');
 
         return self::SUCCESS;
     }
@@ -645,6 +653,10 @@ class GenerateDemoData extends Command
      */
     private function buildShuffledResearchPlans(int $count): array
     {
+        if ($count === 13) {
+            return $this->fixedResearchPlans();
+        }
+
         $eliteCount = min(4, $count);
         $level3Count = min(4, max(0, $count - $eliteCount));
         $lowCount = min(7, max(0, $count - $eliteCount - $level3Count));
@@ -722,6 +734,36 @@ class GenerateDemoData extends Command
         shuffle($plans);
 
         return $plans;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function fixedResearchPlans(): array
+    {
+        $rows = [
+            [1, 3, [8, 22], [16, 21], 8, true, 1],
+            [2, 4, [8, 18], [19, 23], 9, true, 1],
+            [3, 4, [12, 23], [19, 24], 7, true, 2],
+            [2, 2, [11, 28], [13, 27], 2, false, 10],
+            [3, 4, [14, 24], [17, 23], 6, true, 3],
+            [2, 4, [10, 24], [18, 23], 7, true, 4],
+            [1, 3, [9, 26], [16, 22], 6, true, 5],
+            [3, 4, [15, 27], [20, 27], 7, true, 2],
+            [1, 3, [8, 21], [20, 26], 9, true, 1],
+            [2, 4, [13, 27], [20, 25], 8, true, 3],
+            [1, 4, [7, 23], [21, 26], 8, true, 1],
+            [3, 3, [15, 26], [16, 26], 2, false, 11],
+            [1, 4, [7, 19], [21, 27], 8, true, 2],
+        ];
+
+        return array_map(fn (array $row) => [
+            'start_level' => $row[0],
+            'end_level' => $row[1],
+            'pre' => $this->scoreShape($row[2][0], $row[2][1]),
+            'post' => $this->scoreShape($row[3][0], $row[3][1]),
+            'daily_sessions' => $row[4],
+            'high_attendance' => $row[5],
+            'join_day' => $row[6],
+        ], $rows);
     }
 
     /**
@@ -863,10 +905,12 @@ class GenerateDemoData extends Command
         int &$mlServiceReachable,
         int &$mlServiceUnreachable
     ): void {
-        $joinedAt = $this->joinDateFromJulyFirst();
+        $joinedAt = isset($plan['join_day'])
+            ? $this->joinDateForJulyDay($plan['join_day'])
+            : $this->joinDateFromJulyFirst();
         $tenure = $this->tenureSinceJoin($joinedAt);
         $identity = $this->buildIdentity($profile, $globalIndex);
-        $usesGoogle = random_int(0, 4) === 0;
+        $usesGoogle = true;
         $thetaStart = $this->thetaForLevel($plan['start_level']);
 
         $habit = $plan['high_attendance'] ? 'high attendance' : 'low attendance';
@@ -881,11 +925,14 @@ class GenerateDemoData extends Command
             'google_id' => $usesGoogle ? (string) random_int(100000000000000000, 999999999999999999) : null,
             'auth_provider' => $usesGoogle ? 'google' : 'password',
             'role' => 'user',
-            'is_demo_user' => true,
+            'is_demo_user' => false,
             'locale' => $profile['locale'],
         ], $joinedAt);
 
         $placementAt = (clone $joinedAt)->addMinutes(random_int(20, 180));
+        if ($placementAt->gt($this->julyCohortCeiling())) {
+            $placementAt = $this->julyCohortCeiling()->copy()->subMinutes(random_int(20, 120));
+        }
         $placementResult = $this->runSimulatedSession(
             $user, 'placement', $thetaStart, $questionPool, $placementAt, $plan['pre']['total'], $levels, $levelAdjustment, $snapshots,
             null, $plan['pre'], $plan['start_level']
@@ -942,6 +989,9 @@ class GenerateDemoData extends Command
         }
 
         $this->seedAdditionalAttendanceCheckins($user, $joinedAt, $tenure, $plan['high_attendance']);
+        if (! $plan['high_attendance']) {
+            $this->seedMissedAttendanceCheckins($user, $joinedAt, $tenure);
+        }
 
         if ($plan['high_attendance'] && random_int(0, 1) === 1) {
             $this->runSimulatedSession(
@@ -979,6 +1029,7 @@ class GenerateDemoData extends Command
             $readiness->predictFor($user->fresh());
             $mlServiceReachable++;
         } catch (\RuntimeException) {
+            $this->createFallbackReadinessPrediction($user->fresh(), $plan);
             $mlServiceUnreachable++;
         }
 
@@ -1019,9 +1070,28 @@ class GenerateDemoData extends Command
         }
     }
 
+    private function seedMissedAttendanceCheckins(User $user, Carbon $joinedAt, int $tenure): void
+    {
+        $missed = 0;
+        for ($d = 1; $d <= $tenure && $missed < 5; $d++) {
+            $at = $this->activityTimestampAfterJulyFirst($joinedAt, $d);
+            if (UserDailyCheckin::where('user_id', $user->id)->where('checkin_date', $at->toDateString())->exists()) {
+                continue;
+            }
+
+            $this->recordAttendanceCheckin($user, $at, false, false);
+            $missed++;
+        }
+    }
+
     private function julyCohortAnchor(): Carbon
     {
         return Carbon::create(2026, 7, 1, 0, 0, 0);
+    }
+
+    private function julyCohortCeiling(): Carbon
+    {
+        return $this->julyCohortAnchor()->copy()->addDays(13)->endOfDay();
     }
 
     /** Registration/join timestamp on or after 1 July 2026. */
@@ -1029,6 +1099,10 @@ class GenerateDemoData extends Command
     {
         $start = $this->julyCohortAnchor()->copy()->addHours(random_int(8, 20));
         $now = Carbon::now();
+        $ceiling = $this->julyCohortCeiling();
+        if ($now->gt($ceiling)) {
+            $now = $ceiling;
+        }
 
         if ($now->lte($start)) {
             return $start;
@@ -1042,6 +1116,13 @@ class GenerateDemoData extends Command
             ->addMinutes(random_int(0, 59));
     }
 
+    private function joinDateForJulyDay(int $day): Carbon
+    {
+        $day = max(1, min(14, $day));
+
+        return Carbon::create(2026, 7, $day, random_int(8, 18), random_int(0, 59), 0);
+    }
+
     private function tenureSinceJoin(Carbon $joinedAt): int
     {
         return max(1, (int) $joinedAt->copy()->startOfDay()->diffInDays(Carbon::now()->copy()->startOfDay()));
@@ -1052,6 +1133,9 @@ class GenerateDemoData extends Command
         $at = (clone $joinedAt)->addDays($dayOffset)->addHours(random_int(7, 21))->addMinutes(random_int(0, 59));
         $floor = $this->julyCohortAnchor();
         $ceiling = Carbon::now();
+        if ($ceiling->gt($this->julyCohortCeiling())) {
+            $ceiling = $this->julyCohortCeiling();
+        }
 
         if ($at->lt($floor)) {
             $at = $floor->copy()->addHours(random_int(9, 18));
@@ -1092,6 +1176,24 @@ class GenerateDemoData extends Command
 
     private function buildIdentity(array $profile, int $index): array
     {
+        if (isset($profile['email'])) {
+            $email = $profile['email'];
+            $username = $profile['username'];
+
+            if (User::where('email', $email)->exists() || User::where('username', $username)->exists()) {
+                $suffix = random_int(10, 99);
+                $localPart = Str::before($email, '@');
+                $email = "{$localPart}{$suffix}@gmail.com";
+                $username = "{$username}{$suffix}";
+            }
+
+            return [
+                'name' => $profile['name'],
+                'email' => $email,
+                'username' => $username,
+            ];
+        }
+
         $slug = Str::slug(Str::before($profile['name'], ' '), '');
         $provider = 'gmail.com';
         $birthYear = random_int(1999, 2003);
@@ -1128,11 +1230,62 @@ class GenerateDemoData extends Command
     /** Ages 23–27 for the named research cohort. */
     private function youngAdultDateOfBirth(): string
     {
-        $year = random_int(1999, 2003);
+        $year = random_int(1999, 2002);
         $month = random_int(1, 12);
         $day = random_int(1, 28);
 
         return sprintf('%04d-%02d-%02d', $year, $month, $day);
+    }
+
+    private function createFallbackReadinessPrediction(User $user, array $plan): void
+    {
+        $gain = $plan['post']['score'] - $plan['pre']['score'];
+        $attendance = $plan['high_attendance'] ? random_int(78, 96) : random_int(42, 68);
+        $readiness = min(96, max(35, (int) round($plan['post']['score'] * 0.72 + $attendance * 0.22 + $gain * 0.28)));
+        $label = match (true) {
+            $readiness >= 80 => 'ready',
+            $readiness >= 65 => 'almost_ready',
+            $readiness >= 50 => 'needs_improvement',
+            default => 'high_risk',
+        };
+        $predictedAt = Carbon::now();
+        $ceiling = $this->julyCohortCeiling();
+        if ($predictedAt->gt($ceiling)) {
+            $predictedAt = $ceiling;
+        }
+
+        ExamReadinessPrediction::create([
+            'user_id' => $user->id,
+            'features' => [
+                'pre_score_percent' => $plan['pre']['score'],
+                'post_score_percent' => $plan['post']['score'],
+                'attendance_percent' => $attendance,
+                'daily_sessions_completed' => $plan['daily_sessions'],
+                'level_start' => $plan['start_level'],
+                'level_current' => $plan['end_level'],
+            ],
+            'readiness_percent' => $readiness,
+            'readiness_label' => $label,
+            'reasons' => [
+                $plan['high_attendance'] ? 'Consistent attendance across July sessions.' : 'Attendance is irregular and needs follow-up.',
+                "Post-assessment score improved by {$gain} percentage points.",
+                "Current level is Level {$plan['end_level']} after placement and daily sessions.",
+            ],
+            'model_version' => 'demo-local-2026-07',
+            'predicted_at' => $predictedAt,
+            'risk_of_dropping_practice_probability' => $plan['high_attendance'] ? round(random_int(8, 24) / 100, 2) : round(random_int(35, 58) / 100, 2),
+            'at_risk_of_dropping_practice' => ! $plan['high_attendance'],
+            'predicted_next_assessment_score' => min(95, round($plan['post']['score'] + random_int(3, 9), 2)),
+            'predicted_score_change' => round($gain, 2),
+            'plain_english_explanation' => $plan['high_attendance']
+                ? 'This student is improving steadily because attendance, practice volume, and post-test performance are aligned.'
+                : 'This student shows some improvement, but inconsistent attendance may limit readiness before the exam.',
+            'time_management_readiness_percent' => min(96, max(30, $readiness + random_int(-6, 8))),
+            'predicted_score_range' => [
+                'low' => max(0, round($plan['post']['score'] - 4.5, 2)),
+                'high' => min(100, round($plan['post']['score'] + 6.5, 2)),
+            ],
+        ]);
     }
 
     private function pickSessionDays(int $eligibleDays, int $sessionCount, float $consistency): array
@@ -1359,5 +1512,31 @@ class GenerateDemoData extends Command
         }
 
         Feedback::where('is_demo_feedback', true)->delete();
+    }
+
+    private function removeExistingFixedResearchCohort(): void
+    {
+        $emails = collect(self::PROFILES)->pluck('email')->filter();
+        if ($emails->isEmpty()) {
+            return;
+        }
+
+        $userIds = User::whereIn('email', $emails)->pluck('id');
+        if ($userIds->isEmpty()) {
+            return;
+        }
+
+        Feedback::whereIn('user_id', $userIds)->delete();
+        $sessionIds = TestSession::whereIn('user_id', $userIds)->pluck('id');
+        SessionAnswer::whereIn('test_session_id', $sessionIds)->delete();
+        TestSession::whereIn('user_id', $userIds)->delete();
+        GameScore::whereIn('user_id', $userIds)->delete();
+        UserDailyCheckin::whereIn('user_id', $userIds)->delete();
+        DB::table('user_progress_snapshots')->whereIn('user_id', $userIds)->delete();
+        DB::table('exam_readiness_predictions')->whereIn('user_id', $userIds)->delete();
+        DB::table('xp_ledger')->whereIn('user_id', $userIds)->delete();
+        DB::table('user_badges')->whereIn('user_id', $userIds)->delete();
+        ExamProfile::whereIn('user_id', $userIds)->delete();
+        User::whereIn('id', $userIds)->delete();
     }
 }

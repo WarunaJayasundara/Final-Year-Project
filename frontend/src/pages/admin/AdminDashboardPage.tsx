@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { CalendarCheck2, Download, ListChecks, Loader2, TrendingUp, UserCheck, Users } from 'lucide-react';
+import { Download, ListChecks, Loader2, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
@@ -11,7 +11,8 @@ import { useCohortOverview, useDownloadPairedScoresCsv } from '@/features/admin/
 
 export function AdminDashboardPage() {
   const { t } = useTranslation('admin');
-  const { data: overview, isLoading } = useCohortOverview(false);
+  const includeDemo = false;
+  const { data: overview, isLoading } = useCohortOverview(includeDemo);
   const downloadCsv = useDownloadPairedScoresCsv({
     onError: () => toast.error(t('dashboard.exportCsvFailed')),
   });
@@ -46,13 +47,13 @@ export function AdminDashboardPage() {
           <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
           <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
         </div>
-        <Button variant="outline" onClick={() => downloadCsv.mutate(false)} disabled={downloadCsv.isPending}>
+        <Button variant="outline" onClick={() => downloadCsv.mutate(includeDemo)} disabled={downloadCsv.isPending}>
           {downloadCsv.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
           {t('dashboard.exportCsv')}
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Users className="h-5 w-5" />} label={t('dashboard.students')} value={String(overview.total_students)} />
         <StatCard
           icon={<UserCheck className="h-5 w-5" />}
@@ -68,11 +69,6 @@ export function AdminDashboardPage() {
           icon={<TrendingUp className="h-5 w-5" />}
           label={t('dashboard.averageScore')}
           value={overview.average_score_percent !== null ? `${overview.average_score_percent}%` : '-'}
-        />
-        <StatCard
-          icon={<CalendarCheck2 className="h-5 w-5" />}
-          label={t('dashboard.averageAttendance')}
-          value={overview.average_attendance_percent !== null ? `${overview.average_attendance_percent}%` : '-'}
         />
       </div>
 

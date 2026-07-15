@@ -9,7 +9,7 @@ progresses — don't let it drift from reality.
 
 ## 1. Project Overview
 
-**HelaIQ** (renamed from "MindRise" in a full rebrand — see §7.14) is a
+**HelaIQ** (renamed from "MindRise" in a full rebrand — see Section 7.14) is a
 Sri Lankan cognitive-training / IQ-development web platform, built as
 CT/2020/074, W.R. Jayasundara's final-year project at the University of
 Kelaniya. Full academic title: "HelaIQ: An AI-Powered Cognitive Training
@@ -17,10 +17,10 @@ Platform for IQ Development in Sri Lanka." Core loop: adaptive IQ
 placement test → daily practice → progress tracking → government-exam
 preparation. After supervisor feedback that the original scope "lacked
 novelty," the project was expanded through a large, explicit phased
-roadmap (all phases now shipped — see §8). Old code comments, backend
+roadmap (all phases now shipped — see Section 8). Old code comments, backend
 docblocks, and some non-visible internal identifiers (DB name
 `iq_platform`, some class/variable names) still say "MindRise" — the
-rebrand (§7.14) intentionally scoped to the user-facing presentation
+rebrand (Section 7.14) intentionally scoped to the user-facing presentation
 layer only, not a global find-replace of internal engineering identifiers.
 
 **User's working style (important for how to operate in this repo):**
@@ -32,7 +32,7 @@ real computation over fabricated/placeholder results, honest documentation
 of limitations and scope cuts (this reads as *rigor*, not weakness, in
 their thesis), and architecture that extends rather than replaces existing
 patterns. Never fabricate benchmark numbers, dataset claims, or Sinhala
-translations — see §16.
+translations — see Section 16.
 
 ---
 
@@ -81,7 +81,7 @@ Final Project/
 │   │           └── Bank2/            Phase 6 competitive-exam question generators
 │   ├── tests/Feature/                NO RefreshDatabase — hits real dev DB, explicit tearDown() cleanup everywhere
 │   └── tools/
-│       ├── validate_sinhala.py       Sinhala corpus/corruption validator — READ §16 BEFORE touching Sinhala
+│       ├── validate_sinhala.py       Sinhala corpus/corruption validator — READ Section 16 BEFORE touching Sinhala
 │       └── sinhala_corpus.json       generated corpus cache
 ├── frontend/                 React 19 + Vite SPA
 │   └── src/
@@ -91,22 +91,22 @@ Final Project/
 │       └── locales/{en,si}/          i18next namespaces (common, dashboard, admin, sessions, games, ...)
 ├── ml-service/                Standalone FastAPI microservice (NOT part of Laravel)
 │   ├── app.py                        inference API — /predict, /health, /metadata, /models, /evaluation-report, /explainability-report
-│   ├── data_pipeline/                research-grade ETL + feature engineering + calibration (see §7)
+│   ├── data_pipeline/                research-grade ETL + feature engineering + calibration (see Section 7)
 │   ├── data/
 │   │   ├── raw/                      gitignored — OULAD (~450MB) + UCI downloads, regenerate via fetch_datasets.py
 │   │   ├── processed/                gitignored-by-convention-but-currently-untracked — per-dataset processed CSVs + calibration_report.json
 │   │   └── hybrid_student_dataset.csv  COMMITTED (73,637 rows, ~11MB — matches existing precedent of committing training data)
 │   ├── models/                       trained artifacts — model.joblib/scaler.joblib/metadata.json = LIVE deployed model
-│   │   └── versions/                 model_registry.py archive (not yet populated — see §12 next task)
-│   ├── generate_dataset.py           synthetic data generator (now calibration-aware, see §7)
+│   │   └── versions/                 model_registry.py archive (not yet populated — see Section 12 next task)
+│   ├── generate_dataset.py           synthetic data generator (now calibration-aware, see Section 7)
 │   ├── model_comparison.py           9-model screening + Optuna nested-CV HPO — SUPERSEDES the old train_model.py
-│   ├── evaluate.py                   comprehensive evaluation suite (NOT YET RUN against new model — see §12)
-│   ├── explain.py                    SHAP+LIME+permutation+PDP (NOT YET RUN against new model — see §12)
+│   ├── evaluate.py                   comprehensive evaluation suite (NOT YET RUN against new model — see Section 12)
+│   ├── explain.py                    SHAP+LIME+permutation+PDP (NOT YET RUN against new model — see Section 12)
 │   ├── train_multioutput.py          risk/next-score/score-change models (already run — real OULAD ground truth)
 │   ├── model_registry.py             versioning + champion-vs-challenger promotion
 │   ├── retrain.py                    orchestrates comparison→evaluate→explain→register→promote
 │   └── generate_notebook.py          writes model_comparison_notebook.ipynb (a deliverable, no jupyter dependency to generate it)
-└── docs/                     All narrative documentation — see §15
+└── docs/                     All narrative documentation — see Section 15
 ```
 
 ---
@@ -122,7 +122,7 @@ Final Project/
   React 18/19 Strict Mode's double-invoke behaviour. This pattern is used
   everywhere in the codebase; don't regress it.
 - **i18n**: i18next, EN/SI namespaces under `src/locales/{en,si}/*.json`.
-  **Sinhala text has a strict validation process — see §16, do not skip it.**
+  **Sinhala text has a strict validation process — see Section 16, do not skip it.**
 - **Theming**: `next-themes`, light/dark/system. `ThemeToggle` is a plain
   cycling button (a Radix DropdownMenu version was tried and abandoned
   after synthetic-event issues in automated testing — don't reintroduce
@@ -270,7 +270,7 @@ real activity → features; second-half real outcome → target. UCI excluded
 from this specific pipeline (only 3 static grades, no way to split without
 leakage).
 
-### 7.4 Model comparison — RESULTS ARE IN (just completed, see §12)
+### 7.4 Model comparison — RESULTS ARE IN (just completed, see Section 12)
 
 `model_comparison.py` screened **9 candidates** (Random Forest, Extra
 Trees, Gradient Boosting, AdaBoost, XGBoost, LightGBM, CatBoost, SVM, MLP)
@@ -308,7 +308,7 @@ missing, so this is fine, but be aware only one of the two exists now.
 
 SHAP (TreeExplainer, primary) + LIME (independent local cross-check) +
 permutation importance (model-agnostic) + partial dependence — computed by
-`explain.py` (**not yet run against the new model** — see §12). Every
+`explain.py` (**not yet run against the new model** — see Section 12). Every
 `/predict` response includes top-5 SHAP reasons + a **trend-aware
 plain-English explanation** (`app.py::_plain_english()`) comparing against
 the student's previous prediction (Laravel sends `previous_features`,
@@ -320,7 +320,7 @@ fetched from that student's last `exam_readiness_predictions` row).
 challenger promotion gate, ≥0.5pp macro-F1 margin required to replace a
 live model) + `retrain.py` (orchestrates the full chain + registers +
 promotes). **No version has been registered yet** — this is next-task work
-(§12). No automatic scheduled retraining trigger exists (deliberate scope
+(Section 12). No automatic scheduled retraining trigger exists (deliberate scope
 decision — documented, not built, per the brief's own instruction that
 this is disproportionate infra for a single-VM student project).
 
@@ -333,7 +333,7 @@ offline analysis, **never** part of the model's feature vector
 fairness-by-design). Already run once (with the OLD 24-feature model, so
 it gracefully skipped the model-accuracy-by-group section via a
 `n_features_in_` mismatch guard) — **needs re-running now that the new
-43-feature model exists** (§12).
+43-feature model exists** (Section 12).
 
 Real findings (`models/bias_fairness_report.json`): near gender parity
 (9.5% vs 9.1% "ready"); disability gap (7.0% vs 9.5%); large deprivation
@@ -423,7 +423,7 @@ Full plan at `C:\Users\wrj26\.claude\plans\nested-zooming-hippo.md`.
   new rows (different wording/style), but conceptually redundant (~3x
   coverage in just those two subcategories); 2 have real `session_answers`
   history so must never be bulk-deleted per this project's established
-  "deactivate, don't delete" convention. Left in place, flagged in §12 for
+  "deactivate, don't delete" convention. Left in place, flagged in Section 12 for
   the user to decide.
 - **Self-learning study notes** (new `study_notes` table +
   `StudyNoteGeneratorServiceInterface`/Mock/Gemini, mirroring the question-
@@ -501,7 +501,7 @@ phases A→K (full detail in the plan file); summary:
   `ml-service/data_pipeline/time_features.py`. **Deliberately NOT yet
   merged into `extract()`'s live 43-feature vector** — the currently-live
   model was trained on exactly that 43-value contract; the cutover happens
-  atomically once a new model is promoted (§12 below). `hybrid_student_dataset.csv`
+  atomically once a new model is promoted (Section 12 below). `hybrid_student_dataset.csv`
   regenerated with all 9 new columns (55 total, same 73,637 rows / 45.7%
   real share).
 - **Phase E — ablation study** (`ml-service/ablation_study.py`, NEW,
@@ -513,7 +513,7 @@ phases A→K (full detail in the plan file); summary:
   variant because that was measured at 2+ hours *per variant* — infeasible
   for 6 variants and answers a different question than the one being asked.
   **Kicked off in the background early in this session; still running as
-  of this write** (see §12 — this is the one genuinely open item).
+  of this write** (see Section 12 — this is the one genuinely open item).
 - **Phase F**: `/predict` gained `prediction_confidence_note` (fixed
   disclaimer distinguishing model estimate from verified outcome, per
   brief's explicit requirement), `predicted_score_range` (± the
@@ -550,7 +550,7 @@ phases A→K (full detail in the plan file); summary:
   extraction script — **not hand-typed**. This matters: a first hand-typed
   attempt at this exact file produced genuinely garbled/corrupted Sinhala
   (wrong glyphs, mixed-up diacritics) that was self-caught before writing
-  and immediately discarded, re-confirming why §16's hard rule exists.
+  and immediately discarded, re-confirming why Section 16's hard rule exists.
   Injected into `GeminiAiQuestionGeneratorService`'s prompt as
   terminology context. New `translation_status`/`translation_quality_score`/
   `sinhala_review_status`/`semantic_equivalence_score` columns (+
@@ -624,7 +624,7 @@ IQ levels, so Level 5 wasn't reliably harder than Level 3.
   confound's logical role is fixed by construction, not judged per
   instance). Also resolved the ~810 (actually 405) pre-existing stale
   `direction_sense`/`coding_decoding` rows flagged in an earlier session
-  (§9) — user chose deactivate; done (`is_active=false`, 13 rows with real
+  (Section 9) — user chose deactivate; done (`is_active=false`, 13 rows with real
   `session_answers` history preserved not deleted).
 - **Visual IQ engine v2 + Bank5**: new `generation_rule`/
   `transformation_steps`/`visual_complexity_score` columns on
@@ -984,7 +984,7 @@ verified by tracing concrete failing inputs through the actual code
 (caught 6 real bugs a casual playthrough likely would have missed, e.g.
 the Cognitive Command Center switching-cost bug only shows up in
 submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
-§11 for the full list of bounded, documented scope limits.
+Section 11 for the full list of bounded, documented scope limits.
 
 ---
 
@@ -1005,17 +1005,17 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 - Government exam profile + countdown + rule-based `StudyPlanService`.
 - AI question generation with human-review gate (Mock + Gemini swappable,
   Jaccard duplicate detection, admin approve/reject).
-- Full bilingual EN/SI UI (validated Sinhala corpus, see §16).
+- Full bilingual EN/SI UI (validated Sinhala corpus, see Section 16).
 - Admin panel: question/category/user CRUD, Psychometrics dashboard,
   Question Bank Stats, AI Questions review, **ML Research** (new).
 - **ML readiness prediction, research-grade version**: hybrid real+
   synthetic training data, 9-model comparison with Optuna HPO (XGBoost
   selected, macro-F1 0.6808 — note the currently-*live* `model.joblib` on
   disk is actually stamped version `20260709143659`, an earlier run than
-  this figure's `20260711054426`; not yet reconciled, see §12), 43-feature
+  this figure's `20260711054426`; not yet reconciled, see Section 12), 43-feature
   vector, real multi-output models (risk/next-score/score-change, already
   trained), bias/fairness analysis, model versioning infrastructure.
-- **Time-aware upgrade (§7.12)**: real per-question
+- **Time-aware upgrade (Section 7.12)**: real per-question
   response-time capture + learned-time calibration lifecycle,
   speed-accuracy scoring, optional real-exam profile structure,
   readiness-gap/insufficient-plan warnings, phase-aware weak-area
@@ -1023,8 +1023,8 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   Sinhala terminology glossary + structural-equivalence translation
   validation. **The 9 new time-aware ML features exist and are fully
   wired end-to-end except the final model-swap**: an ablation study
-  comparing 6 feature-set variants — see §12, one of two genuinely open items.
-- **Adult-level content upgrade (§7.13, this session)**: difficulty_weight
+  comparing 6 feature-set variants — see Section 12, one of two genuinely open items.
+- **Adult-level content upgrade (Section 7.13, this session)**: difficulty_weight
   bug fixed (now genuinely spans 1-5), Bank4 (~530 Level 4-5 questions, 5
   new archetypes) + Bank5 (~260 new visual/chart questions, 2 new
   archetypes) added, visual-generation metadata persistence, 2 new
@@ -1035,7 +1035,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   uploaded exam guide) + a real bug fix in the corpus validator itself
   (non-recursive glob silently skipped Bank2-5 the whole time). 99/99
   backend tests passing, clean `tsc`, clean Sinhala validator.
-- **Complete HelaIQ rebrand + UI/UX redesign (§7.14, this session)**:
+- **Complete HelaIQ rebrand + UI/UX redesign (Section 7.14, this session)**:
   MindRise → HelaIQ across every user-facing surface — new brand identity
   (Ceylon-sapphire-and-gold palette, hand-coded `HelaIQMark` logo, a
   branded stroke-drawing loader, dedicated Sinhala typography), new
@@ -1053,12 +1053,12 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   on every route reachable without an auth bypass (public + admin);
   student-only surfaces (dashboard/testing/games/study content) verified
   via type-checking + structural review only, per the same Google-OAuth
-  constraint this project has hit in prior sessions — see §7.14 for full
-  detail and §9 for what a real student walkthrough would need.
+  constraint this project has hit in prior sessions — see Section 7.14 for full
+  detail and Section 9 for what a real student walkthrough would need.
 
 ## 9. Partially Completed / In-Progress
 
-- **Time-aware ML feature cutover** (§12, the only open item from §7.12) —
+- **Time-aware ML feature cutover** (Section 12, the only open item from Section 7.12) —
   the ablation study (`ml-service/ablation_study.py`) was still running
   when this was last updated. Once it finishes: pick the winning variant,
   register + promote via `model_registry.py`, THEN (and only then) merge
@@ -1073,11 +1073,11 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   were never called) — folded into the same registration step above once
   the ablation's winner is known, rather than doing it twice.
 - Fill exact numbers into the "populated after training" placeholders in
-  `docs/ML_RESEARCH_METHODOLOGY.md` (§5.5/6.3) and
-  `docs/THESIS_METHODOLOGY_DRAFT.md` (§3.y.4 table) — both the original
-  Phase 7 numbers (screening/HPO figures already captured in §7.4) and the
+  `docs/ML_RESEARCH_METHODOLOGY.md` (Section 5.5/6.3) and
+  `docs/THESIS_METHODOLOGY_DRAFT.md` (Section 3.y.4 table) — both the original
+  Phase 7 numbers (screening/HPO figures already captured in Section 7.4) and the
   new ablation-study results.
-- **Student-facing browser verification of §7.13's new UI** (games,
+- **Student-facing browser verification of Section 7.13's new UI** (games,
   study-notes) — not done live in-browser (students authenticate
   exclusively via Google OAuth; no password-login path exists for
   role=`user`, confirmed while attempting this). Verified instead via the
@@ -1085,7 +1085,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   (SpacedRepetitionService, StudyNoteRecommendationService) against real
   data. If a real click-through is needed, it requires either going
   through actual Google OAuth or adding a dev-only auth bypass.
-- **Student-facing browser verification of §7.14's redesigned dashboard/
+- **Student-facing browser verification of Section 7.14's redesigned dashboard/
   testing/theory/games pages** — same exact constraint as the bullet
   above, hit again this session for the HelaIQ redesign. Verified via
   `tsc`/`oxlint` (both clean) + structural review (confirmed no
@@ -1099,7 +1099,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   new design tokens automatically and were spot-checked for non-breakage
   only — not individually bespoke-redesigned. Documented scope cut in the
   original plan, not an oversight; revisit if the user wants full parity.
-- Otherwise nothing else is mid-flight — Phases 1-6, §7.11-§7.14 are fully
+- Otherwise nothing else is mid-flight — Phases 1-6, Section 7.11-Section 7.14 are fully
   verified and closed out within the constraints noted above (99/99
   backend tests, clean `tsc`, clean `oxlint`, clean Sinhala corpus
   validator).
@@ -1119,7 +1119,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
   to the honest single-document fallback, having no `පරිච්ඡේදය N`/`N
   කොටස`/`Chapter N` marker) — a real, live-tested finding, not a
   regression: two more permissive patterns were tried and dropped after
-  producing garbage headings on real documents (see §7.13). Recall is
+  producing garbage headings on real documents (see Section 7.13). Recall is
   intentionally traded for zero fabricated structure.
 - **Bank5's Boolean-overlay archetype yielded only 30/60 target rows** and
   **Venn-consistency yielded 36/100** — both are real, verified, distinct
@@ -1138,7 +1138,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 
 - **ML label is only 45.7% real-grounded** — the rest is a calibrated but
   still-synthetic composite heuristic. Full threats-to-validity discussion
-  in `ML_RESEARCH_METHODOLOGY.md` §12.
+  in `ML_RESEARCH_METHODOLOGY.md` Section 12.
 - **The 9 time-aware ML features are synthesized (not real) for training
   data** — no public dataset (OULAD/UCI) records per-item response times,
   so `ml-service/data_pipeline/time_features.py` generates them from the
@@ -1148,7 +1148,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 - **Live model version mismatch**: `models/model.joblib` on disk is
   stamped `20260709143659`; CLAUDE.md/ML_RESEARCH_METHODOLOGY.md have
   referenced a later `20260711054426` run's numbers. Not yet reconciled —
-  resolve as part of the §12 registration step (whichever model is
+  resolve as part of the Section 12 registration step (whichever model is
   actually promoted becomes the single source of truth going forward).
 - Real datasets' populations (UK distance-learning adults, Portuguese
   secondary students) don't match MindRise's actual target demographic
@@ -1163,10 +1163,10 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 - No bulk question import tool (CRUD is per-question only).
 - Historical: a self-caught Unicode-corruption incident while hand-composing
   Sinhala text mid-session — recovered by adopting the corpus-validator
-  process now codified in §16. **Repeated (and self-caught again) this
+  process now codified in Section 16. **Repeated (and self-caught again) this
   session** while first attempting to hand-type `sinhala_glossary.json` —
   discarded immediately, rebuilt programmatically from already-reviewed
-  source pairs instead (see §7.12). Never repeat the freehand-composition
+  source pairs instead (see Section 7.12). Never repeat the freehand-composition
   mistake a third time — always extract from a verified source or run
   through the corpus validator before committing.
 
@@ -1184,7 +1184,7 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 - **Real questions retired, never deleted** (Phase 6) — `is_active=false`
   preserves `session_answers` FK integrity and prediction history.
 - **ML: real data blended with *calibrated* synthetic, not pure synthetic**
-  — the defining decision of this session's work; see §7.3. The synthetic
+  — the defining decision of this session's work; see Section 7.3. The synthetic
   portion's existence is itself justified (population coverage for
   platform-only features), not just a stopgap.
 - **Honest scope-cuts over overclaiming** — TabNet excluded, 2 of the
@@ -1195,22 +1195,22 @@ submitted metadata, not visually). See `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`
 
 ## 12. EXACT NEXT TASK (resume here after /compact)
 
-**Most recent session was the Final Deep System Audit (§7.15) — complete,
+**Most recent session was the Final Deep System Audit (Section 7.15) — complete,
 100/100 backend tests passing, 12 real bugs found and fixed, full report
 at `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`.** Nothing blocking remains
 from it; the few things it found but deliberately didn't fix (visual
 question metadata backfill, ML train/test leakage documentation, 3
 flagged Sinhala image-question captions, one hardcoded default admin
-password) are listed in that report's §11, none of them urgent.
+password) are listed in that report's Section 11, none of them urgent.
 
-**Before that, the HelaIQ rebrand (§7.14) is functionally complete
+**Before that, the HelaIQ rebrand (Section 7.14) is functionally complete
 across all 11 of the user's own specified phases** — `tsc`/`oxlint`/
 Sinhala-validator all clean, live-browser-verified on every route
 reachable without an auth bypass. Nothing blocking remains from it. If
 picking this back up, the real open items are: (a) a genuine student-
 facing browser walkthrough of the redesigned dashboard/testing/theory/
-games pages — blocked the same way §7.13's was (Google OAuth only, see
-§9); (b) optionally extend Phase 10's admin redesign to the other 8 admin
+games pages — blocked the same way Section 7.13's was (Google OAuth only, see
+Section 9); (b) optionally extend Phase 10's admin redesign to the other 8 admin
 pages beyond the 4 already done (documented scope cut, not urgent); (c)
 the SVG favicon has no PNG/ICO fallback set (no rasterization tool in
 `devDependencies` — a one-time manual step, not code work).
@@ -1221,19 +1221,19 @@ the SVG favicon has no PNG/ICO fallback set (no rasterization tool in
 the still-open ML/content-bank items from earlier sessions — still
 accurate, just no longer the most recently touched work.**
 
-**This session's Adult-Level Content Upgrade (§7.13) is functionally
+**This session's Adult-Level Content Upgrade (Section 7.13) is functionally
 complete and verified (99/99 backend tests, clean `tsc`, clean Sinhala
 validator) — nothing blocking remains from it.** Optional lower-priority
 follow-ups if picking this back up: (a) get a real student-facing
 browser walkthrough of the 3 new games + redesigned Study Notes page (needs
-Google OAuth or a dev auth bypass — not done this session, see §9/§10);
+Google OAuth or a dev auth bypass — not done this session, see Section 9/Section 10);
 (b) decide whether to backfill the 14 pre-existing `StudyNote` rows'
 mismatched `subcategory` values so their retrieval-practice isn't empty;
 (c) consider raising Bank5's Boolean-overlay/Venn-consistency row counts if
 more volume is wanted (both are capped by real generator ceilings, not
-bugs — see §10).
+bugs — see Section 10).
 
-**The Time-Aware upgrade (§7.12)'s ablation study FINISHED during this
+**The Time-Aware upgrade (Section 7.12)'s ablation study FINISHED during this
 session** (`ml-service/models/ablation_report.json` now exists) — read
 here so it isn't re-run:
 
@@ -1251,7 +1251,7 @@ accuracy until evaluation results demonstrate it": no time-aware variant
 (C or D) beats the current live model.** Adding the 9 response-time
 features (C) actually scores *below* the behavior-only variant (B), and
 the full model (D) doesn't recover past the live baseline either. Per
-§12's own pre-written decision tree: **do not merge `extractTimeAware()`
+Section 12's own pre-written decision tree: **do not merge `extractTimeAware()`
 into `extract()`, do not retrain/swap the live model** — leave it as-is
 and write this up as a legitimate negative result in
 `ML_RESEARCH_METHODOLOGY.md`/`THESIS_METHODOLOGY_DRAFT.md` (still
@@ -1287,7 +1287,7 @@ manually).
    model**: this is the one place three things must change together,
    atomically, or the live `/predict` endpoint breaks:
    - `FeatureExtractionService::extract()` — merge in `extractTimeAware()`'s
-     9 features (currently deliberately excluded, see §7.12/TIME_AWARE_FEATURE_ORDER's docblock).
+     9 features (currently deliberately excluded, see Section 7.12/TIME_AWARE_FEATURE_ORDER's docblock).
    - `ml-service/app.py` — extend `FEATURE_ORDER`/`ADVANCED_FEATURE_ORDER`
      (or add a third `TIME_AWARE_FEATURE_ORDER` import from
      `data_pipeline/time_features.py`) to match, and update
@@ -1302,7 +1302,7 @@ manually).
    If the ablation shows the time-aware variants DON'T meaningfully help,
    that's a legitimate, reportable research finding — leave the live model
    as-is and document the negative result honestly in the methodology docs
-   (this is exactly the kind of result the brief's §20 "important scientific
+   (this is exactly the kind of result the brief's Section 20 "important scientific
    requirements" section is asking to be able to trust).
 3. **Also fold in the pre-existing outstanding ML Phase 7 registration** —
    `model_registry.py` `register_version()`/`promote()` were never actually
@@ -1311,15 +1311,15 @@ manually).
    the live `model.joblib`'s version stamp (`20260709143659`) doesn't match
    the `20260711054426` figure referenced elsewhere in this file — reconcile
    once you know which model is actually ending up live.
-4. Fill exact numbers into `docs/ML_RESEARCH_METHODOLOGY.md` §5.5/6.3
+4. Fill exact numbers into `docs/ML_RESEARCH_METHODOLOGY.md` Section 5.5/6.3
    (`<!-- FINAL_RESULTS_PLACEHOLDER -->`) and `docs/THESIS_METHODOLOGY_DRAFT.md`
-   §3.y.4 — both the original Phase 7 screening/HPO numbers (already
-   captured in §7.4) and this session's ablation-study results (new
-   subsection, matching §7.12's structure).
+   Section 3.y.4 — both the original Phase 7 screening/HPO numbers (already
+   captured in Section 7.4) and this session's ablation-study results (new
+   subsection, matching Section 7.12's structure).
 5. `cd backend && php artisan test` (91 passing as of this write) and
    `cd frontend && npx tsc --noEmit` (clean as of this write) — re-run
    after any further changes.
-6. **Decide on the ~810 stale/redundant Bank3 rows** flagged in §7.11 —
+6. **Decide on the ~810 stale/redundant Bank3 rows** flagged in Section 7.11 —
    still unresolved, ask the user whether to deactivate them or leave as
    extra bank volume (2 rows have real `session_answers` history so must be
    deactivated not deleted if removed at all).
@@ -1379,7 +1379,7 @@ cd ml-service && ./venv/Scripts/python.exe -m uvicorn app:app --host 127.0.0.1 -
 ./venv/Scripts/python.exe -m data_pipeline.bias_fairness_report
 ./venv/Scripts/python.exe model_registry.py list
 ./venv/Scripts/python.exe retrain.py              # ⚠️ re-runs model_comparison.py internally
-./venv/Scripts/python.exe ablation_study.py       # ⚠️ still long (6 feature-set groups × nested HPO), but far cheaper than a 6x model_comparison.py re-run - see §12
+./venv/Scripts/python.exe ablation_study.py       # ⚠️ still long (6 feature-set groups × nested HPO), but far cheaper than a 6x model_comparison.py re-run - see Section 12
 
 # MySQL (XAMPP, not persistent)
 cd /c/xampp/mysql/bin && ./mysqld.exe --defaults-file=/c/xampp/mysql/bin/my.ini &
@@ -1445,7 +1445,7 @@ self-caught, but the lesson is now a hard process, not a suggestion:
   `generate_dataset.py` (which imports from it) — verified this session via
   a byte-identical before/after diff after refactoring; keep that
   invariant if touched again.
-- Don't re-run `model_comparison.py`/`retrain.py` casually (§12) — very
+- Don't re-run `model_comparison.py`/`retrain.py` casually (Section 12) — very
   expensive, and the current result is good and live.
 - Don't re-add the Radix DropdownMenu-based `ThemeToggle` without solving
   the underlying synthetic-event testing issue that caused it to be
@@ -1455,7 +1455,7 @@ self-caught, but the lesson is now a hard process, not a suggestion:
 - Don't literally implement "Expected IQ Improvement," "Predicted
   Cognitive Growth," or "Most Effective Learning Strategy" as separate
   supervised-ML outputs if asked to revisit the brief — they were
-  deliberately scoped out/reframed with documented reasoning (§7.1, §11);
+  deliberately scoped out/reframed with documented reasoning (Section 7.1, Section 11);
   reintroducing them as literal ML predictions would contradict this
   session's own validity/rigor argument unless genuine new ground-truth
   data becomes available.
@@ -1484,4 +1484,4 @@ self-caught, but the lesson is now a hard process, not a suggestion:
   via `len(feature_mapping.FULL_FEATURE_ORDER)` = 43. It's 24 original +
   **19** advanced features (not 18) — earlier doc drafts undercounted the
   advanced list by one. Use 43 (24+19) everywhere in the final
-  methodology numbers; §7.2 above has the corrected full list.
+  methodology numbers; Section 7.2 above has the corrected full list.

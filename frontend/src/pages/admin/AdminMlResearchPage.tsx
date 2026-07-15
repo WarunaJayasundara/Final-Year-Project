@@ -1,8 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Layers, ShieldCheck, Target, Trophy, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
@@ -18,8 +17,7 @@ function get(obj: unknown, path: string[]): unknown {
 
 export function AdminMlResearchPage() {
   const { t } = useTranslation('admin');
-  const [includeDemo, setIncludeDemo] = useState(true);
-  const { data: overview, isLoading: overviewLoading } = useMlOverview(includeDemo);
+  const { data: overview, isLoading: overviewLoading } = useMlOverview(false);
   const { data: reports, isLoading: reportsLoading } = useMlResearchReports();
 
   if (overviewLoading || reportsLoading) {
@@ -49,9 +47,6 @@ export function AdminMlResearchPage() {
           <h1 className="text-2xl font-semibold">{t('mlResearch.title')}</h1>
           <p className="text-muted-foreground">{t('mlResearch.subtitle')}</p>
         </div>
-        <Button variant={includeDemo ? 'default' : 'outline'} size="sm" onClick={() => setIncludeDemo((v) => !v)}>
-          {includeDemo ? t('feedback.includingDemo') : t('feedback.excludingDemo')}
-        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

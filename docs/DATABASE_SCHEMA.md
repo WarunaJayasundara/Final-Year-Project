@@ -1,7 +1,7 @@
 # HelaIQ — Database Schema Reference
 
 This is the full column-level companion to `docs/HELAIQ_THESIS_DOCUMENT.md`
-§3.7 ("Database schema — grouped overview"), which only gives a coarse,
+Section 3.7 ("Database schema — grouped overview"), which only gives a coarse,
 grouped table listing. This file is the appendix-grade reference: every
 table, every column, its type, nullability/default, and foreign keys —
 built by reading every migration file directly, not inferred or guessed.
@@ -43,7 +43,7 @@ than silently reflected.
 ## Relationship / integrity conventions (recap)
 
 Two conventions recur throughout the schema below and are documented in
-full in the main thesis document's §3.7 — recapped briefly here so this
+full in the main thesis document's Section 3.7 — recapped briefly here so this
 file is self-contained:
 
 1. **Retire, never delete.** Rows that become obsolete (questions, exam
@@ -62,13 +62,13 @@ file is self-contained:
 `Schema::create(...)` call across all 46 migration files) — 3 of which
 are Laravel-framework tables (`password_resets`, `failed_jobs`,
 `personal_access_tokens`) rather than application domain tables, leaving
-**22 application/domain tables**. (Note: the main thesis document's §3.7
+**22 application/domain tables**. (Note: the main thesis document's Section 3.7
 overview table states "26 tables" — this is a minor pre-existing
 miscount in that summary sentence; the migrations directory itself
 resolves unambiguously to 25 `Schema::create` calls. See this document's
-closing note for the correction now applied to §3.7.)
+closing note for the correction now applied to Section 3.7.)
 
-Grouped the same way as the main document's §3.7:
+Grouped the same way as the main document's Section 3.7:
 
 | Group | Tables |
 |---|---|
@@ -374,7 +374,7 @@ exam history) — a real structural change worth flagging explicitly.
 | `id` | bigint, PK | — | |
 | `user_id` | FK → `users.id` | required, `cascadeOnDelete` | indexed (not unique — see above) |
 | `status` | enum(`active`,`completed`) | default `active` | added `2026_07_13` |
-| `exam_category` | string(50) | required | historically a fixed list; current student-facing flow always stores `'other'` (see main thesis doc §7.11-era note) |
+| `exam_category` | string(50) | required | historically a fixed list; current student-facing flow always stores `'other'` (see main thesis doc Section 7.11-era note) |
 | `exam_name` | string(150) | nullable | |
 | `exam_date` | date | nullable | |
 | `daily_study_hours_target` | decimal(4,1) | default `1.5` | |
@@ -549,9 +549,9 @@ Laravel default queue-failure log. `id`, `uuid` (unique), `connection`
 
 ## Correction applied to the main thesis document
 
-While building this reference, the main document's §3.7 stated **"26
+While building this reference, the main document's Section 3.7 stated **"26
 tables"** — a direct grep of every `Schema::create(...)` call across all
-46 migration files resolves unambiguously to **25**. §3.7 has been
+46 migration files resolves unambiguously to **25**. Section 3.7 has been
 corrected to state 25 and now points here for the full column-level
 detail (see this document's own "Table count" section above for the
 grouped breakdown, including the note that 3 of the 25 are Laravel

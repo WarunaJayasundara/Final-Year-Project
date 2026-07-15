@@ -97,7 +97,7 @@ class AnalyticsController extends Controller
 
         $callback = function () use ($rows) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['user_id', 'name', 'email', 'pre_score_percent', 'post_score_percent', 'level_start', 'level_current', 'daily_sessions_completed', 'attendance_percent']);
+            fputcsv($handle, ['user_id', 'name', 'email', 'pre_score_percent', 'post_score_percent', 'level_start', 'level_current', 'daily_sessions_completed']);
 
             foreach ($rows as $row) {
                 fputcsv($handle, [
@@ -109,7 +109,6 @@ class AnalyticsController extends Controller
                     $row['level_start'],
                     $row['level_current'],
                     $row['daily_sessions_completed'],
-                    $row['attendance_percent'],
                 ]);
             }
 

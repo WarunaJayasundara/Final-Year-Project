@@ -29,13 +29,12 @@ export function AdminFeedbackPage() {
   const { t } = useTranslation('admin');
   const [status, setStatus] = useState<'all' | 'new' | 'reviewed'>('all');
   const [page, setPage] = useState(1);
-  const [includeDemo, setIncludeDemo] = useState(true);
 
-  const { data: stats, isLoading: statsLoading } = useFeedbackStats(includeDemo);
+  const { data: stats, isLoading: statsLoading } = useFeedbackStats(false);
   const { data: feedback, isLoading: feedbackLoading } = useAdminFeedback({
     page,
     status: status === 'all' ? undefined : status,
-    include_demo: includeDemo,
+    include_demo: false,
   });
   const markReviewed = useMarkFeedbackReviewed();
 
@@ -58,20 +57,11 @@ export function AdminFeedbackPage() {
           <h1 className="text-2xl font-semibold">{t('feedback.title')}</h1>
           <p className="text-muted-foreground">{t('feedback.subtitle')}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={includeDemo ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setIncludeDemo((v) => !v)}
-          >
-            {includeDemo ? t('feedback.includingDemo') : t('feedback.excludingDemo')}
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href={`/api/admin/feedback/export.csv?include_demo=${includeDemo ? '1' : '0'}`}>
-              <Download className="h-4 w-4" /> {t('feedback.exportCsv')}
-            </a>
-          </Button>
-        </div>
+        <Button asChild variant="outline" size="sm">
+          <a href="/api/admin/feedback/export.csv?include_demo=0">
+            <Download className="h-4 w-4" /> {t('feedback.exportCsv')}
+          </a>
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -165,7 +155,6 @@ export function AdminFeedbackPage() {
                     <Stars value={entry.overall_rating} />
                     <span className="text-xs text-muted-foreground">{entry.user_name}</span>
                     {entry.locale && <Badge variant="outline" className="text-[10px] uppercase">{entry.locale}</Badge>}
-                    {entry.is_demo_feedback && <Badge variant="secondary" className="text-[10px]">{t('feedback.demoTag')}</Badge>}
                   </div>
                   {entry.status === 'new' ? (
                     <Button size="sm" variant="outline" onClick={() => markReviewed.mutate(entry.id)} disabled={markReviewed.isPending}>
