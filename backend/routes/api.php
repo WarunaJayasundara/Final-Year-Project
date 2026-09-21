@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\LevelController;
 use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\SinhalaController;
 use App\Http\Controllers\Admin\SourceDocumentController;
 use App\Http\Controllers\Admin\StudyNoteController as AdminStudyNoteController;
 use App\Http\Controllers\Admin\UserManagementController;
@@ -62,6 +63,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin,super_admin'])->
     Route::apiResource('categories', CategoryController::class)->except(['create', 'edit']);
 
     Route::post('/questions/generate-visual-preview', [QuestionController::class, 'generateVisualPreview']);
+    // Sinhala tooling for the question form: machine-draft translation and script-integrity check.
+    Route::post('/sinhala/translate', [SinhalaController::class, 'translate']);
+    Route::post('/sinhala/check', [SinhalaController::class, 'check']);
     Route::apiResource('questions', QuestionController::class)->except(['create', 'edit']);
     Route::post('/questions/{question}/image', [QuestionController::class, 'uploadImage']);
 

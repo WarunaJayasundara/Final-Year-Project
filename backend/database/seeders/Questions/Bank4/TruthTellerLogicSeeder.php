@@ -79,7 +79,7 @@ class TruthTellerLogicSeeder extends Seeder
                     ? "X plus {$add} equals ".($x + $add).'.'
                     : "X minus {$add} equals {$base}.";
                 $clueSi = $useSubtract
-                    ? "X ට {$add} එකතු කළ විට ".($x + $add)." ලැබේ."
+                    ? "X ට {$add} එකතු කළ විට ".($x + $add).' ලැබේ.'
                     : "X ඉන් {$add} අඩු කළ විට {$base} ලැබේ.";
 
                 [$claims, $trueCount] = $this->buildClaims($x, $seedBase + $level * 1000 + $i);

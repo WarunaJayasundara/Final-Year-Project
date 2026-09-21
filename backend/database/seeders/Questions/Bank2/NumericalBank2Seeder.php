@@ -247,28 +247,33 @@ class NumericalBank2Seeder extends Seeder
                 [$terms, $answer, $ruleEn] = match ($kind) {
                     'squares' => (function () use ($params) {
                         $k = $params[0];
+
                         return [[$k ** 2, ($k + 1) ** 2, ($k + 2) ** 2, ($k + 3) ** 2], ($k + 4) ** 2,
                             'each term is a consecutive perfect square'];
                     })(),
                     'cubes' => (function () use ($params) {
                         $k = $params[0];
+
                         return [[$k ** 3, ($k + 1) ** 3, ($k + 2) ** 3, ($k + 3) ** 3], ($k + 4) ** 3,
                             'each term is a consecutive cube'];
                     })(),
                     'primes' => (function () use ($params, $primes) {
                         $idx = $params[0];
+
                         return [array_slice($primes, $idx, 4), $primes[$idx + 4],
                             'the terms are consecutive prime numbers'];
                     })(),
                     'fib' => (function () use ($params) {
                         [$a, $b] = $params;
                         $t = [$a, $b, $a + $b, $a + 2 * $b];
+
                         return [$t, $t[2] + $t[3],
                             'each term is the sum of the two before it'];
                     })(),
                     'alt' => (function () use ($params) {
                         [$start, $a, $b] = $params;
                         $t = [$start, $start + $a, $start + $a + $b, $start + 2 * $a + $b];
+
                         return [$t, $start + 2 * $a + 2 * $b,
                             "the series adds +{$a} and +{$b} alternately"];
                     })(),
@@ -278,6 +283,7 @@ class NumericalBank2Seeder extends Seeder
                         for ($j = 0; $j < 3; $j++) {
                             $t[] = 2 * end($t) + $c;
                         }
+
                         return [$t, 2 * end($t) + $c,
                             "each term is double the previous plus {$c}"];
                     })(),
@@ -493,12 +499,13 @@ class NumericalBank2Seeder extends Seeder
                 $diff = abs($fatherAgeAtBirth - $motherAgeAtSiblingBirth + $siblingYoungerBy);
                 if ($diff === 0) {
                     $i--;
+
                     continue;
                 }
                 [$name, $poss, $nameSi, $possSi] = $names[$i % 3];
 
                 $en = "{$name}'s father was {$fatherAgeAtBirth} years old when {$name} was born. {$name}'s mother was {$motherAgeAtSiblingBirth} years old when {$poss} sibling, {$siblingYoungerBy} years younger, was born. What is the age difference between {$poss} parents?";
-                $si = "{$nameSi}ගේ පියා උපන් විට {$nameSi}ගේ පියාට වයස අවුරුදු {$fatherAgeAtBirth} විය. {$nameSi}ට වඩා අවුරුදු {$siblingYoungerBy}කින් බාල සොයුරා/සොයුරිය උපන් විට {$nameSi}ගේ මව්කගේ වයස අවුරුදු {$motherAgeAtSiblingBirth} විය. {$possSi} දෙමාපියන්ගේ වයස් වෙනස කීයද?";
+                $si = "{$nameSi} උපන් විට {$nameSi}ගේ පියාට වයස අවුරුදු {$fatherAgeAtBirth} විය. {$nameSi}ට වඩා අවුරුදු {$siblingYoungerBy}කින් බාල සොයුරා/සොයුරිය උපන් විට {$nameSi}ගේ මවගේ වයස අවුරුදු {$motherAgeAtSiblingBirth} විය. {$possSi} දෙමාපියන්ගේ වයස් වෙනස කීයද?";
 
                 $rows[] = $this->numericRow(
                     $level, $en, $si, $diff,
@@ -543,7 +550,7 @@ class NumericalBank2Seeder extends Seeder
                     $en = "Two trains start at the same time from stations A and B, {$distance} km apart, travelling towards each other at {$speedA} km/h and {$speedB} km/h respectively. After how many hours will they meet?";
                     $si = "දුම්රිය දෙකක් A සහ B දුම්රියපොළවලින් කි.මී. {$distance}ක් දුරින් සිට, එකවර පිටත් වී පැයට කි.මී. {$speedA} සහ {$speedB} වේගයෙන් එකිනෙකා දෙසට ධාවනය වේ. ඒවා හමුවීමට කොපමණ පැය ගණනක් ගතවේද?";
                     $explEn = "Combined speed = {$speedA} + {$speedB} = ".($speedA + $speedB)." km/h. Time = Distance / Combined speed = {$time} hours.";
-                    $explSi = "ඒකාබද්ධ වේගය = ".($speedA + $speedB)." කි.මී./පැය. කාලය = දුර / ඒකාබද්ධ වේගය = පැය {$time}ක්.";
+                    $explSi = 'ඒකාබද්ධ වේගය = '.($speedA + $speedB)." කි.මී./පැය. කාලය = දුර / ඒකාබද්ධ වේගය = පැය {$time}ක්.";
                 } else {
                     if ($speedA === $speedB) {
                         continue;
@@ -554,7 +561,7 @@ class NumericalBank2Seeder extends Seeder
                     $en = "Vehicle X travels at {$fast} km/h and vehicle Y travels at {$slow} km/h in the same direction. If Y has a {$lead} km head start, how many hours will it take X to catch up with Y?";
                     $si = "වාහනය X පැයට කි.මී. {$fast} වේගයෙන් සහ වාහනය Y පැයට කි.මී. {$slow} වේගයෙන් එකම දිශාවට ධාවනය වේ. Y හට කි.මී. {$lead}ක ඉදිරි ආරම්භයක් ඇත්නම්, X හට Y ලඟා වීමට ගතවන පැය ගණන කීයද?";
                     $explEn = "Relative speed = {$fast} - {$slow} = ".($fast - $slow)." km/h. Time to catch up = Lead distance / Relative speed = {$time} hours.";
-                    $explSi = "සාපේක්ෂ වේගය = ".($fast - $slow)." කි.මී./පැය. ලඟා වීමට ගතවන කාලය = ඉදිරි දුර / සාපේක්ෂ වේගය = පැය {$time}ක්.";
+                    $explSi = 'සාපේක්ෂ වේගය = '.($fast - $slow)." කි.මී./පැය. ලඟා වීමට ගතවන කාලය = ඉදිරි දුර / සාපේක්ෂ වේගය = පැය {$time}ක්.";
                 }
 
                 $rows[] = $this->numericRow(

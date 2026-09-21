@@ -93,7 +93,7 @@ class GamificationService
 
     public function summary(User $user): array
     {
-        $level = $this->levelForXp($user->xp);
+        $level = $this->levelForXp((int) $user->xp);
         $currentLevelXp = $this->xpForLevel($level);
         $nextLevelXp = $this->xpForLevel($level + 1);
         $span = max(1, $nextLevelXp - $currentLevelXp);

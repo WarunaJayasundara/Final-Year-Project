@@ -58,7 +58,7 @@ class ReadinessPredictionService
         $payload['exam_pace_gap'] = $timeAware['exam_pace_gap'];
         $payload['time_efficiency_score'] = $timeAware['time_efficiency_score'];
 
-        $url = rtrim(config('services.ml_service.url'), '/') . '/predict';
+        $url = rtrim(config('services.ml_service.url'), '/').'/predict';
 
         try {
             $response = $this->client->post($url, [
@@ -134,7 +134,7 @@ class ReadinessPredictionService
     private function fetchOptionalJson(string $path): ?array
     {
         try {
-            $response = $this->client->get(rtrim(config('services.ml_service.url'), '/') . $path, ['timeout' => 5]);
+            $response = $this->client->get(rtrim(config('services.ml_service.url'), '/').$path, ['timeout' => 5]);
 
             return json_decode((string) $response->getBody(), true);
         } catch (GuzzleException $e) {

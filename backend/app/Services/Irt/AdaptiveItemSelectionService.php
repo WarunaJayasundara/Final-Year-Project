@@ -47,7 +47,7 @@ class AdaptiveItemSelectionService
         return $this->closestToAbility($candidates, $theta);
     }
 
-    /** @param \Illuminate\Support\Collection<int,Question> $candidates */
+    /** @param  \Illuminate\Support\Collection<int,Question>  $candidates */
     private function closestToAbility(Collection $candidates, float $theta): ?Question
     {
         $best = null;

@@ -41,11 +41,13 @@ class StreakService
             if ($activeDates->contains($dateString)) {
                 $streak++;
                 $cursor = $cursor->subDay();
+
                 continue;
             }
 
             if ($dateString === Carbon::today()->toDateString()) {
                 $cursor = $cursor->subDay();
+
                 continue;
             }
 

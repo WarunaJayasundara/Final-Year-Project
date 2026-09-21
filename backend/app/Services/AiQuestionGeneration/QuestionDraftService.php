@@ -11,6 +11,7 @@ use App\Models\SourceDocument;
 use App\Models\User;
 use App\Services\QuestionBank\DuplicateDetectionService;
 use App\Services\QuestionBank\SinhalaSemanticValidationService;
+use App\Services\QuestionBank\SinhalaTextGuard;
 
 /**
  * Orchestrates AI question generation: calls the bound generator (Gemini or
@@ -82,7 +83,9 @@ class QuestionDraftService
                 $isDuplicate = $this->isDuplicate($candidate['question_text_en'], $candidatePool)
                     || $this->duplicateDetection->isSemanticDuplicate($candidate['question_text_en'], $candidatePool);
 
-                if (! $isDuplicate) {
+                // A draft whose Sinhala is corrupted or was never translated is unusable (there is no
+                // draft editor), so it counts as a failed attempt instead of being stored for review.
+                if (! $isDuplicate && ! $this->hasBrokenSinhala($candidate)) {
                     $draft = $candidate;
                     break;
                 }
@@ -111,12 +114,14 @@ class QuestionDraftService
                 'explanation_si' => $draft['explanation_si'] ?? null,
                 'difficulty_weight' => $draft['difficulty_weight'] ?? 2,
                 'solving_time_seconds' => $draft['solving_time_seconds'] ?? null,
-                'source' => $this->generator instanceof GeminiAiQuestionGeneratorService && config('services.gemini.api_key') ? 'gemini' : 'mock',
+                'source' => ($draft['generator'] ?? null) === 'gemini' ? 'gemini' : 'mock',
                 'status' => 'pending',
                 'generated_by' => $generatedBy,
                 'source_document_id' => $sourceDocument?->id,
                 'source_type' => $sourceDocument ? 'book_inspired' : 'original',
-                'generation_method' => $generationMethod,
+                'generation_method' => $sourceDocument
+                    ? $generationMethod
+                    : (($draft['generator'] ?? null) === 'gemini' ? 'ai_gemini' : 'ai_mock'),
                 'quality_score' => $this->computeQualityScore($draft, $level),
                 'validation_status' => 'auto_validated',
                 'translation_status' => 'auto_checked',
@@ -132,8 +137,20 @@ class QuestionDraftService
         return $created;
     }
 
+    /**
+     * @throws \DomainException when the draft's Sinhala fails the script-integrity check
+     */
     public function approve(AiGeneratedQuestion $draft, User $reviewer): Question
     {
+        if ($this->hasBrokenSinhala([
+            'question_text_en' => $draft->question_text_en,
+            'question_text_si' => $draft->question_text_si,
+            'explanation_en' => $draft->explanation_en,
+            'explanation_si' => $draft->explanation_si,
+        ])) {
+            throw new \DomainException('The Sinhala text of this draft is corrupted or was never translated, so it cannot be approved.');
+        }
+
         $question = Question::create([
             'category_id' => $draft->category_id,
             'level_id' => $draft->level_id,
@@ -175,7 +192,7 @@ class QuestionDraftService
     }
 
     /**
-     * @param int[] $draftIds
+     * @param  int[]  $draftIds
      * @return array{approved: Question[], skipped: int[]}
      */
     public function bulkApprove(array $draftIds, User $reviewer): array
@@ -186,13 +203,32 @@ class QuestionDraftService
         foreach (AiGeneratedQuestion::whereIn('id', $draftIds)->get() as $draft) {
             if ($draft->status !== 'pending') {
                 $skipped[] = $draft->id;
+
                 continue;
             }
 
-            $approved[] = $this->approve($draft, $reviewer);
+            try {
+                $approved[] = $this->approve($draft, $reviewer);
+            } catch (\DomainException) {
+                $skipped[] = $draft->id;
+            }
         }
 
         return ['approved' => $approved, 'skipped' => $skipped];
+    }
+
+    /** @param  array<string, mixed>  $draft */
+    private function hasBrokenSinhala(array $draft): bool
+    {
+        $guard = new SinhalaTextGuard();
+
+        foreach ([['question_text_si', 'question_text_en'], ['explanation_si', 'explanation_en']] as [$si, $en]) {
+            if (trim((string) ($draft[$si] ?? '')) !== '' && SinhalaTextGuard::hasError($guard->inspect((string) $draft[$si], (string) ($draft[$en] ?? '')))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function reject(AiGeneratedQuestion $draft, User $reviewer): void

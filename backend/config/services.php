@@ -45,6 +45,9 @@ return [
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
+        // "-latest" aliases track Google's current models, so a retired model id cannot disable AI features.
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+        'translation_model' => env('GEMINI_TRANSLATION_MODEL', 'gemini-flash-latest'),
     ],
 
     'ml_service' => [

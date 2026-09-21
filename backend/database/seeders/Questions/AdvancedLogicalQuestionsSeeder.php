@@ -15,6 +15,7 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const PER_LEVEL = ['3' => 5, '4' => 6, '5' => 6];
+
     private const BLOOD_PER_LEVEL = ['3' => 3, '4' => 3, '5' => 4];
 
     private const CIPHER_WORDS = [
@@ -32,7 +33,7 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
             "පිරිමි ළමයෙකු හඳුන්වා දෙමින් කාන්තාවක, 'ඔහු මගේ ස්වාමිපුරුෂයාගේ සහෝදරියගේ පුතායි' යැයි පැවසුවාය. එම පිරිමි ළමයා කාන්තාව හා සම්බන්ධ වන්නේ කෙසේද?",
             'Nephew', 'බෑණා', 'Son', 'පුත්', 'Brother', 'සහෝදරයා'],
         ["A is B's sister. C is B's mother. D is C's father. E is D's mother. How is A related to D?",
-            "A යනු B ගේ සහෝදරියයි. C යනු B ගේ මවයි. D යනු C ගේ පියායි. E යනු D ගේ මවයි. A, D හා සම්බන්ධ වන්නේ කෙසේද?",
+            'A යනු B ගේ සහෝදරියයි. C යනු B ගේ මවයි. D යනු C ගේ පියායි. E යනු D ගේ මවයි. A, D හා සම්බන්ධ වන්නේ කෙසේද?',
             'Granddaughter', 'මුණුබුරිය', 'Daughter', 'දුව', 'Niece', 'ලේලිය'],
         ["Introducing a man, a woman said, 'He is the only son of my mother's mother.' How is the man related to the woman?",
             "පිරිමියෙකු හඳුන්වා දෙමින් කාන්තාවක, 'ඔහු මගේ මවගේ මවගේ එකම පුතායි' යැයි පැවසුවාය. එම පිරිමියා කාන්තාව හා සම්බන්ධ වන්නේ කෙසේද?",
@@ -41,7 +42,7 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
             "දැරියක් පෙන්වමින් Raj, 'ඇය මගේ බිරිඳගේ මවගේ එකම පුතාගේ දුවයි' යැයි පැවසීය. එම දැරිය Raj හා සම්බන්ධ වන්නේ කෙසේද?",
             'Niece', 'ලේලිය', 'Daughter', 'දුව', 'Sister', 'සහෝදරිය'],
         ["A's father is B. B's sister is C. C's mother is D. D's husband is E. How is A related to E?",
-            "A ගේ පියා B ය. B ගේ සහෝදරිය C ය. C ගේ මව D ය. D ගේ ස්වාමිපුරුෂයා E ය. A, E හා සම්බන්ධ වන්නේ කෙසේද?",
+            'A ගේ පියා B ය. B ගේ සහෝදරිය C ය. C ගේ මව D ය. D ගේ ස්වාමිපුරුෂයා E ය. A, E හා සම්බන්ධ වන්නේ කෙසේද?',
             'Grandchild', 'මුනුබුරා/මිණිබිරිය', 'Child', 'දරුවා', 'Nephew', 'බෑණා'],
         ["Pointing to a man, a woman said, 'His wife is the only daughter of my father.' How is the man related to the woman?",
             "පිරිමියෙකු පෙන්වමින් කාන්තාවක, 'ඔහුගේ බිරිඳ මගේ පියාගේ එකම දුවයි' යැයි පැවසුවාය. එම පිරිමියා කාන්තාව හා සම්බන්ධ වන්නේ කෙසේද?",
@@ -251,8 +252,8 @@ class AdvancedLogicalQuestionsSeeder extends Seeder
         [$options, $key] = [$this->options(array_map('strval', $values), array_map('strval', $values)),
             ['A', 'B', 'C', 'D'][array_search($answer, $values, true)]];
 
-        $signB = $b >= 0 ? "+ {$b}y" : "- ".abs($b).'y';
-        $signD = $d >= 0 ? "+ {$d}y" : "- ".abs($d).'y';
+        $signB = $b >= 0 ? "+ {$b}y" : '- '.abs($b).'y';
+        $signD = $d >= 0 ? "+ {$d}y" : '- '.abs($d).'y';
 
         $en = "For any two numbers x and y, the operations \u{2295} and \u{2296} are defined as: x \u{2295} y = {$a}x {$signB} and x \u{2296} y = {$c}x {$signD}. What is the value of {$p} \u{2295} ({$q} \u{2296} {$r})?";
         $si = "ඕනෑම සංඛ්‍යා දෙකක් x සහ y සඳහා, \u{2295} සහ \u{2296} ක්‍රියාවලි මෙසේ අර්ථ දක්වා ඇත: x \u{2295} y = {$a}x {$signB} සහ x \u{2296} y = {$c}x {$signD}. {$p} \u{2295} ({$q} \u{2296} {$r}) හි අගය කුමක්ද?";

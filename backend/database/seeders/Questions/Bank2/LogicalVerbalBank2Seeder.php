@@ -54,7 +54,7 @@ class LogicalVerbalBank2Seeder extends Seeder
         ['dogs', 'බල්ලෝ', 'animals', 'සතුන්'],
         ['engineers', 'ඉංජිනේරුවන්', 'graduates', 'උපාධිධාරීන්'],
         ['nurses', 'හෙදියන්', 'hospital workers', 'රෝහල් සේවකයන්'],
-        ['cricketers', 'ක්‍රිකට් ක්‍රීඩකයන්', 'athletes', 'ක්‍රීඩකයන්'],
+        ['cricketers', 'ක්‍රිකට් ක්‍රීඩකයන්', 'athletes', 'මලල ක්‍රීඩකයන්'],
         ['pilots', 'ගුවන් නියමුවන්', 'travellers', 'සංචාරකයන්'],
         ['farmers', 'ගොවීන්', 'hard workers', 'වෙහෙස මහන්සි වන අය'],
         ['singers', 'ගායකයන්', 'artists', 'කලාකරුවන්'],
@@ -66,7 +66,7 @@ class LogicalVerbalBank2Seeder extends Seeder
         ['carpenters', 'වඩුවන්', 'craftsmen', 'ශිල්පීන්'],
         ['fishermen', 'ධීවරයන්', 'swimmers', 'පිහිනන්නන්'],
         ['painters', 'චිත්‍ර ශිල්පීන්', 'creative people', 'නිර්මාණශීලී අය'],
-        ['dancers', 'නර්තන ශිල්පීන්', 'performers', 'රංගන ශිල්පීන්'],
+        ['dancers', 'නර්තන ශිල්පීන්', 'performers', 'කලාකරුවන්'],
     ];
 
     private const SYLLOGISM_NAMES = ['Ruwan', 'Malini', 'Sanath', 'Nihal', 'Chamari', 'Mahesh', 'Sunil', 'Kamala', 'Aruna', 'Shanika'];

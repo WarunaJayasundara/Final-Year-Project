@@ -173,4 +173,5 @@ class ExamProfileController extends Controller
     /**
      * Percentage of the prep window (profile creation -> exam date) elapsed,
      * for the dashboard's countdown progress circle. Null with no exam_date.
-     */}
+     */
+}

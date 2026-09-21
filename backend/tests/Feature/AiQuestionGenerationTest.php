@@ -140,7 +140,7 @@ class AiQuestionGenerationTest extends TestCase
     public function test_rejecting_a_draft_does_not_create_a_live_question()
     {
         $this->adminUser = $this->makeAdmin();
-        $category = Category::where('code', 'attention')->firstOrFail();
+        $category = Category::where('code', 'logical_reasoning')->firstOrFail();
         $level = IqLevel::where('level_number', 3)->firstOrFail();
 
         $generate = $this->actingAs($this->adminUser, 'web')->postJson('/api/admin/ai-questions/generate', [
@@ -169,7 +169,8 @@ class AiQuestionGenerationTest extends TestCase
         // question - QuestionDraftService's Jaccard duplicate check should
         // reject every attempt (retried 3x per requested question) and
         // therefore persist zero drafts, never a near-duplicate.
-        $alwaysDuplicateGenerator = new class($existingQuestion->question_text_en) implements AiQuestionGeneratorServiceInterface {
+        $alwaysDuplicateGenerator = new class($existingQuestion->question_text_en) implements AiQuestionGeneratorServiceInterface
+        {
             public function __construct(private string $duplicateText)
             {
             }
@@ -200,5 +201,65 @@ class AiQuestionGenerationTest extends TestCase
 
         $this->assertCount(0, $created, 'A generator that only produces duplicates of existing questions should yield zero persisted drafts.');
         $this->assertEquals($countBefore, AiGeneratedQuestion::count());
+    }
+
+    public function test_mock_drafts_with_untranslated_sinhala_are_not_stored()
+    {
+        $this->adminUser = $this->makeAdmin();
+        // The mock memory templates have no Sinhala wording, so every candidate is rejected
+        // instead of being stored with English text in the Sinhala field.
+        $category = Category::where('code', 'memory')->firstOrFail();
+        $level = IqLevel::where('level_number', 2)->firstOrFail();
+
+        $response = $this->actingAs($this->adminUser, 'web')->postJson('/api/admin/ai-questions/generate', [
+            'category_id' => $category->id,
+            'level_id' => $level->id,
+            'count' => 2,
+        ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('meta.requested', 2);
+        $response->assertJsonPath('meta.created', 0);
+        $this->assertCount(0, $response->json('data'));
+    }
+
+    public function test_a_draft_with_untranslated_sinhala_cannot_be_approved()
+    {
+        $this->adminUser = $this->makeAdmin();
+        $category = Category::where('code', 'memory')->firstOrFail();
+        $level = IqLevel::where('level_number', 2)->firstOrFail();
+
+        $draft = AiGeneratedQuestion::create([
+            'category_id' => $category->id,
+            'level_id' => $level->id,
+            'question_type' => 'mcq_text',
+            'question_text_en' => 'Memorize this sequence: 1-7-9-4. What was the 3rd number?',
+            'question_text_si' => 'Memorize this sequence: 1-7-9-4. Number 3?',
+            'options' => [
+                ['key' => 'A', 'text_en' => '9', 'text_si' => '9'],
+                ['key' => 'B', 'text_en' => '7', 'text_si' => '7'],
+                ['key' => 'C', 'text_en' => '4', 'text_si' => '4'],
+                ['key' => 'D', 'text_en' => '1', 'text_si' => '1'],
+            ],
+            'correct_option_key' => 'A',
+            'explanation_en' => 'Number 3 in 1-7-9-4 is 9.',
+            'explanation_si' => 'Number 3 in 1-7-9-4 is 9.',
+            'difficulty_weight' => 2,
+            'source' => 'mock',
+            'status' => 'pending',
+            'generated_by' => $this->adminUser->id,
+        ]);
+        $questionCount = Question::count();
+
+        $response = $this->actingAs($this->adminUser, 'web')->postJson("/api/admin/ai-questions/{$draft->id}/approve");
+
+        $response->assertStatus(422);
+        $this->assertEquals($questionCount, Question::count(), 'No live question may be created from an untranslated draft.');
+        $this->assertEquals('pending', $draft->fresh()->status);
+
+        $bulk = $this->actingAs($this->adminUser, 'web')->postJson('/api/admin/ai-questions/bulk-approve', ['ids' => [$draft->id]]);
+        $bulk->assertStatus(200);
+        $bulk->assertJsonPath('data.approved_count', 0);
+        $this->assertContains($draft->id, $bulk->json('data.skipped_ids'));
     }
 }

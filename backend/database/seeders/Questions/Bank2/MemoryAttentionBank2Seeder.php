@@ -19,6 +19,7 @@ class MemoryAttentionBank2Seeder extends Seeder
     use BuildsQuestions;
 
     private const ORDINAL_EN = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+
     private const ORDINAL_SI = ['පළමු', 'දෙවන', 'තෙවන', 'සිව්වන', 'පස්වන', 'හයවන', 'හත්වන'];
 
     private const WORD_BANKS = [

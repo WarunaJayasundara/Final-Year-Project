@@ -128,7 +128,7 @@ class IrtValidateSimulation extends Command
         $lines[] = '## Method';
         $lines[] = '';
         $lines[] = "A synthetic dataset of {$personCount} respondents with known ability (theta ~ N(0,1)) answering a sparse ".
-            "random subset (~".round($answerRate * 100)."% each) of {$itemCount} items with known difficulty (b ~ N(0,1)) was ".
+            'random subset (~'.round($answerRate * 100)."% each) of {$itemCount} items with known difficulty (b ~ N(0,1)) was ".
             'generated per the Rasch model: P(correct) = 1 / (1 + e^-(theta - b)). This simulated response data was then run '.
             'through the same PROX (Wright & Stone, 1979) joint calibration and Newton-Raphson MLE ability estimation code '.
             "used by the live application (App\\Services\\Irt\\RaschMath), with a fixed random seed ({$seed}) for reproducibility. ".
@@ -165,7 +165,7 @@ class IrtValidateSimulation extends Command
         return sqrt(-2 * log($u1)) * cos(2 * M_PI * $u2);
     }
 
-    /** @param array<string,float> $values */
+    /** @param  array<string,float>  $values */
     private function meanOf(array $values): float
     {
         return count($values) > 0 ? array_sum($values) / count($values) : 0.0;

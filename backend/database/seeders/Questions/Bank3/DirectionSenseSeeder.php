@@ -68,7 +68,7 @@ class DirectionSenseSeeder extends Seeder
                 $dir1Opposite = self::OPPOSITE[$dir1];
 
                 $en = "P walks {$cancelKm} km {$dir1}, then {$cancelKm} km {$dir1Opposite}, then {$netKm} km {$dir2}. In which direction is P now from the starting point?";
-                $si = "P: {$this->diren($dir1)} කි.මී. {$cancelKm}, {$this->diren($dir1Opposite)} කි.මී. {$cancelKm}, {$this->diren($dir2)} කි.මී. {$netKm}. කුමක්ද?";
+                $si = "P කි.මී. {$cancelKm}ක් {$this->diren($dir1)}ට, පසුව කි.මී. {$cancelKm}ක් {$this->diren($dir1Opposite)}ට, ඉන්පසු කි.මී. {$netKm}ක් {$this->diren($dir2)}ට ගමන් කරයි. ආරම්භක ස්ථානයේ සිට P දැන් පිහිටා ඇත්තේ කුමන දිශාවේද?";
 
                 $rows[] = $this->directionRow($level, $en, $si, $dir2, "b3dir1-{$dir1}-{$dir2}-{$cancelKm}-{$netKm}");
             }
@@ -104,7 +104,7 @@ class DirectionSenseSeeder extends Seeder
                 [$a, $b, $c, $vertical, $horizontal] = $combos[$cursor++];
 
                 $en = "P walks {$a} km {$vertical}, then {$b} km {$horizontal}. What is the shortest distance between P's current position and the starting point (in km)?";
-                $si = "P කි.මී. {$a}ක් {$this->diren($vertical)}ට, පසුව කි.මී. {$b}ක් {$this->diren($horizontal)}ට ගමන් කරයි. P ගේ ස්ථානය සහ ආරම්භක ස්ථානය අතර දුර කීයද (කි.මී.)?";
+                $si = "P කි.මී. {$a}ක් {$this->diren($vertical)}ට, පසුව කි.මී. {$b}ක් {$this->diren($horizontal)}ට ගමන් කරයි. P ගේ ස්ථානය සහ ආරම්භක ස්ථානය අතර කෙටිම දුර කීයද (කි.මී.)?";
 
                 $rows[] = $this->distanceRow($level, $en, $si, $c, "b3dir2-{$a}-{$b}-{$vertical}-{$horizontal}");
             }

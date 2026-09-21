@@ -2,7 +2,6 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\Category;
 use App\Models\IqLevel;
 use App\Models\TestSession;
 use App\Models\User;
@@ -105,10 +104,5 @@ class ResearchExportService
                     ->count(),
             ];
         })->filter()->values();
-    }
-
-    public function categoriesList(): Collection
-    {
-        return Category::orderBy('name_en')->get();
     }
 }

@@ -1,2 +1,6 @@
 *
 !.gitignore
+# Generated question images are part of the validated question bank and are
+# required by content:import, so they are tracked (about 12 MB of SVG).
+!questions/
+!questions/**

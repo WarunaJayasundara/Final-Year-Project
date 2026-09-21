@@ -96,6 +96,7 @@ trait BuildsQuestions
         foreach (array_values($labelsEn) as $i => $en) {
             $out[] = ['key' => $keys[$i], 'text_en' => $en, 'text_si' => $labelsSi[$i]];
         }
+
         return $out;
     }
 }

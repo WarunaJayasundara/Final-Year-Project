@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ExamProfile;
 use App\Models\ExamReadinessPrediction;
 use App\Models\User;
 use App\Models\UserDailyCheckin;
@@ -32,6 +33,7 @@ class ReadinessPredictionTest extends TestCase
         if ($this->testUser) {
             ExamReadinessPrediction::where('user_id', $this->testUser->id)->delete();
             UserDailyCheckin::where('user_id', $this->testUser->id)->delete();
+            ExamProfile::where('user_id', $this->testUser->id)->delete();
             $this->testUser->delete();
         }
 
@@ -223,6 +225,111 @@ class ReadinessPredictionTest extends TestCase
         $stored = ExamReadinessPrediction::where('user_id', $this->testUser->id)->first();
         $this->assertEquals(42.5, (float) $stored->time_management_readiness_percent);
         $this->assertEquals(['low' => 50.5, 'high' => 80.5], $stored->predicted_score_range);
+    }
+
+    public function test_predictions_are_persisted_append_only_with_model_version()
+    {
+        $this->testUser = User::create([
+            'name' => 'Readiness Append Only Test User',
+            'email' => 'readiness-append-only-'.uniqid().'@test.local',
+            'password' => Hash::make('password'),
+            'auth_provider' => 'password',
+            'role' => 'user',
+            'locale' => 'en',
+        ]);
+
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'readiness_percent' => 40.0, 'readiness_label' => 'high_risk', 'reasons' => [], 'model_version' => 'v-first',
+            ])),
+            new Response(200, [], json_encode([
+                'readiness_percent' => 55.0, 'readiness_label' => 'needs_improvement', 'reasons' => [], 'model_version' => 'v-second',
+            ])),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+        $this->app->bind(ReadinessPredictionService::class, function ($app) use ($client) {
+            return new ReadinessPredictionService($app->make(FeatureExtractionService::class), $client);
+        });
+
+        $this->actingAs($this->testUser, 'web')->postJson('/api/readiness/predict')->assertStatus(200);
+        $this->actingAs($this->testUser, 'web')->postJson('/api/readiness/predict')->assertStatus(200);
+
+        // Two predictions must mean two rows - never an update-in-place - so
+        // the full history remains queryable, not just the latest state.
+        $rows = ExamReadinessPrediction::where('user_id', $this->testUser->id)->orderBy('id')->get();
+        $this->assertCount(2, $rows);
+        $this->assertEquals('v-first', $rows[0]->model_version);
+        $this->assertEquals(40.0, (float) $rows[0]->readiness_percent);
+        $this->assertEquals('v-second', $rows[1]->model_version);
+        $this->assertEquals(55.0, (float) $rows[1]->readiness_percent);
+
+        $latest = $this->actingAs($this->testUser, 'web')->getJson('/api/readiness/latest');
+        $latest->assertStatus(200);
+        $latest->assertJsonPath('data.model_version', 'v-second');
+    }
+
+    public function test_exam_outcome_capture_moves_profile_to_history_and_reverts_readiness_to_general()
+    {
+        $this->testUser = User::create([
+            'name' => 'Readiness Outcome Test User',
+            'email' => 'readiness-outcome-'.uniqid().'@test.local',
+            'password' => Hash::make('password'),
+            'auth_provider' => 'password',
+            'role' => 'user',
+            'locale' => 'en',
+        ]);
+
+        // Created directly (not via the HTTP endpoint) with a future date, so
+        // it starts as the active exam profile (isPastDue() === false).
+        $profile = ExamProfile::create([
+            'user_id' => $this->testUser->id,
+            'status' => 'active',
+            'exam_category' => 'other',
+            'exam_name' => 'Upcoming SLAS Exam',
+            'exam_date' => now()->addDays(10)->toDateString(),
+            'daily_study_hours_target' => 2,
+        ]);
+
+        // Two queued responses: this test calls /predict twice (before and after the outcome).
+        $mock = new MockHandler([
+            new Response(200, [], json_encode([
+                'readiness_percent' => 68.0, 'readiness_label' => 'almost_ready', 'reasons' => [], 'model_version' => 'v-outcome',
+            ])),
+            new Response(200, [], json_encode([
+                'readiness_percent' => 68.0, 'readiness_label' => 'almost_ready', 'reasons' => [], 'model_version' => 'v-outcome',
+            ])),
+        ]);
+        $client = new Client(['handler' => HandlerStack::create($mock)]);
+        $this->app->bind(ReadinessPredictionService::class, function ($app) use ($client) {
+            return new ReadinessPredictionService($app->make(FeatureExtractionService::class), $client);
+        });
+
+        // While the exam is still upcoming, the prediction is framed as exam-specific.
+        $before = $this->actingAs($this->testUser, 'web')->postJson('/api/readiness/predict');
+        $before->assertStatus(200);
+        $before->assertJsonPath('data.readiness_type', 'exam_specific');
+        $before->assertJsonPath('data.exam_name', 'Upcoming SLAS Exam');
+
+        // The exam date arrives and passes (outcome() requires isPastDue()).
+        $profile->update(['exam_date' => now()->subDays(1)->toDateString()]);
+
+        $outcome = $this->actingAs($this->testUser, 'web')->postJson('/api/exam-profile/outcome', [
+            'attended' => true,
+            'passed' => true,
+            'score' => 78,
+        ]);
+        $outcome->assertStatus(200);
+
+        $profile->refresh();
+        $this->assertEquals('completed', $profile->status);
+        $this->assertNotNull($profile->outcome_recorded_at);
+        $this->assertEquals(1, ExamProfile::where('user_id', $this->testUser->id)->where('status', 'completed')->count());
+
+        // With no active profile left, a fresh prediction reverts to general framing.
+        $after = $this->actingAs($this->testUser, 'web')->postJson('/api/readiness/predict');
+        $after->assertStatus(200);
+        $after->assertJsonPath('data.readiness_type', 'general');
+        $after->assertJsonPath('data.exam_name', null);
     }
 
     public function test_latest_endpoint_returns_null_when_no_prediction_exists()

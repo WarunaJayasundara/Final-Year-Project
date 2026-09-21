@@ -199,6 +199,14 @@ APPROVED_NOVEL_WORDS: set[str] = {
     # is the locative/genitive inflection of the already-approved root
     # "සැලැස්ම" ("plan", already used e.g. "අධ්‍යයන සැලැස්මක්" in common.json).
     "සැලැස්මේ",
+    # Sinhala fidelity audit (question-bank correction pass): rewritten direction-sense and
+    # coding-decoding question templates. All five are standard words or plain inflections.
+    #   අක්ෂරයක්ම = "every single letter" (අක්ෂර + -යක් + emphasis -ම)
+    #   කේතගත     = "encoded" (කේත + ගත); standard in computing and cipher vocabulary
+    #   වචනයක්    = "a word" (indefinite of වචනය)
+    #   කෙටිම      = "shortest" (කෙටි + -ම), for "shortest distance"
+    #   දිශාවේද    = "in which direction?" (දිශාවේ + question particle -ද)
+    "අක්ෂරයක්ම", "කේතගත", "වචනයක්", "කෙටිම", "දිශාවේද",
 }
 
 SINHALA_RE = re.compile(r"[඀-෿‍]+")

@@ -242,6 +242,16 @@ class TestSessionController extends Controller
 
         $answers = $session->answers()->get();
         $answeredCount = $answers->whereNotNull('answered_at')->count();
+
+        // Mirrors the stopping rule already enforced in handleAdaptiveAnswer()
+        // (which keeps serving items until it's met) - repeated here as a
+        // server-side guard so a placement session can never be marked
+        // complete with too few items even if /complete is called directly.
+        if ($session->session_type === 'placement' && $answeredCount < self::PLACEMENT_MIN_ITEMS) {
+            return response()->json([
+                'message' => 'The placement test needs at least '.self::PLACEMENT_MIN_ITEMS.' answered questions before it can be completed.',
+            ], 422);
+        }
         $correctCount = $answers->where('is_correct', true)->count();
         $totalQuestions = $session->session_type === 'placement' ? $answeredCount : $session->total_questions;
         $scorePercent = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;

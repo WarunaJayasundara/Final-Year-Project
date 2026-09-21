@@ -63,7 +63,10 @@ class AiQuestionController extends Controller
             $sourceDocument,
         );
 
-        return response()->json(['data' => Collection::make($drafts)->load(['category', 'level'])], 201);
+        return response()->json([
+            'data' => Collection::make($drafts)->load(['category', 'level']),
+            'meta' => ['requested' => (int) $request->input('count', 3), 'created' => count($drafts)],
+        ], 201);
     }
 
     public function approve(Request $request, AiGeneratedQuestion $aiQuestion)
@@ -72,7 +75,11 @@ class AiQuestionController extends Controller
             return response()->json(['message' => 'This draft has already been reviewed.'], 422);
         }
 
-        $question = $this->drafts->approve($aiQuestion, $request->user());
+        try {
+            $question = $this->drafts->approve($aiQuestion, $request->user());
+        } catch (\DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json(['data' => [
             'draft' => $aiQuestion->fresh(),

@@ -11,49 +11,6 @@ use Illuminate\Support\Collection;
 class QuestionSamplingService
 {
     /**
-     * Placement test: evenly sampled across all categories, drawn from levels 2-4 only.
-     * Excludes questions the user has already been shown in a previous session
-     * (falls back to allowing repeats only if a category's pool is exhausted).
-     */
-    public function sampleForPlacement(int $userId, int $totalQuestions = 30): Collection
-    {
-        $categories = Category::all();
-        $levelNumbers = [2, 3, 4];
-        $levelIds = IqLevel::whereIn('level_number', $levelNumbers)->pluck('id');
-        $excludeIds = $this->seenQuestionIds($userId);
-
-        $perCategory = (int) ceil($totalQuestions / max($categories->count(), 1));
-
-        $questions = collect();
-
-        foreach ($categories as $category) {
-            $fresh = Question::where('category_id', $category->id)
-                ->whereIn('level_id', $levelIds)
-                ->where('is_active', true)
-                ->whereNotIn('id', $excludeIds)
-                ->inRandomOrder()
-                ->limit($perCategory)
-                ->get();
-
-            if ($fresh->count() < $perCategory) {
-                $remaining = $perCategory - $fresh->count();
-                $repeats = Question::where('category_id', $category->id)
-                    ->whereIn('level_id', $levelIds)
-                    ->where('is_active', true)
-                    ->whereNotIn('id', $fresh->pluck('id'))
-                    ->inRandomOrder()
-                    ->limit($remaining)
-                    ->get();
-                $fresh = $fresh->merge($repeats);
-            }
-
-            $questions = $questions->merge($fresh);
-        }
-
-        return $questions->shuffle()->take($totalQuestions)->values();
-    }
-
-    /**
      * Daily session: sampled across all categories at the user's current level,
      * falling back to level +/- 1, then to repeats, if a category/level cell is
      * short. $categoryAllocation (from WeakAreaWeightingService) overrides the

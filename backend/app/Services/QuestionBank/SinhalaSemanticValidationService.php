@@ -61,6 +61,16 @@ class SinhalaSemanticValidationService
             $notes[] = 'Numbers appearing in the English text are not all present in the Sinhala text.';
         }
 
+        // Script integrity: corrupted or non-Sinhala text must never be auto-approved.
+        if (trim($textSi) !== '') {
+            $checks++;
+            if (! SinhalaTextGuard::hasError((new SinhalaTextGuard())->inspect($textSi, $textEn))) {
+                $passed++;
+            } else {
+                $notes[] = 'Sinhala text failed the script-integrity check (corrupted or non-Sinhala characters).';
+            }
+        }
+
         if ($options !== null) {
             $checks++;
             if ($this->optionCountParity($options)) {

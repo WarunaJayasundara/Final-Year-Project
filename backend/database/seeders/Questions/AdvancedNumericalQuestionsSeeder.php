@@ -208,7 +208,7 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
         [$name, $poss, $nameSi, $possSi] = $names[$variant % count($names)];
 
         $en = "{$name}'s father was {$fatherAgeAtBirth} years old when {$name} was born. {$name}'s mother was {$motherAgeAtSiblingBirth} years old when {$poss} sibling, {$siblingYoungerBy} years younger, was born. What is the age difference between {$poss} parents?";
-        $si = "{$nameSi}ගේ පියා උපන් විට {$nameSi}ගේ පියාට වයස අවුරුදු {$fatherAgeAtBirth} විය. {$nameSi}ට වඩා අවුරුදු {$siblingYoungerBy}කින් බාල සොයුරා/සොයුරිය උපන් විට {$nameSi}ගේ මව්කගේ වයස අවුරුදු {$motherAgeAtSiblingBirth} විය. {$possSi} දෙමාපියන්ගේ වයස් වෙනස කීයද?";
+        $si = "{$nameSi} උපන් විට {$nameSi}ගේ පියාට වයස අවුරුදු {$fatherAgeAtBirth} විය. {$nameSi}ට වඩා අවුරුදු {$siblingYoungerBy}කින් බාල සොයුරා/සොයුරිය උපන් විට {$nameSi}ගේ මවගේ වයස අවුරුදු {$motherAgeAtSiblingBirth} විය. {$possSi} දෙමාපියන්ගේ වයස් වෙනස කීයද?";
 
         $distractors = $this->distractorsAround($diff, 3);
         [$options, $key] = $this->optionsFromValues($distractors, $diff);
@@ -234,7 +234,7 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
             $si = "දුම්රිය දෙකක් A සහ B දුම්රියපොළවලින් කි.මී. {$distance}ක් දුරින් සිට, එකවර පිටත් වී පැයට කි.මී. {$speedA} සහ {$speedB} වේගයෙන් එකිනෙකා දෙසට ධාවනය වේ. ඒවා හමුවීමට කොපමණ පැය ගණනක් ගතවේද?";
             $answer = $time;
             $explanationEn = "Combined speed = {$speedA} + {$speedB} = ".($speedA + $speedB)." km/h. Time = Distance / Combined speed = {$time} hours.";
-            $explanationSi = "ඒකාබද්ධ වේගය = ".($speedA + $speedB)." කි.මී./පැය. කාලය = දුර / ඒකාබද්ධ වේගය = පැය {$time}ක්.";
+            $explanationSi = 'ඒකාබද්ධ වේගය = '.($speedA + $speedB)." කි.මී./පැය. කාලය = දුර / ඒකාබද්ධ වේගය = පැය {$time}ක්.";
         } else {
             if ($speedA === $speedB) {
                 $speedB += 10;
@@ -246,7 +246,7 @@ class AdvancedNumericalQuestionsSeeder extends Seeder
             $si = "වාහනය X පැයට කි.මී. {$fast} වේගයෙන් සහ වාහනය Y පැයට කි.මී. {$slow} වේගයෙන් එකම දිශාවට ධාවනය වේ. Y හට කි.මී. {$lead}ක ඉදිරි ආරම්භයක් ඇත්නම්, X හට Y ලඟා වීමට ගතවන පැය ගණන කීයද?";
             $answer = $time;
             $explanationEn = "Relative speed = {$fast} - {$slow} = ".($fast - $slow)." km/h. Time to catch up = Lead distance / Relative speed = {$time} hours.";
-            $explanationSi = "සාපේක්ෂ වේගය = ".($fast - $slow)." කි.මී./පැය. ලඟා වීමට ගතවන කාලය = ඉදිරි දුර / සාපේක්ෂ වේගය = පැය {$time}ක්.";
+            $explanationSi = 'සාපේක්ෂ වේගය = '.($fast - $slow)." කි.මී./පැය. ලඟා වීමට ගතවන කාලය = ඉදිරි දුර / සාපේක්ෂ වේගය = පැය {$time}ක්.";
         }
 
         $distractors = $this->distractorsAround($answer, 2);

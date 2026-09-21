@@ -122,4 +122,39 @@ class AdaptivePlacementTest extends TestCase
         $this->testUser->refresh();
         $this->assertLessThan(0.0, $this->testUser->theta_estimate, 'Answering every item incorrectly should yield below-average ability.');
     }
+
+    public function test_placement_session_enforces_minimum_item_stopping_rule()
+    {
+        $this->testUser = User::create([
+            'name' => 'IRT Test Early Complete',
+            'email' => 'irt-test-early-'.uniqid().'@test.local',
+            'password' => Hash::make('password'),
+            'auth_provider' => 'password',
+            'role' => 'user',
+            'locale' => 'en',
+        ]);
+
+        $response = $this->actingAs($this->testUser, 'web')->postJson('/api/sessions/placement/start');
+        $response->assertStatus(201);
+        $sessionId = $response->json('data.id');
+
+        // Answer only 3 items - well under PLACEMENT_MIN_ITEMS (15) - then try
+        // to complete directly, bypassing the normal item-by-item flow.
+        $current = $response->json('data.current_question');
+        for ($i = 0; $i < 3 && $current !== null; $i++) {
+            $question = Question::find($current['id']);
+            $answer = $this->actingAs($this->testUser, 'web')->postJson("/api/sessions/{$sessionId}/answers", [
+                'question_id' => $current['id'],
+                'selected_option_key' => $question->correct_option_key,
+            ]);
+            $this->assertFalse($answer->json('data.ready_to_complete'), 'Should not be ready to complete this early.');
+            $current = $answer->json('data.next_question');
+        }
+
+        $prematureComplete = $this->actingAs($this->testUser, 'web')->postJson("/api/sessions/{$sessionId}/complete");
+        $prematureComplete->assertStatus(422);
+
+        $this->testUser->refresh();
+        $this->assertNull($this->testUser->placement_completed_at, 'A session below the minimum item count must not be allowed to finish.');
+    }
 }

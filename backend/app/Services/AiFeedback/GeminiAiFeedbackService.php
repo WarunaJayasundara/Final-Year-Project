@@ -4,6 +4,8 @@ namespace App\Services\AiFeedback;
 
 use App\Contracts\AiFeedbackServiceInterface;
 use App\Models\Question;
+use App\Services\Gemini\GeminiEndpoint;
+use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -17,8 +19,6 @@ use Illuminate\Support\Facades\Storage;
  */
 class GeminiAiFeedbackService implements AiFeedbackServiceInterface
 {
-    private const MODEL = 'gemini-2.5-flash';
-
     private Client $client;
 
     private MockAiFeedbackService $fallback;
@@ -52,8 +52,8 @@ class GeminiAiFeedbackService implements AiFeedbackServiceInterface
                 ];
             }
 
-            $response = $this->client->post(
-                sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', self::MODEL, $apiKey),
+            $response = GeminiEndpoint::post($this->client,
+                GeminiEndpoint::url($apiKey),
                 [
                     'json' => [
                         'contents' => [['parts' => $parts]],
@@ -65,11 +65,17 @@ class GeminiAiFeedbackService implements AiFeedbackServiceInterface
             $body = json_decode((string) $response->getBody(), true);
             $text = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
+            if ($text && $locale === 'si' && ! SinhalaStyle::acceptable($text)) {
+                Log::warning('Gemini feedback returned corrupted Sinhala, using the mock explanation.', ['question_id' => $question->id]);
+
+                return $this->fallback->explainAnswer($question, $selectedOptionKey, $locale);
+            }
+
             return $text ?: $this->fallback->explainAnswer($question, $selectedOptionKey, $locale);
         } catch (\Throwable $e) {
             Log::warning('Gemini AI feedback call failed, falling back to mock explanation.', [
                 'question_id' => $question->id,
-                'error' => $e->getMessage(),
+                'error' => GeminiEndpoint::redact($e->getMessage()),
             ]);
 
             return $this->fallback->explainAnswer($question, $selectedOptionKey, $locale);
@@ -82,6 +88,7 @@ class GeminiAiFeedbackService implements AiFeedbackServiceInterface
         $selected = $options->get($selectedOptionKey);
         $correct = $options->get($question->correct_option_key);
         $languageName = $locale === 'si' ? 'Sinhala' : 'English';
+        $sinhalaRules = $locale === 'si' ? SinhalaStyle::rules() : '';
 
         $questionText = $locale === 'si' ? $question->question_text_si : $question->question_text_en;
         $selectedText = $selected["text_{$locale}"] ?? $selected['text_en'] ?? $selectedOptionKey;
@@ -102,6 +109,8 @@ class GeminiAiFeedbackService implements AiFeedbackServiceInterface
 
         Keep the whole thing under 6 short sentences, encouraging in tone, plain text (no markdown),
         suitable for display directly to the student after a practice session.
+
+        {$sinhalaRules}
         PROMPT;
     }
 }

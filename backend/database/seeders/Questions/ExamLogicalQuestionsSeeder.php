@@ -38,7 +38,7 @@ class ExamLogicalQuestionsSeeder extends Seeder
         ['dogs', 'බල්ලෝ', 'animals', 'සතුන්', 'Rex'],
         ['engineers', 'ඉංජිනේරුවන්', 'graduates', 'උපාධිධාරීන්', 'Ruwan'],
         ['nurses', 'හෙදියන්', 'hospital workers', 'රෝහල් සේවකයන්', 'Malini'],
-        ['cricketers', 'ක්‍රිකට් ක්‍රීඩකයන්', 'athletes', 'ක්‍රීඩකයන්', 'Sanath'],
+        ['cricketers', 'ක්‍රිකට් ක්‍රීඩකයන්', 'athletes', 'මලල ක්‍රීඩකයන්', 'Sanath'],
         ['pilots', 'ගුවන් නියමුවන්', 'travellers', 'සංචාරකයන්', 'Nihal'],
         ['farmers', 'ගොවීන්', 'hard workers', 'වෙහෙස මහන්සි වන අය', 'Siripala'],
         ['singers', 'ගායකයන්', 'artists', 'කලාකරුවන්', 'Chamari'],
@@ -50,7 +50,7 @@ class ExamLogicalQuestionsSeeder extends Seeder
         ['carpenters', 'වඩුවන්', 'craftsmen', 'ශිල්පීන්', 'Piyal'],
         ['fishermen', 'ධීවරයන්', 'swimmers', 'පිහිනන්නන්', 'Somasiri'],
         ['painters', 'චිත්‍ර ශිල්පීන්', 'creative people', 'නිර්මාණශීලී අය', 'Dilki'],
-        ['dancers', 'නර්තන ශිල්පීන්', 'රංගන ශිල්පීන්' === '' ? '' : 'performers', 'රංගන ශිල්පීන්', 'Sandun'],
+        ['dancers', 'නර්තන ශිල්පීන්', 'කලාකරුවන්' === '' ? '' : 'performers', 'කලාකරුවන්', 'Sandun'],
     ];
 
     public function run(): void

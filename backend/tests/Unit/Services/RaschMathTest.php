@@ -82,6 +82,58 @@ class RaschMathTest extends TestCase
         $this->assertLessThan($recovered['hard'], $recovered['medium']);
     }
 
+    public function test_estimate_ability_all_correct_clamps_theta_to_upper_bound()
+    {
+        $itemDifficulties = ['q1' => 0.0, 'q2' => 0.0, 'q3' => 0.0, 'q4' => 0.0, 'q5' => 0.0];
+        $responses = ['q1' => true, 'q2' => true, 'q3' => true, 'q4' => true, 'q5' => true];
+
+        $result = RaschMath::estimateAbility($itemDifficulties, $responses);
+
+        $this->assertEquals(4.5, $result['theta']);
+        $this->assertEquals(5, $result['items_used']);
+    }
+
+    public function test_estimate_ability_all_wrong_clamps_theta_to_lower_bound()
+    {
+        $itemDifficulties = ['q1' => 0.0, 'q2' => 0.0, 'q3' => 0.0, 'q4' => 0.0, 'q5' => 0.0];
+        $responses = ['q1' => false, 'q2' => false, 'q3' => false, 'q4' => false, 'q5' => false];
+
+        $result = RaschMath::estimateAbility($itemDifficulties, $responses);
+
+        $this->assertEquals(-4.5, $result['theta']);
+    }
+
+    public function test_estimate_ability_single_item_still_produces_a_valid_estimate()
+    {
+        $correct = RaschMath::estimateAbility(['q1' => 0.0], ['q1' => true]);
+        $incorrect = RaschMath::estimateAbility(['q1' => 0.0], ['q1' => false]);
+
+        $this->assertEquals(4.5, $correct['theta']);
+        $this->assertEquals(-4.5, $incorrect['theta']);
+        $this->assertEquals(1, $correct['items_used']);
+
+        // A single item carries less information than five identical items,
+        // so its standard error should be wider (less precise).
+        $fiveItemResult = RaschMath::estimateAbility(
+            ['q1' => 0.0, 'q2' => 0.0, 'q3' => 0.0, 'q4' => 0.0, 'q5' => 0.0],
+            ['q1' => true, 'q2' => true, 'q3' => true, 'q4' => true, 'q5' => true]
+        );
+        $this->assertGreaterThan($fiveItemResult['se'], $correct['se']);
+    }
+
+    public function test_estimate_ability_mixed_responses_of_equal_difficulty_stays_near_center()
+    {
+        $itemDifficulties = ['q1' => 0.0, 'q2' => 0.0, 'q3' => 0.0, 'q4' => 0.0, 'q5' => 0.0];
+        $responses = ['q1' => true, 'q2' => true, 'q3' => true, 'q4' => false, 'q5' => false];
+
+        $result = RaschMath::estimateAbility($itemDifficulties, $responses);
+
+        // More correct than wrong on equal-difficulty items should nudge
+        // ability positive, but nowhere near the clamp bounds.
+        $this->assertGreaterThan(0.0, $result['theta']);
+        $this->assertLessThan(2.0, $result['theta']);
+    }
+
     public function test_calibrate_items_handles_perfect_and_zero_scores_without_infinity()
     {
         $responses = [

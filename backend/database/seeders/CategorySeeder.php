@@ -21,7 +21,7 @@ class CategorySeeder extends Seeder
             [
                 'code' => 'logical_reasoning',
                 'name_en' => 'Logical Reasoning',
-                'name_si' => 'තාර්කික තර්කනය',
+                'name_si' => 'තාර්කික චින්තනය',
                 'description_en' => 'Syllogisms, odd-one-out, and if-then deductions.',
                 'description_si' => 'තර්ක ගැටළු, වෙනස් වූ අයිතමය සොයාගැනීම සහ නිගමන.',
                 'icon' => 'puzzle',
@@ -31,7 +31,7 @@ class CategorySeeder extends Seeder
                 'name_en' => 'Numerical Ability',
                 'name_si' => 'සංඛ්‍යාත්මක හැකියාව',
                 'description_en' => 'Arithmetic, number series, ratios and percentages.',
-                'description_si' => 'ගණිතමය ගැටළු, සංඛ්‍යා ශ්‍රේණි, අනුපාත සහ ප්‍රතිශත.',
+                'description_si' => 'අංකගණිතය, සංඛ්‍යා ශ්‍රේණි, අනුපාත සහ ප්‍රතිශත.',
                 'icon' => 'calculator',
             ],
             [

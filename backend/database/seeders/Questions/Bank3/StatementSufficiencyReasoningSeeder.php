@@ -30,8 +30,8 @@ class StatementSufficiencyReasoningSeeder extends Seeder
     ];
 
     private const OPTIONS_SI = [
-        'i_alone' => 'ප්‍රකාශ I තනිව ප්‍රමාණවත් වේ',
-        'ii_alone' => 'ප්‍රකාශ II තනිව ප්‍රමාණවත් වේ',
+        'i_alone' => 'ප්‍රකාශ I තනිව ප්‍රමාණවත් වේ, නමුත් ප්‍රකාශ II තනිව ප්‍රමාණවත් නොවේ',
+        'ii_alone' => 'ප්‍රකාශ II තනිව ප්‍රමාණවත් වේ, නමුත් ප්‍රකාශ I තනිව ප්‍රමාණවත් නොවේ',
         'both_together' => 'ප්‍රකාශ දෙකම අවශ්‍ය වේ',
         'each_alone' => 'ප්‍රකාශ දෙකම තනිව ප්‍රමාණවත් වේ',
     ];
@@ -132,7 +132,7 @@ class StatementSufficiencyReasoningSeeder extends Seeder
             $level, 'mcq_text', $textEn, $textSi,
             $this->options($shuffledEn, $shuffledSi), $correctKey,
             "Checking which statement(s) pin down a single value for X: {$this->explainKind($answerKind)}",
-            "පිළිතුර: ".self::OPTIONS_SI[$answerKind],
+            'පිළිතුර: '.self::OPTIONS_SI[$answerKind],
             min(3, max(1, (int) ceil($level / 2))),
             ['subcategory' => 'statement_sufficiency', 'solving_time_seconds' => 45 + $level * 12, 'bloom_level' => 'evaluate'],
         ];

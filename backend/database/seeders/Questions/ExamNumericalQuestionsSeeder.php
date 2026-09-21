@@ -103,7 +103,7 @@ class ExamNumericalQuestionsSeeder extends Seeder
                     "සංඛ්‍යා {$n}ක සාමාන්‍යය {$avg}කි. {$x} සංඛ්‍යාව ඉවත් කළ විට ඉතිරි සංඛ්‍යාවල සාමාන්‍යය කීයද?",
                     $newAvg,
                     [$avg, $newAvg + 1, $newAvg - 1, $avg + 2],
-                    'Total = '.($n * $avg).'; after removing '.$x.' the total is '.($n * $avg - $x)." across ".($n - 1)." numbers, so the average is {$newAvg}.",
+                    'Total = '.($n * $avg).'; after removing '.$x.' the total is '.($n * $avg - $x).' across '.($n - 1)." numbers, so the average is {$newAvg}.",
                     'එකතුව = '.($n * $avg)."; {$x} ඉවත් කළ පසු එකතුව ".($n * $avg - $x).' වන අතර සංඛ්‍යා '.($n - 1)."කි, එබැවින් සාමාන්‍යය {$newAvg} වේ.",
                     "avg-{$n}-{$avg}-{$x}"
                 );

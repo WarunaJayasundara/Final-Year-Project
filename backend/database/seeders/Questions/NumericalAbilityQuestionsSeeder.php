@@ -9,7 +9,9 @@ class NumericalAbilityQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const PER_LEVEL_WORD_PROBLEM = 27;
+
     private const PER_LEVEL_SERIES = 27;
+
     private const PER_LEVEL_PERCENTAGE = 26;
 
     public function run(): void

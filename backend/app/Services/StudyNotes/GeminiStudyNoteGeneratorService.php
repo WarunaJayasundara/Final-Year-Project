@@ -3,6 +3,8 @@
 namespace App\Services\StudyNotes;
 
 use App\Contracts\StudyNoteGeneratorServiceInterface;
+use App\Services\Gemini\GeminiEndpoint;
+use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -16,8 +18,6 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterface
 {
-    private const MODEL = 'gemini-2.5-flash';
-
     private const MAX_EXCERPT_CHARS = 6000;
 
     private Client $client;
@@ -41,8 +41,8 @@ class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterf
         }
 
         try {
-            $response = $this->client->post(
-                sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', self::MODEL, $apiKey),
+            $response = GeminiEndpoint::post($this->client,
+                GeminiEndpoint::url($apiKey),
                 [
                     'json' => [
                         'contents' => [['parts' => [['text' => $this->buildPrompt($documentTitle, $textExcerpt, $matchedTopics)]]]],
@@ -68,7 +68,7 @@ class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterf
         } catch (\Throwable $e) {
             Log::warning('Gemini study-note generation call failed, falling back to mock.', [
                 'document' => $documentTitle,
-                'error' => $e->getMessage(),
+                'error' => GeminiEndpoint::redact($e->getMessage()),
             ]);
 
             return $this->fallback->generate($documentTitle, $textExcerpt, $matchedTopics);
@@ -83,6 +83,8 @@ class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterf
         // compilations (see PdfIngestionService's own docblock).
         $boundedExcerpt = mb_substr($textExcerpt, 0, self::MAX_EXCERPT_CHARS);
         $topicHint = $matchedTopics !== [] ? implode(', ', $matchedTopics) : 'general aptitude reasoning';
+
+        $sinhalaRules = SinhalaStyle::rules();
 
         return <<<PROMPT
         You are writing a short bilingual (English + Sinhala) teaching/study
@@ -117,6 +119,9 @@ class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterf
           "common_mistakes_si": "the same, naturally written in Sinhala",
           "key_concepts": ["short concept label", "another concept label"]
         }
+
+        The *_si fields must follow this Sinhala style.
+        {$sinhalaRules}
 
         Do not include any text outside the JSON object.
         PROMPT;

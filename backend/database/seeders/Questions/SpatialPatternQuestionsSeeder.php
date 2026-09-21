@@ -19,7 +19,9 @@ class SpatialPatternQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const PER_LEVEL_SEQUENCE = 27;
+
     private const PER_LEVEL_ODD_SHAPE = 27;
+
     private const PER_LEVEL_SHAPE_COUNT = 26;
 
     private const SHAPE_SETS = [

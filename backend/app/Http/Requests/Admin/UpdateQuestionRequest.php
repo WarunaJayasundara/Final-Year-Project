@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateQuestionRequest extends FormRequest
 {
+    use RejectsCorruptedSinhala;
+
     public function authorize()
     {
         return true;

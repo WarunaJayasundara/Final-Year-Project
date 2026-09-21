@@ -346,6 +346,7 @@ class FeatureExtractionService
             $qid = $answer->question_id;
             if (! isset($firstSeen[$qid])) {
                 $firstSeen[$qid] = $answer->answered_at;
+
                 continue;
             }
             if ($answer->answered_at->diffInDays($firstSeen[$qid]) >= 14) {

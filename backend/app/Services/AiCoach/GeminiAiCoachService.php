@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Services\Analytics\IqScoreService;
 use App\Services\Analytics\StreakService;
 use App\Services\Analytics\StudentContextService;
+use App\Services\Gemini\GeminiEndpoint;
+use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -20,8 +22,6 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiAiCoachService implements AiCoachServiceInterface
 {
-    private const MODEL = 'gemini-2.5-flash';
-
     private StudentContextService $context;
 
     private Client $client;
@@ -66,8 +66,8 @@ class GeminiAiCoachService implements AiCoachServiceInterface
 
             $contents[] = ['role' => 'user', 'parts' => [['text' => $message]]];
 
-            $response = $this->client->post(
-                sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', self::MODEL, $apiKey),
+            $response = GeminiEndpoint::post($this->client,
+                GeminiEndpoint::url($apiKey),
                 [
                     'json' => ['contents' => $contents],
                     'timeout' => 15,
@@ -77,11 +77,18 @@ class GeminiAiCoachService implements AiCoachServiceInterface
             $body = json_decode((string) $response->getBody(), true);
             $text = $body['candidates'][0]['content']['parts'][0]['text'] ?? null;
 
+            // A model's Sinhala can come back with letters from other scripts; never show that to a student.
+            if ($text && $locale === 'si' && ! SinhalaStyle::acceptable($text)) {
+                Log::warning('Gemini coach returned corrupted Sinhala, using the mock coach.', ['user_id' => $user->id]);
+
+                return $this->fallback->chat($user, $message, $history, $locale);
+            }
+
             return $text ?: $this->fallback->chat($user, $message, $history, $locale);
         } catch (\Throwable $e) {
             Log::warning('Gemini AI coach call failed, falling back to mock coach.', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage(),
+                'error' => GeminiEndpoint::redact($e->getMessage()),
             ]);
 
             return $this->fallback->chat($user, $message, $history, $locale);
@@ -95,6 +102,7 @@ class GeminiAiCoachService implements AiCoachServiceInterface
         $weakest = $ctx['weakest_category'];
         $weakestName = $weakest ? ($locale === 'si' ? $weakest['name_si'] : $weakest['name_en']) : 'unknown';
         $iq = $ctx['iq_estimate']['iq_score'] ?? 'not yet available';
+        $sinhalaRules = $locale === 'si' ? SinhalaStyle::rules() : '';
 
         return <<<PROMPT
         You are HelaIQ's friendly cognitive-training coach for a Sri Lankan student aged 20-30
@@ -111,7 +119,10 @@ class GeminiAiCoachService implements AiCoachServiceInterface
 
         Ground every answer in this real data - do not invent stats. If the student asks what to
         practice, recommend their weakest category. If they ask about games, suggest one that
-        trains that category (Memory Match, Sequence Puzzle, or Mental Math Rush).
+        trains that category. Available games: Memory Match, Sequence Puzzle, Mental Math Rush, Mental Rotation,
+        Selective Attention, Working Memory, Visual & Spatial Memory, Cognitive Command Center.
+
+        {$sinhalaRules}
         PROMPT;
     }
 }

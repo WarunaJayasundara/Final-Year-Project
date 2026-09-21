@@ -9,7 +9,9 @@ class LogicalReasoningQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const PER_LEVEL_ODD_ONE_OUT = 35;
+
     private const PER_LEVEL_ANALOGY = 35;
+
     private const PER_LEVEL_SYLLOGISM = 10;
 
     private const CATEGORIES = [

@@ -174,13 +174,13 @@ class RaschMath
         return min(max($p, $bound), 1 - $bound);
     }
 
-    /** @param array<int|string,float> $values */
+    /** @param  array<int|string,float>  $values */
     private static function mean(array $values): float
     {
         return count($values) > 0 ? array_sum($values) / count($values) : 0.0;
     }
 
-    /** @param array<int|string,float> $values */
+    /** @param  array<int|string,float>  $values */
     private static function variance(array $values, float $mean): float
     {
         if (count($values) === 0) {

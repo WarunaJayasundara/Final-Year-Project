@@ -27,14 +27,14 @@ class DuplicateDetectionService
         $this->client = $client ?? new Client();
     }
 
-    /** @param string[] $candidateTexts */
+    /** @param  string[]  $candidateTexts */
     public function isSemanticDuplicate(string $newText, array $candidateTexts, float $threshold = self::DEFAULT_THRESHOLD): bool
     {
         if ($candidateTexts === []) {
             return false;
         }
 
-        $url = rtrim(config('services.ml_service.url'), '/') . '/duplicate-check';
+        $url = rtrim(config('services.ml_service.url'), '/').'/duplicate-check';
 
         try {
             $response = $this->client->post($url, [

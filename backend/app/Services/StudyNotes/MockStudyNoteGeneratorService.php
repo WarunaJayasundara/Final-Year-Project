@@ -35,7 +35,7 @@ class MockStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterfac
             'learning_objective_en' => "Recognise and work through {$topicList} problems.",
             'learning_objective_si' => "{$topicList} ගැටලු හඳුනාගෙන විසඳීම.",
             'content_en' => "This document's keyword analysis matched the following topics: {$topicList}. "
-                ."This is an automatically detected topic index, not an AI-written explanation - "
+                .'This is an automatically detected topic index, not an AI-written explanation - '
                 .'a real teaching summary requires the Gemini-backed generator to be configured.',
             'content_si' => "ලේඛනය: {$documentTitle}. තේමා: {$topicList}.",
             'worked_example_en' => $example?->question_text_en,

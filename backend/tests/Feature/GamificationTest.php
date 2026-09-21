@@ -6,7 +6,6 @@ use App\Models\Badge;
 use App\Models\Game;
 use App\Models\GameScore;
 use App\Models\MissionClaim;
-use App\Models\Question;
 use App\Models\TestSession;
 use App\Models\User;
 use App\Models\UserBadge;
@@ -161,5 +160,35 @@ class GamificationTest extends TestCase
         $response->assertJsonPath('data.level', 2);
         $response->assertJsonPath('data.coins', 20);
         $response->assertJsonPath('data.badges_total', Badge::count());
+    }
+
+    public function test_xp_ledger_is_append_only_and_rank_curve_is_triangular()
+    {
+        $this->testUser = $this->makeUser('ledger-append-only');
+        $service = app(\App\Services\Gamification\GamificationService::class);
+
+        $service->award($this->testUser, 40, 5, 'test_reason_one');
+        $service->award($this->testUser, 25, 3, 'test_reason_two');
+
+        // Two separate awards must produce two separate rows, never one row
+        // updated in place, so a student's XP history stays fully auditable.
+        $entries = XpLedgerEntry::where('user_id', $this->testUser->id)->orderBy('id')->get();
+        $this->assertCount(2, $entries);
+        $this->assertEquals(40, $entries[0]->xp_amount);
+        $this->assertEquals('test_reason_one', $entries[0]->reason);
+        $this->assertEquals(25, $entries[1]->xp_amount);
+        $this->assertEquals('test_reason_two', $entries[1]->reason);
+
+        // The earlier row must remain exactly as first written after the second award.
+        $this->assertEquals(40, XpLedgerEntry::find($entries[0]->id)->xp_amount);
+
+        $this->testUser->refresh();
+        $this->assertEquals(65, $this->testUser->xp);
+
+        // Triangular level curve: xpForLevel(n) = 50*(n-1)*n.
+        $this->assertEquals(0, $service->xpForLevel(1));
+        $this->assertEquals(100, $service->xpForLevel(2));
+        $this->assertEquals(300, $service->xpForLevel(3));
+        $this->assertEquals(600, $service->xpForLevel(4));
     }
 }

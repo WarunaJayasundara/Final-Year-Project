@@ -9,7 +9,9 @@ class AttentionQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const PER_LEVEL_LETTER_COUNT = 27;
+
     private const PER_LEVEL_EVEN_ODD = 27;
+
     private const PER_LEVEL_ODD_WORD_OUT = 26;
 
     private const WORD_POOL = [

@@ -32,8 +32,11 @@ namespace App\Services\QuestionBank;
 class SvgFigureBuilder
 {
     private const STROKE = '#334155';
+
     private const FILL = '#60a5fa';
+
     private const PANEL_BORDER = '#cbd5e1';
+
     private const LABELS = ['A', 'B', 'C', 'D'];
 
     /** @var array<string, array<int, array{0: float, 1: float}>> unit polygons centred at origin */
@@ -184,7 +187,7 @@ class SvgFigureBuilder
 
         if ($shape === 'semicircle') {
             $r = round($scale, 1);
-            $path = "M ".round($cx - $r, 1).' '.round($cy, 1)." A {$r} {$r} 0 0 1 ".round($cx + $r, 1).' '.round($cy, 1).' Z';
+            $path = 'M '.round($cx - $r, 1).' '.round($cy, 1)." A {$r} {$r} 0 0 1 ".round($cx + $r, 1).' '.round($cy, 1).' Z';
 
             return '<path d="'.$path.'" fill="'.$fill.'" stroke="'.self::STROKE.'" stroke-width="2" transform="rotate('.$rot.' '.round($cx, 1).' '.round($cy, 1).')"/>';
         }
@@ -292,7 +295,7 @@ class SvgFigureBuilder
             .'" font-weight="bold" letter-spacing="'.$letterSpacing.'" fill="'.self::STROKE.'"'.$attr.'>'.htmlspecialchars($text, ENT_XML1).'</text>';
     }
 
-    /** @param int|array{0:int,1:int} $n side count, or [rows, cols] for a rectangular grid */
+    /** @param  int|array{0:int,1:int}  $n side count, or [rows, cols] for a rectangular grid */
     private function renderGrid($n, float $x, float $y, float $size): string
     {
         [$rows, $cols] = is_array($n) ? $n : [$n, $n];
@@ -353,7 +356,7 @@ class SvgFigureBuilder
         return $out;
     }
 
-    /** @param array<int, array> $cells [gridX, gridY, shapeSpec, highlight?] on a 4x4 layout grid */
+    /** @param  array<int, array>  $cells [gridX, gridY, shapeSpec, highlight?] on a 4x4 layout grid */
     private function renderNet(array $cells, float $x, float $y, float $size): string
     {
         $pad = $size * 0.06;
@@ -373,7 +376,7 @@ class SvgFigureBuilder
         return $out;
     }
 
-    /** @param array<int,int|float> $series */
+    /** @param  array<int,int|float>  $series */
     private function renderChart(array $spec, float $x, float $y, float $size): string
     {
         $series = $spec['series'] ?? [];

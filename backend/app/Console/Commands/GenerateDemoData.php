@@ -790,7 +790,7 @@ class GenerateDemoData extends Command
         );
     }
 
-    /** @param array<int, array{total: int, correct: int, score: float}> $pool */
+    /** @param  array<int, array{total: int, correct: int, score: float}>  $pool */
     private function takeUniqueShape(array &$pool, int &$idx, array &$usedScores, array $pre): array
     {
         while ($idx < count($pool)) {

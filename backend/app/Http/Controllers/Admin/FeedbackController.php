@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FeedbackController extends Controller
@@ -118,7 +117,7 @@ class FeedbackController extends Controller
         return response()->streamDownload($callback, 'feedback-anonymized.csv', ['Content-Type' => 'text/csv']);
     }
 
-    /** @param \Illuminate\Support\Collection<int, string> $texts */
+    /** @param  \Illuminate\Support\Collection<int, string>  $texts */
     private function topTerms($texts, int $limit = 10): array
     {
         $stopwords = ['the', 'a', 'an', 'is', 'are', 'was', 'were', 'and', 'or', 'but', 'to', 'of', 'in', 'on', 'for',

@@ -38,7 +38,7 @@ class AbilityEstimationService
         return $this->estimate($answers, $user->theta_estimate ?? 0.0);
     }
 
-    /** @param \Illuminate\Support\Collection<int,SessionAnswer> $answers */
+    /** @param  \Illuminate\Support\Collection<int,SessionAnswer>  $answers */
     private function estimate($answers, float $startingTheta): array
     {
         $itemDifficulties = [];

@@ -25,6 +25,7 @@ class MatrixSeriesImageSeeder extends Seeder
     private const ROT_SHAPES = ['arrow' => 360, 'flag' => 360, 'lshape' => 360, 'semicircle' => 360, 'triangle' => 120, 'pentagon' => 72];
 
     private const MATRIX_PER_LEVEL = [1 => 60, 2 => 70, 3 => 80, 4 => 80, 5 => 60];
+
     private const SERIES_PER_LEVEL = [1 => 60, 2 => 70, 3 => 80, 4 => 80, 5 => 60];
 
     private SvgFigureBuilder $svg;

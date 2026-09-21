@@ -147,7 +147,7 @@ class ItemAnalysisService
         ];
     }
 
-    /** @param float[] $values */
+    /** @param  float[]  $values */
     private function stdDev(array $values): float
     {
         $n = count($values);

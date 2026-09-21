@@ -9,6 +9,7 @@ class MemoryQuestionsSeeder extends Seeder
     use BuildsQuestions;
 
     private const ORDINAL_EN = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'];
+
     private const ORDINAL_SI = ['පළමු', 'දෙවන', 'තෙවන', 'සිව්වන', 'පස්වන', 'හයවන', 'හත්වන'];
 
     private const WORD_BANKS = [
@@ -65,8 +66,8 @@ class MemoryQuestionsSeeder extends Seeder
         return [
             $level,
             'mcq_text',
-            "Memorize this sequence: {$sequenceStr}. What is the ".self::ORDINAL_EN[$askPosition]." number in the sequence?",
-            "මෙම අනුක්‍රමය මතක තබා ගන්න: {$sequenceStr}. අනුක්‍රමයේ ".self::ORDINAL_SI[$askPosition]." අංකය කුමක්ද?",
+            "Memorize this sequence: {$sequenceStr}. What is the ".self::ORDINAL_EN[$askPosition].' number in the sequence?',
+            "මෙම අනුක්‍රමය මතක තබා ගන්න: {$sequenceStr}. අනුක්‍රමයේ ".self::ORDINAL_SI[$askPosition].' අංකය කුමක්ද?',
             $this->options(array_map('strval', $optionValues), array_map('strval', $optionValues)),
             $correctKey,
             "The sequence was {$sequenceStr}. The ".self::ORDINAL_EN[$askPosition]." number is {$correctValue}.",

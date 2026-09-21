@@ -5,6 +5,8 @@ namespace App\Services\AiQuestionGeneration;
 use App\Contracts\AiQuestionGeneratorServiceInterface;
 use App\Models\Category;
 use App\Models\IqLevel;
+use App\Services\Gemini\GeminiEndpoint;
+use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -18,8 +20,6 @@ use Illuminate\Support\Facades\Log;
  */
 class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterface
 {
-    private const MODEL = 'gemini-2.5-flash';
-
     /**
      * Bloom's Taxonomy verb the question should target, scaled by IQ level -
      * lower levels test recall/comprehension, higher levels test analysis
@@ -71,8 +71,8 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         }
 
         try {
-            $response = $this->client->post(
-                sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', self::MODEL, $apiKey),
+            $response = GeminiEndpoint::post($this->client,
+                GeminiEndpoint::url($apiKey),
                 [
                     'json' => [
                         'contents' => [['parts' => [['text' => $this->buildPrompt($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext)]]]],
@@ -96,11 +96,14 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
             [$minTime, $maxTime] = self::TIME_BOUNDS[$level->level_number] ?? self::TIME_BOUNDS[3];
             $parsed['solving_time_seconds'] = max($minTime, min($maxTime, (int) ($parsed['estimated_time_seconds'] ?? $minTime)));
 
+            // Marks a genuine Gemini answer; mock fallbacks never carry it (see QuestionDraftService).
+            $parsed['generator'] = 'gemini';
+
             return $parsed;
         } catch (\Throwable $e) {
             Log::warning('Gemini question generation call failed, falling back to mock.', [
                 'category' => $category->code,
-                'error' => $e->getMessage(),
+                'error' => GeminiEndpoint::redact($e->getMessage()),
             ]);
 
             return $this->fallback->generate($category, $level, $examCategoryLabel, $avoidQuestionTexts, $sourceContext);
@@ -114,7 +117,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
             ? "Style the question to resemble what would appear on a {$examCategoryLabel} aptitude/reasoning paper."
             : 'Style the question as a general cognitive-assessment item, not tied to any specific exam.';
         $avoidList = $avoidQuestionTexts
-            ? "Do not repeat or closely paraphrase any of these existing questions:\n- " . implode("\n- ", array_slice($avoidQuestionTexts, 0, 15))
+            ? "Do not repeat or closely paraphrase any of these existing questions:\n- ".implode("\n- ", array_slice($avoidQuestionTexts, 0, 15))
             : 'There are no existing questions to avoid duplicating yet.';
         // $sourceContext is a short admin-curated summary (title + matched
         // topic keywords), never a document's raw extracted text - the
@@ -125,6 +128,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
             ? "Reference context (topic/style inspiration ONLY - do not reproduce or closely paraphrase any specific wording from it, it may be copyrighted material you have not seen): {$sourceContext}"
             : 'No specific reference document context was provided for this question.';
         $glossaryHint = $this->glossaryHintFor($category);
+        $sinhalaRules = SinhalaStyle::rules();
         [$minTime, $maxTime] = self::TIME_BOUNDS[$level->level_number] ?? self::TIME_BOUNDS[3];
 
         return <<<PROMPT
@@ -136,6 +140,8 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         {$sourceHint}
         {$avoidList}
         {$glossaryHint}
+
+        {$sinhalaRules}
 
         Respond with ONLY a JSON object (no markdown fences, no commentary) matching
         exactly this shape:

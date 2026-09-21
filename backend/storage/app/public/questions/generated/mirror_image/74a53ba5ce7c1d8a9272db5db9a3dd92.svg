@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 282" font-family="Arial, sans-serif">
+<rect width="450" height="282" fill="#ffffff" rx="8"/>
+<g><clipPath id="clip-16010130"><rect x="160" y="10" width="130" height="130"/></clipPath><rect x="160" y="10" width="130" height="130" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-16010130)"><text x="225" y="90.5" text-anchor="middle" font-size="44.2" font-weight="bold" letter-spacing="2" fill="#334155">4LQ</text></g></g>
+<line x1="10" y1="150" x2="440" y2="150" stroke="#cbd5e1" stroke-width="1"/>
+<text x="60" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">A</text>
+<g><clipPath id="clip-10172100"><rect x="10" y="172" width="100" height="100"/></clipPath><rect x="10" y="172" width="100" height="100" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-10172100)"><text x="60" y="233.9" text-anchor="middle" font-size="34" font-weight="bold" letter-spacing="2" fill="#334155" transform="rotate(180 60 222)">4LQ</text></g></g>
+<text x="170" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">B</text>
+<g><clipPath id="clip-120172100"><rect x="120" y="172" width="100" height="100"/></clipPath><rect x="120" y="172" width="100" height="100" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-120172100)"><text x="170" y="233.9" text-anchor="middle" font-size="34" font-weight="bold" letter-spacing="2" fill="#334155">4LQ</text></g></g>
+<text x="280" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">C</text>
+<g><clipPath id="clip-230172100"><rect x="230" y="172" width="100" height="100"/></clipPath><rect x="230" y="172" width="100" height="100" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-230172100)"><text x="280" y="233.9" text-anchor="middle" font-size="34" font-weight="bold" letter-spacing="2" fill="#334155" transform="translate(560 0) scale(-1 1)">4LQ</text></g></g>
+<text x="390" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">D</text>
+<g><clipPath id="clip-340172100"><rect x="340" y="172" width="100" height="100"/></clipPath><rect x="340" y="172" width="100" height="100" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-340172100)"><text x="390" y="233.9" text-anchor="middle" font-size="34" font-weight="bold" letter-spacing="2" fill="#334155" transform="translate(0 444) scale(1 -1)">4LQ</text></g></g>
+</svg>

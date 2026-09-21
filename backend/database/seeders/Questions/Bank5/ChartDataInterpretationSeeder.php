@@ -172,7 +172,7 @@ class ChartDataInterpretationSeeder extends Seeder
                     .'අගය වඩාත්ම වැඩි වූයේ එකිනෙකට යාබද කුමන අවධි දෙක අතරද?';
 
                 $answerLabel = "Period {$maxIncreaseStep} to Period ".($maxIncreaseStep + 1);
-                $answerLabelSi = "අවධි {$maxIncreaseStep} සිට අවධි ".($maxIncreaseStep + 1)." දක්වා";
+                $answerLabelSi = "අවධි {$maxIncreaseStep} සිට අවධි ".($maxIncreaseStep + 1).' දක්වා';
                 $distractorSteps = array_values(array_diff(range(1, $n - 1), [$maxIncreaseStep]));
                 mt_srand(crc32("b5line-{$seedBase}-{$level}-{$i}"));
                 shuffle($distractorSteps);
@@ -182,7 +182,7 @@ class ChartDataInterpretationSeeder extends Seeder
                 }
 
                 $labelsEn = [$answerLabel, ...array_map(fn ($s) => "Period {$s} to Period ".($s + 1), $chosenSteps)];
-                $labelsSi = [$answerLabelSi, ...array_map(fn ($s) => "අවධි {$s} සිට අවධි ".($s + 1)." දක්වා", $chosenSteps)];
+                $labelsSi = [$answerLabelSi, ...array_map(fn ($s) => "අවධි {$s} සිට අවධි ".($s + 1).' දක්වා', $chosenSteps)];
                 $order = [0, 1, 2, 3];
                 shuffle($order);
                 $shuffledEn = array_map(fn ($i) => $labelsEn[$i], $order);
@@ -232,7 +232,7 @@ class ChartDataInterpretationSeeder extends Seeder
             $level, 'mcq_image', $en, $si,
             $this->options($shuffled, $shuffled), $correctKey,
             "Reading the bar heights directly from the chart identifies category {$labels[$targetIdx]}.",
-            "ප්‍රස්ථාරයේ තීරු උස සෘජුවම කියවීමෙන් නිවැරදි කාණ්ඩය හඳුනාගත හැක.",
+            'ප්‍රස්ථාරයේ තීරු උස සෘජුවම කියවීමෙන් නිවැරදි කාණ්ඩය හඳුනාගත හැක.',
             null,
             [
                 'subcategory' => 'data_interpretation', 'image_path' => $imagePath,

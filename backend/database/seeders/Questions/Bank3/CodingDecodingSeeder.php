@@ -74,7 +74,7 @@ class CodingDecodingSeeder extends Seeder
                 $answer = $this->shiftWord($word, $shift);
 
                 $en = "In a certain code, every letter moves forward by {$shift} position(s) in the alphabet. How is the word {$word} coded?";
-                $si = "සෑම අකුරක්ම ස්ථාන {$shift}කින් ඉදිරියට යයි. {$word} = ?";
+                $si = "යම් කේතයක, හෝඩියේ සෑම අක්ෂරයක්ම ඉදිරියට ස්ථාන {$shift}කින් මාරු වේ. {$word} යන වචනය කේතගත වන්නේ කෙසේද?";
 
                 $rows[] = $this->cipherRow($level, $en, $si, $answer, $word, $shift, "b3code1-{$word}-{$shift}");
             }
@@ -103,7 +103,7 @@ class CodingDecodingSeeder extends Seeder
                 $coded = $this->shiftWord($word, $shift);
 
                 $en = "In a certain code, every letter moves forward by {$shift} position(s) in the alphabet. If a word is coded as {$coded}, what was the original word?";
-                $si = "සෑම අකුරක්ම ස්ථාන {$shift}කින් ඉදිරියට යයි. කේතය {$coded} නම්, වචනය කුමක්ද?";
+                $si = "යම් කේතයක, හෝඩියේ සෑම අක්ෂරයක්ම ඉදිරියට ස්ථාන {$shift}කින් මාරු වේ. යම් වචනයක් {$coded} ලෙස කේතගත කර ඇත්නම්, මුල් වචනය කුමක්ද?";
 
                 $rows[] = $this->cipherRow($level, $en, $si, $word, $coded, $shift, "b3code2-{$word}-{$shift}");
             }

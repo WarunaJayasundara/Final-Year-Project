@@ -57,13 +57,6 @@ class SpeedAccuracyScoreService
 
     private const SPEED_BAND = 0.15;
 
-    public function forSession(TestSession $session): ?array
-    {
-        $answers = $session->answers()->with('question')->whereNotNull('answered_at')->get();
-
-        return $this->scoreAnswers($answers);
-    }
-
     public function forUser(User $user, int $lookbackSessions = 10): ?array
     {
         $sessionIds = TestSession::where('user_id', $user->id)

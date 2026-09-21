@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" font-family="Arial, sans-serif">
+<rect width="240" height="240" fill="#ffffff" rx="8"/>
+<g><clipPath id="clip-1010220"><rect x="10" y="10" width="220" height="220"/></clipPath><rect x="10" y="10" width="220" height="220" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="6"/><g clip-path="url(#clip-1010220)"><polyline points="36.4,44.5 69.8,36.4 103.3,90.3 136.7,93 170.2,147 203.6,138.9" fill="none" stroke="#60a5fa" stroke-width="2.5"/><circle cx="36.4" cy="44.5" r="3" fill="#334155"/><circle cx="69.8" cy="36.4" r="3" fill="#334155"/><circle cx="103.3" cy="90.3" r="3" fill="#334155"/><circle cx="136.7" cy="93" r="3" fill="#334155"/><circle cx="170.2" cy="147" r="3" fill="#334155"/><circle cx="203.6" cy="138.9" r="3" fill="#334155"/></g></g>
+</svg>

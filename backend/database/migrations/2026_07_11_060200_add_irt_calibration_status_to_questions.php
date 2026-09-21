@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('irt_calibration_status', 20)->default('uncalibrated')->after('irt_response_count');
         });
 
-        DB::statement(<<<SQL
+        DB::statement(<<<'SQL'
             UPDATE questions q
             LEFT JOIN (
                 SELECT question_id, COUNT(*) AS cnt
