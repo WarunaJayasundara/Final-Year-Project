@@ -1,0 +1,11 @@
+venv
+__pycache__
+*.pyc
+*.log
+*.ipynb
+catboost_info
+data/raw
+data/processed
+data/*.csv
+data/*.bak
+models/test_split.npz

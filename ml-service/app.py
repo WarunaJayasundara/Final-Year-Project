@@ -192,6 +192,9 @@ class ScoreRange(BaseModel):
 
 
 class PredictionResponse(BaseModel):
+    # "model_version" is a deliberate public field name; silence pydantic's protected "model_" namespace warning.
+    model_config = {"protected_namespaces": ()}
+
     readiness_percent: float
     readiness_label: str
     reasons: List[Reason]
@@ -223,7 +226,7 @@ class PredictionResponse(BaseModel):
     time_management_readiness_percent: Optional[float] = None
 
 
-app = FastAPI(title="MindRise Exam Readiness Service")
+app = FastAPI(title="HelaIQ Exam Readiness Service")
 
 _state = {}
 

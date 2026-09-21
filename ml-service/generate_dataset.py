@@ -16,7 +16,7 @@ validated on how well it recovers a *known, documented* ground-truth
 relationship from features alone. Once enough real students have both
 platform activity and a known real exam outcome, `label` in this dataset
 should be replaced by that real outcome and the model retrained on real
-data - the training pipeline (train_model.py) itself does not change.
+data - the training pipeline (model_comparison.py) itself does not change.
 
 Usage:
     python generate_dataset.py --rows 80000 --seed 42
@@ -190,7 +190,7 @@ def _composite_score(df: pd.DataFrame, rng: np.random.Generator):
     "exam readiness", plus an urgency interaction (low practice + little time
     left = extra risk) and Gaussian noise so the label isn't perfectly
     deterministic from the features (real outcomes never are). The ML models
-    trained in train_model.py never see this function - they only see the
+    trained in model_comparison.py never see this function - they only see the
     resulting label/percent and the raw features, exactly like a real
     supervised-learning setup.
     """

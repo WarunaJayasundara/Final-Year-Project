@@ -1,0 +1,54 @@
+{
+  "protocol": "student-disjoint 5-fold; fold0 test, fold1 validation (calibrators fitted here), rest train",
+  "temperature_fitted_on_validation": 1.0528,
+  "baseline_raw_argmax": {
+    "accuracy": 0.6922,
+    "f1_macro": 0.6786,
+    "log_loss": 0.6876,
+    "brier": 0.4173,
+    "ece_top_label": 0.0173,
+    "quadratic_weighted_kappa": 0.8162,
+    "mean_abs_class_error": 0.3159,
+    "within_one_class_accuracy": 0.9922
+  },
+  "temperature_scaled_argmax": {
+    "accuracy": 0.6922,
+    "f1_macro": 0.6786,
+    "log_loss": 0.6868,
+    "brier": 0.4168,
+    "ece_top_label": 0.0137,
+    "quadratic_weighted_kappa": 0.8162,
+    "mean_abs_class_error": 0.3159,
+    "within_one_class_accuracy": 0.9922
+  },
+  "isotonic_argmax": {
+    "accuracy": 0.6907,
+    "f1_macro": 0.6784,
+    "log_loss": 0.6901,
+    "brier": 0.417,
+    "ece_top_label": 0.0096,
+    "quadratic_weighted_kappa": 0.817,
+    "mean_abs_class_error": 0.3174,
+    "within_one_class_accuracy": 0.9923
+  },
+  "raw_ordinal_cost_decision": {
+    "accuracy": 0.6913,
+    "f1_macro": 0.6777,
+    "log_loss": 0.6876,
+    "brier": 0.4173,
+    "ece_top_label": 0.0173,
+    "quadratic_weighted_kappa": 0.8161,
+    "mean_abs_class_error": 0.3155,
+    "within_one_class_accuracy": 0.9934
+  },
+  "temperature_ordinal_cost_decision": {
+    "accuracy": 0.6916,
+    "f1_macro": 0.6777,
+    "log_loss": 0.6868,
+    "brier": 0.4168,
+    "ece_top_label": 0.0137,
+    "quadratic_weighted_kappa": 0.8163,
+    "mean_abs_class_error": 0.3151,
+    "within_one_class_accuracy": 0.9936
+  }
+}
