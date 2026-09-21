@@ -26,7 +26,7 @@ function ShapeGrid({ cells, highlight }: { cells: Cell[]; highlight?: 'correct' 
             className={`aspect-square rounded-sm ${
               isFilled
                 ? highlight === 'correct'
-                  ? 'bg-emerald-500'
+                  ? 'bg-success'
                   : highlight === 'wrong'
                     ? 'bg-destructive'
                     : 'bg-primary'
@@ -45,7 +45,7 @@ export function MentalRotation() {
   const [current, setCurrent] = useState<RotationRound>(() => generateRound());
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
@@ -81,6 +81,7 @@ export function MentalRotation() {
   };
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setRound(1);
     setCurrent(generateRound());
     setSelectedId(null);
@@ -125,7 +126,7 @@ export function MentalRotation() {
                   onClick={() => handleSelect(option.id, option.isCorrect)}
                   className={`rounded-xl border p-3 transition-colors ${
                     revealCorrect
-                      ? 'border-emerald-500 bg-emerald-500/10'
+                      ? 'border-success bg-success/10'
                       : revealWrong
                         ? 'border-destructive bg-destructive/10'
                         : 'border-border hover:bg-muted disabled:opacity-70'

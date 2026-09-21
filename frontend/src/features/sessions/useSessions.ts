@@ -4,7 +4,6 @@ import {
   explainAnswer,
   fetchCategories,
   getReport,
-  getSession,
   startDaily,
   startMockExam,
   startPlacement,
@@ -41,14 +40,6 @@ export function useStartPractice(options?: { onSuccess?: (data: SessionData) => 
 
 export function useStartMockExam(options?: { onSuccess?: (data: SessionData) => void; onError?: (error: unknown) => void }) {
   return useMutation({ mutationFn: (request: MockExamRequest) => startMockExam(request), ...options });
-}
-
-export function useSession(sessionId: number | null) {
-  return useQuery({
-    queryKey: ['sessions', sessionId],
-    queryFn: () => getSession(sessionId as number),
-    enabled: sessionId !== null,
-  });
 }
 
 export function useSubmitAnswer(sessionId: number) {

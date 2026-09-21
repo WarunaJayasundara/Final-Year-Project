@@ -31,11 +31,6 @@ export async function startMockExam(request: MockExamRequest): Promise<SessionDa
   return data.data;
 }
 
-export async function getSession(sessionId: number): Promise<SessionData> {
-  const { data } = await api.get<{ data: SessionData }>(`/sessions/${sessionId}`);
-  return data.data;
-}
-
 export async function submitAnswer(
   sessionId: number,
   questionId: number,

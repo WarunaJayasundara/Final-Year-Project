@@ -83,7 +83,6 @@
     "title": "Cognitive Command Center",
     "instructions": "Switch quickly between short tasks as the rules change.",
     "round": "Round {{current}} / {{total}}",
-    "score": "Score: {{score}}",
     "rule": "Current rule: {{rule}}",
     "correct": "Correct!",
     "incorrect": "Not quite.",

@@ -108,7 +108,7 @@ export function MathRush() {
                   onClick={() => handleAnswer(option)}
                   className={`rounded-xl border p-5 text-xl font-semibold transition-colors ${
                     isSelectedCorrect
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                      ? 'border-success bg-success/10 text-success'
                       : 'border-border hover:bg-muted disabled:opacity-70'
                   } ${isSelectedWrong ? 'opacity-40' : ''}`}
                 >

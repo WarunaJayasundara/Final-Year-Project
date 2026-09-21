@@ -44,18 +44,16 @@ export function AdminLoginPage() {
   });
 
   return (
-    <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
-      <div className="gradient-orb -left-16 top-4 h-52 w-52 bg-foreground/10" />
-      <div className="gradient-orb -right-20 bottom-0 h-48 w-48 bg-[color:var(--chart-1)]/15" />
+    <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-12">
 
       <FadeIn className="flex w-full flex-col items-center gap-6">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-foreground text-background shadow-lg">
+        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Shield className="h-6 w-6" />
         </span>
 
-        <Card className="glass w-full shadow-xl">
+        <Card className="w-full shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('adminLoginTitle')}</CardTitle>
+            <CardTitle role="heading" aria-level={1} className="text-2xl">{t('adminLoginTitle')}</CardTitle>
             <CardDescription>{t('adminLoginSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent>

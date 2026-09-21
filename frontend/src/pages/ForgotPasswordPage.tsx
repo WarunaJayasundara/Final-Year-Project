@@ -55,13 +55,12 @@ function RequestResetForm() {
   });
 
   return (
-    <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
-      <div className="gradient-orb -left-20 top-0 h-56 w-56 bg-primary/25" />
+    <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-12">
       <FadeIn className="flex w-full flex-col items-center gap-6">
         <HelaIQMark variant="compact" />
-        <Card className="glass w-full shadow-xl">
+        <Card className="w-full shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('forgotPasswordTitle')}</CardTitle>
+            <CardTitle role="heading" aria-level={1} className="text-2xl">{t('forgotPasswordTitle')}</CardTitle>
             <CardDescription>{t('forgotPasswordSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -108,13 +107,12 @@ function ResetPasswordForm({ token, email }: { token: string; email: string }) {
   });
 
   return (
-    <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
-      <div className="gradient-orb -left-20 top-0 h-56 w-56 bg-primary/25" />
+    <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-12">
       <FadeIn className="flex w-full flex-col items-center gap-6">
         <HelaIQMark variant="compact" />
-        <Card className="glass w-full shadow-xl">
+        <Card className="w-full shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('resetPasswordTitle')}</CardTitle>
+            <CardTitle role="heading" aria-level={1} className="text-2xl">{t('resetPasswordTitle')}</CardTitle>
             <CardDescription>{email}</CardDescription>
           </CardHeader>
           <CardContent>

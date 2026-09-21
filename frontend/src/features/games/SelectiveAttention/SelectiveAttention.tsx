@@ -15,7 +15,7 @@ export function SelectiveAttention() {
   const [current, setCurrent] = useState<AttentionRound>(() => generateRound(1));
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
@@ -52,6 +52,7 @@ export function SelectiveAttention() {
   };
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setRound(1);
     setCurrent(generateRound(1));
     setSelectedIndex(null);
@@ -100,7 +101,7 @@ export function SelectiveAttention() {
                   onClick={() => handleSelect(index)}
                   className={`flex aspect-square items-center justify-center rounded-lg border transition-colors ${
                     revealCorrect
-                      ? 'border-emerald-500 bg-emerald-500/10'
+                      ? 'border-success bg-success/10'
                       : revealWrong
                         ? 'border-destructive bg-destructive/10'
                         : 'border-border hover:bg-muted'

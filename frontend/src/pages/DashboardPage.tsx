@@ -1,20 +1,21 @@
-import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ArrowRight, Flame, Gamepad2, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
+import { StatTile } from '@/components/ui/stat-tile';
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { FadeInItem, FadeInStagger } from '@/components/motion/FadeIn';
-import { MotionCard } from '@/components/motion/MotionCard';
 import { useDashboardSummary, useProgressHistory } from '@/features/dashboard/useDashboard';
 import type { IqClassification } from '@/features/dashboard/types';
 import { ReadinessCard } from '@/features/readiness/ReadinessCard';
 import { ExamCountdown } from '@/features/examProfile/ExamCountdown';
 import { XpWidget } from '@/features/gamification/XpWidget';
 import { MissionsCard } from '@/features/gamification/MissionsCard';
+import { categoryColor } from '@/features/categories/categoryStyle';
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation(['dashboard', 'common']);
@@ -30,6 +31,7 @@ export function DashboardPage() {
   const categoryChartData = summary.category_strengths.map((c) => ({
     name: locale === 'si' ? c.name_si : c.name_en,
     accuracy: c.accuracy_percent ?? 0,
+    color: categoryColor(c.code),
   }));
 
   const levelChartData = (history?.level_history ?? []).map((point) => ({
@@ -44,21 +46,28 @@ export function DashboardPage() {
     <FadeInStagger className="flex flex-col gap-10">
       {/* Primary zone: exam countdown, readiness, current level/trend, one clear next action. */}
       <div className="flex flex-col gap-4">
-        <FadeInItem className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{t('common:nav.dashboard')}</h1>
-            <p className="text-muted-foreground">{t('subtitle')}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <Button asChild size="lg" className="shadow-lg shadow-primary/25">
-              <Link to="/test/daily">
-                {t('primaryCta')} <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Link to="/test/practice" className="text-xs text-muted-foreground hover:text-foreground hover:underline">
-              {t('secondaryLink')}
-            </Link>
-          </div>
+        <FadeInItem>
+          <PageHeader
+            title={t('common:nav.dashboard')}
+            subtitle={t('subtitle')}
+            pattern="steps"
+            actions={
+              <>
+                <Button asChild size="lg">
+                  <Link to="/test/daily">
+                    {t('primaryCta')} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Link to="/test/practice" className="text-xs text-muted-foreground hover:text-foreground hover:underline">
+                  {t('secondaryLink')}
+                </Link>
+              </>
+            }
+          />
+        </FadeInItem>
+
+        <FadeInItem>
+          <XpWidget />
         </FadeInItem>
 
         {summary.iq_estimate && (
@@ -104,6 +113,10 @@ export function DashboardPage() {
           <ExamCountdown />
           <ReadinessCard />
         </FadeInItem>
+
+        <FadeInItem>
+          <MissionsCard />
+        </FadeInItem>
       </div>
 
       {/* Secondary zone: everything else, visually subordinate to the primary zone above. */}
@@ -112,28 +125,20 @@ export function DashboardPage() {
           <h2 className="text-sm font-medium text-muted-foreground">{t('moreProgress')}</h2>
         </FadeInItem>
 
-        <FadeInItem>
-          <XpWidget />
-        </FadeInItem>
-
-        <FadeInItem>
-          <MissionsCard />
-        </FadeInItem>
-
-        <FadeInItem className="grid gap-4 sm:grid-cols-3">
-          <StatCard
+        <FadeInItem className="grid grid-cols-3 gap-2 sm:gap-4">
+          <StatTile
             icon={<Target className="h-5 w-5" />}
             accent="var(--chart-3)"
             label={t('currentLevel')}
             value={summary.current_level ? (locale === 'si' ? summary.current_level.name_si : summary.current_level.name_en) : '-'}
           />
-          <StatCard
-            icon={<Flame className="h-5 w-5" />}
+          <StatTile
+            icon={<Flame className="flame-flicker h-5 w-5" />}
             accent="var(--chart-4)"
             label={t('practiceStreak')}
             value={t('streakDays', { count: summary.streak_days })}
           />
-          <StatCard
+          <StatTile
             icon={<Gamepad2 className="h-5 w-5" />}
             accent="var(--chart-2)"
             label={t('gamesPlayed')}
@@ -175,7 +180,11 @@ export function DashboardPage() {
                     <XAxis type="number" domain={[0, 100]} fontSize={12} />
                     <YAxis type="category" dataKey="name" width={110} fontSize={11} />
                     <Tooltip />
-                    <Bar dataKey="accuracy" fill="var(--primary)" radius={4} />
+                    <Bar dataKey="accuracy" radius={4}>
+                      {categoryChartData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -241,25 +250,6 @@ export function DashboardPage() {
         </FadeInItem>
       </div>
     </FadeInStagger>
-  );
-}
-
-function StatCard({ icon, label, value, accent }: { icon: ReactNode; label: string; value: string; accent: string }) {
-  return (
-    <MotionCard>
-      <CardContent className="flex items-center gap-4 p-5">
-        <span
-          className="flex h-11 w-11 items-center justify-center rounded-xl"
-          style={{ backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent }}
-        >
-          {icon}
-        </span>
-        <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-lg font-semibold">{value}</p>
-        </div>
-      </CardContent>
-    </MotionCard>
   );
 }
 

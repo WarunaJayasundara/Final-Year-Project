@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Progress } from '@/components/ui/progress';
 import { useCompleteSession, useSubmitAnswer } from './useSessions';
 import { useQuestionTimer } from './useQuestionTimer';
 import { QuestionCard, type RevealState } from './QuestionCard';
+import { SegmentedProgress } from './SegmentedProgress';
 import type { SessionData } from './types';
 
 export function SessionRunner({ session }: { session: SessionData }) {
@@ -16,11 +16,11 @@ export function SessionRunner({ session }: { session: SessionData }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<RevealState | null>(null);
+  const [results, setResults] = useState<(boolean | null)[]>(() => session.questions.map(() => null));
 
   const question = session.questions[index];
   const { elapsedMs } = useQuestionTimer(question?.id);
   const isLast = index === session.questions.length - 1;
-  const progressPercent = Math.round(((index + (revealed ? 1 : 0)) / session.questions.length) * 100);
 
   if (!question) {
     return null;
@@ -35,6 +35,7 @@ export function SessionRunner({ session }: { session: SessionData }) {
       responseTimeMs: elapsedMs(),
     });
     setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
+    setResults((prev) => prev.map((r, i) => (i === index ? result.is_correct : r)));
   };
 
   const handleNext = async () => {
@@ -57,7 +58,7 @@ export function SessionRunner({ session }: { session: SessionData }) {
             {index + 1} / {session.questions.length}
           </span>
         </div>
-        <Progress value={progressPercent} />
+        <SegmentedProgress total={session.questions.length} current={index} results={results} />
       </div>
 
       <QuestionCard

@@ -1,24 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Puzzle } from 'lucide-react';
+import { Puzzle, Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { BalancedGrid } from '@/components/ui/balanced-grid';
 import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
 import { useGames } from '@/features/games/useGames';
+import { useDashboardSummary } from '@/features/dashboard/useDashboard';
 import { GAME_ICONS, GAME_ROUTES, gameAccent } from '@/features/games/gameStyles';
 
 export function GamesHubPage() {
   const { i18n, t } = useTranslation(['common', 'games']);
   const { data: games, isLoading } = useGames();
+  const { data: summary } = useDashboardSummary();
+  // Personal bests from the dashboard summary: seeing your own record is a reason to play again.
+  const bestByGame = new Map((summary?.game_scores ?? []).map((g) => [g.game_code, g.best_score]));
 
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('nav.games')}</h1>
-        <p className="text-muted-foreground">{t('hub.subtitle', { ns: 'games' })}</p>
-      </div>
+      <PageHeader title={t('nav.games')} subtitle={t('hub.subtitle', { ns: 'games' })} pattern="grid" />
 
       {isLoading ? (
         <CardGridSkeleton count={8} />
@@ -31,17 +33,26 @@ export function GamesHubPage() {
             const accent = gameAccent(game.code);
             const name = locale === 'si' ? game.name_si : game.name_en;
             const description = locale === 'si' ? game.description_si : game.description_en;
+            const best = bestByGame.get(game.code);
 
             return (
               <Link key={game.code} to={GAME_ROUTES[game.code] ?? '/games'}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardContent className="flex flex-col gap-3 p-6">
-                    <span
-                      className="flex h-12 w-12 items-center justify-center rounded-xl"
-                      style={{ backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent }}
-                    >
-                      <Icon className="h-6 w-6" />
-                    </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <span
+                        className="flex h-12 w-12 items-center justify-center rounded-xl"
+                        style={{ backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent }}
+                      >
+                        <Icon className="h-6 w-6" />
+                      </span>
+                      {best !== undefined && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-gold)]/15 px-2.5 py-1 text-xs font-medium">
+                          <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold-ink)]" />
+                          {t('result.best', { ns: 'games', score: best })}
+                        </span>
+                      )}
+                    </div>
                     <p className="font-semibold">{name}</p>
                     <p className="text-sm text-muted-foreground">{description}</p>
                   </CardContent>

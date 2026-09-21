@@ -15,6 +15,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Progress } from '@/components/ui/progress';
 import { FullPageSpinner } from '@/components/auth/RequireAuth';
 import { FadeInItem, FadeInStagger } from '@/components/motion/FadeIn';
 import { useBadges } from '@/features/gamification/useGamification';
@@ -42,40 +44,56 @@ export function BadgesPage() {
     return <FullPageSpinner />;
   }
 
+  const earnedCount = badges.filter((b) => b.earned_at !== null).length;
+  // Earned badges first (newest first), then the locked ones still to win.
+  const ordered = [...badges].sort((x, y) => {
+    if ((x.earned_at === null) !== (y.earned_at === null)) return x.earned_at === null ? 1 : -1;
+    return (y.earned_at ?? '').localeCompare(x.earned_at ?? '');
+  });
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('badges.title')}</h1>
-        <p className="text-muted-foreground">{t('badges.subtitle')}</p>
-      </div>
+      <PageHeader title={t('badges.title')} subtitle={t('badges.subtitle')} pattern="rings" />
 
-      <FadeInStagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {badges.map((badge) => {
+      <Card>
+        <CardContent className="flex flex-col gap-3 p-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[color:var(--brand-gold)]/15 text-[color:var(--brand-gold-ink)]">
+              <Trophy className="h-5 w-5" />
+            </span>
+            <p className="text-lg font-semibold">{t('widget.badgesEarned', { earned: earnedCount, total: badges.length })}</p>
+          </div>
+          <Progress value={badges.length ? (earnedCount / badges.length) * 100 : 0} />
+        </CardContent>
+      </Card>
+
+      <FadeInStagger className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+        {ordered.map((badge) => {
           const Icon = ICONS[badge.icon] ?? Trophy;
           const earned = badge.earned_at !== null;
 
           return (
             <FadeInItem key={badge.code}>
-              <Card className={earned ? 'border-primary/30' : 'opacity-60'}>
-                <CardContent className="flex items-start gap-4 p-5">
+              <Card className={`h-full ${earned ? 'border-[color:var(--brand-gold)]/50' : 'border-dashed'}`}>
+                <CardContent className="flex h-full flex-col items-center gap-2 p-4 text-center">
                   <span
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                      earned ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                    className={`flex h-14 w-14 items-center justify-center rounded-full ${
+                      earned ? 'bg-[color:var(--brand-gold)]/15 text-[color:var(--brand-gold-ink)]' : 'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {earned ? <Icon className="h-6 w-6" /> : <Lock className="h-5 w-5" />}
+                    {earned ? <Icon className="h-7 w-7" /> : <Lock className="h-5 w-5" />}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold">{locale === 'si' ? badge.name_si : badge.name_en}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {locale === 'si' ? badge.description_si : badge.description_en}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {earned
-                        ? t('badges.earnedOn', { date: new Date(badge.earned_at as string).toLocaleDateString() })
-                        : t('badges.locked')}
-                    </p>
-                  </div>
+                  <p className={`text-sm font-semibold leading-snug ${earned ? '' : 'text-muted-foreground'}`}>
+                    {locale === 'si' ? badge.name_si : badge.name_en}
+                  </p>
+                  <p className="line-clamp-3 text-xs text-muted-foreground">
+                    {locale === 'si' ? badge.description_si : badge.description_en}
+                  </p>
+                  <p className="mt-auto pt-1 text-xs text-muted-foreground">
+                    {earned
+                      ? t('badges.earnedOn', { date: new Date(badge.earned_at as string).toLocaleDateString() })
+                      : t('badges.locked')}
+                  </p>
                 </CardContent>
               </Card>
             </FadeInItem>

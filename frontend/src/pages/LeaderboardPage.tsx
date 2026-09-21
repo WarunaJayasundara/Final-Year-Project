@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { Medal, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { FullPageSpinner } from '@/components/auth/RequireAuth';
 import { useLeaderboard } from '@/features/gamification/useGamification';
 
-const MEDAL_COLORS = ['text-amber-500', 'text-slate-400', 'text-amber-700'];
+// Token colors only (the plain gold is a fill color and too pale for an icon on the grey chip).
+const MEDAL_COLORS = ['text-brand-gold-ink', 'text-muted-foreground', 'text-[color:var(--chart-4)]'];
 
 export function LeaderboardPage() {
   const { t } = useTranslation('gamification');
@@ -17,10 +19,7 @@ export function LeaderboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('leaderboard.title')}</h1>
-        <p className="text-muted-foreground">{t('leaderboard.subtitle')}</p>
-      </div>
+      <PageHeader title={t('leaderboard.title')} subtitle={t('leaderboard.subtitle')} pattern="steps" />
 
       <Card>
         <CardHeader>

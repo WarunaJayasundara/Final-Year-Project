@@ -3,13 +3,14 @@ export const GRID_SIZE = 4;
 export type Cell = [row: number, col: number];
 
 /**
- * Hand-picked asymmetric shapes (no rotational or reflective symmetry), so
- * every rotation and every mirror image is visually distinct - required for
- * the puzzle to have exactly one unambiguous correct answer.
+ * Hand-picked chiral shapes: each has four distinct rotations and its mirror image is
+ * NOT one of them, so a mirrored option can never also be a valid rotation. That is what
+ * gives every round exactly one correct answer. Verified by brute force on the 4x4 grid
+ * (an earlier S-shaped entry was mirror-symmetric and made every option correct).
  */
 const BASE_SHAPES: Cell[][] = [
   [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [2, 1], [3, 0]],
-  [[0, 2], [0, 3], [1, 1], [1, 2], [2, 0], [2, 1], [3, 0]],
+  [[0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [2, 0], [3, 0]],
   [[0, 0], [1, 0], [1, 1], [1, 2], [2, 2], [2, 3], [3, 3]],
 ];
 

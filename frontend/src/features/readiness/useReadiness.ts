@@ -1,14 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchLatestReadiness, fetchReadinessHistory, fetchTodayCheckin, runReadinessPrediction, submitCheckin } from './api';
+import { fetchLatestReadiness, fetchTodayCheckin, runReadinessPrediction, submitCheckin } from './api';
 import type { CheckinInput } from './types';
 import { showRewardToast } from '@/features/gamification/rewardToast';
 
 export function useLatestReadiness() {
   return useQuery({ queryKey: ['readiness', 'latest'], queryFn: fetchLatestReadiness });
-}
-
-export function useReadinessHistory() {
-  return useQuery({ queryKey: ['readiness', 'history'], queryFn: fetchReadinessHistory });
 }
 
 // Hook-level onSuccess/onError (not per-call .mutate() callbacks) so they

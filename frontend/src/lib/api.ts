@@ -17,7 +17,7 @@ let csrfReady: Promise<void> | null = null;
  * request. Call this once before the first login/mutation; subsequent calls
  * reuse the same in-flight/completed promise.
  */
-export function ensureCsrfCookie(): Promise<void> {
+function ensureCsrfCookie(): Promise<void> {
   if (!csrfReady) {
     csrfReady = axios
       .get('/sanctum/csrf-cookie', { baseURL: '/', withCredentials: true })

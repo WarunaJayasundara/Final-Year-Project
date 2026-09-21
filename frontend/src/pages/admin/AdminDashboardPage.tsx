@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { categoryColor } from '@/features/categories/categoryStyle';
 import { Download, ListChecks, Loader2, TrendingUp, UserCheck, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +34,7 @@ export function AdminDashboardPage() {
   const categoryData = overview.category_accuracy.map((c) => ({
     name: c.category_name,
     accuracy: Number(c.accuracy_percent),
+    color: categoryColor(c.category_code),
   }));
 
   const levelData = overview.level_distribution.map((l) => ({
@@ -84,7 +86,11 @@ export function AdminDashboardPage() {
                 <XAxis type="number" domain={[0, 100]} fontSize={12} />
                 <YAxis type="category" dataKey="name" width={130} fontSize={11} />
                 <Tooltip />
-                <Bar dataKey="accuracy" fill="var(--primary)" radius={4} />
+                <Bar dataKey="accuracy" radius={4}>
+                  {categoryData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

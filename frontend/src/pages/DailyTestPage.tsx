@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { apiErrorMessage } from '@/lib/apiError';
 import { Button } from '@/components/ui/button';
 import { TestSkeleton } from '@/components/skeletons/TestSkeleton';
 import { SessionRunner } from '@/features/sessions/SessionRunner';
@@ -16,10 +17,7 @@ export function DailyTestPage() {
   const startDaily = useStartDaily({
     onSuccess: setSession,
     onError: (error) => {
-      const message =
-        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        t('daily.startError');
-      setErrorMessage(message);
+      setErrorMessage(apiErrorMessage(error, t));
     },
   });
 

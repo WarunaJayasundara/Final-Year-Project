@@ -15,6 +15,8 @@ import {
   Trophy,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { StatTile } from '@/components/ui/stat-tile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -76,18 +78,19 @@ export function StudyPlanPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-muted-foreground">{t('subtitle')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="ghost" asChild>
-            <Link to="/dashboard">{t('dashboard:examProfile.backToDashboard')}</Link>
-          </Button>
-          <ExamProfileDialog trigger={<Button variant="outline">{t('dashboard:examProfile.edit')}</Button>} />
-        </div>
-      </div>
+      <PageHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        pattern="steps"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" asChild>
+              <Link to="/dashboard">{t('dashboard:examProfile.backToDashboard')}</Link>
+            </Button>
+            <ExamProfileDialog trigger={<Button variant="outline">{t('dashboard:examProfile.edit')}</Button>} />
+          </div>
+        }
+      />
 
       {!plan ? null : !plan.exam_category ? (
         <NoExamWeakAreaPanel weakCategories={plan.weak_categories} locale={locale} t={t} />
@@ -95,7 +98,6 @@ export function StudyPlanPage() {
         <>
           {/* Hero: motivational headline + streak/XP context, urgency-colored by phase */}
           <Card className={`relative overflow-hidden border ${PHASE_COLORS[plan.phase]}`}>
-            <div className="gradient-orb -right-12 -top-16 h-48 w-48 bg-current opacity-10" />
             <CardContent className="relative flex flex-col gap-3 p-6 sm:p-8">
               <Badge variant="outline" className={`w-fit ${PHASE_COLORS[plan.phase]}`}>
                 {t(`phaseNames.${plan.phase}`)}
@@ -118,28 +120,28 @@ export function StudyPlanPage() {
               {gami && (
                 <div className="mt-1 flex flex-wrap gap-3 text-sm">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
-                    <Flame className="h-3.5 w-3.5 text-[color:var(--brand-gold)]" /> {t('streakChip', { count: gami.streak_days })}
+                    <Flame className="h-3.5 w-3.5 text-[color:var(--brand-gold-ink)]" /> {t('streakChip', { count: gami.streak_days })}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
-                    <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold)]" /> {t('rankChip', { level: gami.level })}
+                    <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold-ink)]" /> {t('rankChip', { level: gami.level })}
                   </span>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <StatTile
               icon={<Target className="h-5 w-5" />}
               label={t('recommendedDailyQuestions')}
               value={String(plan.recommended_daily_questions)}
             />
-            <StatCard
+            <StatTile
               icon={<ListChecks className="h-5 w-5" />}
               label={t('recommendedWeeklyMockTests')}
               value={String(plan.recommended_weekly_mock_tests)}
             />
-            <StatCard
+            <StatTile
               icon={<CalendarRange className="h-5 w-5" />}
               label={t('weeksRemaining')}
               value={plan.weeks_remaining !== null ? String(plan.weeks_remaining) : '-'}
@@ -152,7 +154,47 @@ export function StudyPlanPage() {
               <CardTitle className="text-base">{t('phaseTimeline')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-start gap-1 overflow-x-auto pb-2">
+              {/* Phones: vertical stepper (a 5-step horizontal one needs sideways scrolling and clips its labels). */}
+              <ol className="flex flex-col sm:hidden">
+                {PHASE_ORDER.map((phaseKey, idx) => {
+                  const phaseData = plan.phase_timeline.find((p) => p.phase === phaseKey);
+                  const currentIdx = PHASE_ORDER.indexOf(plan.phase);
+                  const isPast = idx < currentIdx;
+                  const isCurrent = phaseKey === plan.phase;
+
+                  return (
+                    <li key={phaseKey} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold ${
+                            isCurrent
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : isPast
+                                ? 'border-primary bg-primary/20 text-primary'
+                                : 'border-border bg-background text-muted-foreground'
+                          }`}
+                        >
+                          {isPast ? <Check className="h-4 w-4" /> : idx + 1}
+                        </span>
+                        {idx < PHASE_ORDER.length - 1 && (
+                          <div className={`min-h-4 w-0.5 flex-1 ${isPast ? 'bg-primary' : 'bg-border'}`} />
+                        )}
+                      </div>
+                      <div className="pb-4 pt-1">
+                        <p className={`text-sm font-medium ${isCurrent ? 'text-primary' : ''}`}>
+                          {phaseData ? (locale === 'si' ? phaseData.label_si : phaseData.label_en) : t(`phaseNames.${phaseKey}`)}
+                        </p>
+                        {phaseData && phaseData.from_days_remaining !== null && phaseData.to_days_remaining !== null && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('phaseRange', { from: phaseData.from_days_remaining, to: phaseData.to_days_remaining })}
+                          </p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+              <div className="hidden items-start gap-1 pb-2 sm:flex">
                 {PHASE_ORDER.map((phaseKey, idx) => {
                   const phaseData = plan.phase_timeline.find((p) => p.phase === phaseKey);
                   const currentIdx = PHASE_ORDER.indexOf(plan.phase);
@@ -184,7 +226,7 @@ export function StudyPlanPage() {
                         {phaseData ? (locale === 'si' ? phaseData.label_si : phaseData.label_en) : t(`phaseNames.${phaseKey}`)}
                       </p>
                       {phaseData?.from_days_remaining !== null && phaseData?.to_days_remaining !== null && phaseData && (
-                        <p className="text-center text-[10px] text-muted-foreground">
+                        <p className="text-center text-xs text-muted-foreground">
                           {t('phaseRange', { from: phaseData.from_days_remaining, to: phaseData.to_days_remaining })}
                         </p>
                       )}
@@ -203,26 +245,26 @@ export function StudyPlanPage() {
                 <CardTitle className="text-base">{t('weeklySchedule')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-1.5">
+                <ul className="flex flex-col gap-1.5">
                   {plan.weekly_schedule.map((day) => {
                     const isToday = day.day === todayKey;
                     const Icon = ACTIVITY_ICON[day.focus === 'mock' ? 'timed_mock_practice' : day.focus === 'rest' || day.focus === 'rest_light' ? 'rest' : 'weak_category_practice'] ?? Target;
                     return (
-                      <div
+                      <li
                         key={day.day}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border p-2 text-center ${
-                          isToday ? 'border-primary bg-primary/10 ring-1 ring-primary/40' : 'border-border'
+                        className={`flex items-center gap-3 rounded-lg border px-3 py-2.5 ${
+                          isToday ? 'border-primary bg-primary/5' : 'border-border'
                         }`}
                       >
-                        <span className="text-[10px] font-medium uppercase text-muted-foreground">
-                          {t(`days.${day.day}`).slice(0, 3)}
+                        <Icon className={`h-4 w-4 shrink-0 ${isToday ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <span className={`w-28 shrink-0 text-sm ${isToday ? 'font-semibold text-primary' : 'font-medium'}`}>
+                          {t(`days.${day.day}`)}
                         </span>
-                        <Icon className={`h-4 w-4 ${isToday ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <span className="line-clamp-2 text-[10px] leading-tight text-muted-foreground">{focusLabel(day)}</span>
-                      </div>
+                        <span className="ml-auto text-right text-sm text-muted-foreground">{focusLabel(day)}</span>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </CardContent>
             </Card>
 
@@ -266,17 +308,17 @@ function DailyPlanRow({
     : baseLink;
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border border-border p-3">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3">
+      <div className="flex min-w-[12rem] flex-1 items-center gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <Icon className="h-4 w-4" />
         </span>
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-medium">{t(`dashboard:examProfile.activity.${block.activity}`)}</p>
           {block.category && <p className="text-xs text-muted-foreground">{categoryLabel(block.category)}</p>}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         {block.minutes !== null && <Badge variant="outline">{t('minutes', { count: block.minutes })}</Badge>}
         {link && (
           <Button size="sm" variant="secondary" asChild>
@@ -415,19 +457,5 @@ function NoExamWeakAreaPanel({
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 p-5">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">{icon}</span>
-        <div>
-          <p className="text-xs text-muted-foreground">{label}</p>
-          <p className="text-lg font-semibold">{value}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

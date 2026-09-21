@@ -27,9 +27,3 @@ export function useClaimMission(options?: { onSuccess?: (result: { mission: unkn
     },
   });
 }
-
-/** Invalidate every gamification query - call after any action that can award XP/coins/badges. */
-export function useInvalidateGamification() {
-  const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ['gamification'] });
-}

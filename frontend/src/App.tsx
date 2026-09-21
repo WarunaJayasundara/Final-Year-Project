@@ -1,3 +1,4 @@
+import { lazy, type ComponentType } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -8,41 +9,52 @@ import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AdminLoginPage } from '@/pages/AdminLoginPage';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
-import { PlacementPage } from '@/pages/PlacementPage';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { StudyPlanPage } from '@/pages/StudyPlanPage';
-import { DailyTestPage } from '@/pages/DailyTestPage';
-import { PracticeTestPage } from '@/pages/PracticeTestPage';
-import { MockExamSetupPage } from '@/pages/MockExamSetupPage';
-import { SessionReportPage } from '@/pages/SessionReportPage';
-import { GamesHubPage } from '@/pages/GamesHubPage';
-import { MemoryMatchPage } from '@/pages/games/MemoryMatchPage';
-import { SequencePuzzlePage } from '@/pages/games/SequencePuzzlePage';
-import { MathRushPage } from '@/pages/games/MathRushPage';
-import { MentalRotationPage } from '@/pages/games/MentalRotationPage';
-import { SelectiveAttentionPage } from '@/pages/games/SelectiveAttentionPage';
-import { WorkingMemorySpanPage } from '@/pages/games/WorkingMemorySpanPage';
-import { VisualSpatialMemoryPage } from '@/pages/games/VisualSpatialMemoryPage';
-import { CognitiveCommandCenterPage } from '@/pages/games/CognitiveCommandCenterPage';
-import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
-import { AdminQuestionsListPage } from '@/pages/admin/AdminQuestionsListPage';
-import { AdminQuestionNewPage } from '@/pages/admin/AdminQuestionNewPage';
-import { AdminQuestionEditPage } from '@/pages/admin/AdminQuestionEditPage';
-import { AdminVisualGeneratorPage } from '@/pages/admin/AdminVisualGeneratorPage';
-import { AdminCategoriesPage } from '@/pages/admin/AdminCategoriesPage';
-import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
-import { AdminPsychometricsPage } from '@/pages/admin/AdminPsychometricsPage';
-import { AdminQuestionBankPage } from '@/pages/admin/AdminQuestionBankPage';
-import { AdminMlResearchPage } from '@/pages/admin/AdminMlResearchPage';
-import { AdminAiQuestionsPage } from '@/pages/admin/AdminAiQuestionsPage';
-import { AdminKnowledgeLibraryPage } from '@/pages/admin/AdminKnowledgeLibraryPage';
-import { AdminFeedbackPage } from '@/pages/admin/AdminFeedbackPage';
-import { BadgesPage } from '@/pages/BadgesPage';
-import { LeaderboardPage } from '@/pages/LeaderboardPage';
-import { StudyNotesPage } from '@/pages/StudyNotesPage';
-import { ProfilePage } from '@/pages/ProfilePage';
+
+/**
+ * Code-splitting helper: every authenticated page (student, games, admin) is
+ * downloaded on first visit instead of shipping in one large entry bundle.
+ * Pages use named exports, so the loader maps the export to `default`.
+ */
+function lazyPage<K extends string>(loader: () => Promise<Record<K, ComponentType>>, name: K) {
+  return lazy(() => loader().then((m) => ({ default: m[name] })));
+}
+
+const PlacementPage = lazyPage(() => import('@/pages/PlacementPage'), 'PlacementPage');
+const DashboardPage = lazyPage(() => import('@/pages/DashboardPage'), 'DashboardPage');
+const StudyPlanPage = lazyPage(() => import('@/pages/StudyPlanPage'), 'StudyPlanPage');
+const DailyTestPage = lazyPage(() => import('@/pages/DailyTestPage'), 'DailyTestPage');
+const PracticeTestPage = lazyPage(() => import('@/pages/PracticeTestPage'), 'PracticeTestPage');
+const MockExamSetupPage = lazyPage(() => import('@/pages/MockExamSetupPage'), 'MockExamSetupPage');
+const SessionReportPage = lazyPage(() => import('@/pages/SessionReportPage'), 'SessionReportPage');
+const GamesHubPage = lazyPage(() => import('@/pages/GamesHubPage'), 'GamesHubPage');
+const MemoryMatchPage = lazyPage(() => import('@/pages/games/MemoryMatchPage'), 'MemoryMatchPage');
+const SequencePuzzlePage = lazyPage(() => import('@/pages/games/SequencePuzzlePage'), 'SequencePuzzlePage');
+const MathRushPage = lazyPage(() => import('@/pages/games/MathRushPage'), 'MathRushPage');
+const MentalRotationPage = lazyPage(() => import('@/pages/games/MentalRotationPage'), 'MentalRotationPage');
+const SelectiveAttentionPage = lazyPage(() => import('@/pages/games/SelectiveAttentionPage'), 'SelectiveAttentionPage');
+const WorkingMemorySpanPage = lazyPage(() => import('@/pages/games/WorkingMemorySpanPage'), 'WorkingMemorySpanPage');
+const VisualSpatialMemoryPage = lazyPage(() => import('@/pages/games/VisualSpatialMemoryPage'), 'VisualSpatialMemoryPage');
+const CognitiveCommandCenterPage = lazyPage(() => import('@/pages/games/CognitiveCommandCenterPage'), 'CognitiveCommandCenterPage');
+const AdminDashboardPage = lazyPage(() => import('@/pages/admin/AdminDashboardPage'), 'AdminDashboardPage');
+const AdminQuestionsListPage = lazyPage(() => import('@/pages/admin/AdminQuestionsListPage'), 'AdminQuestionsListPage');
+const AdminQuestionNewPage = lazyPage(() => import('@/pages/admin/AdminQuestionNewPage'), 'AdminQuestionNewPage');
+const AdminQuestionEditPage = lazyPage(() => import('@/pages/admin/AdminQuestionEditPage'), 'AdminQuestionEditPage');
+const AdminVisualGeneratorPage = lazyPage(() => import('@/pages/admin/AdminVisualGeneratorPage'), 'AdminVisualGeneratorPage');
+const AdminCategoriesPage = lazyPage(() => import('@/pages/admin/AdminCategoriesPage'), 'AdminCategoriesPage');
+const AdminUsersPage = lazyPage(() => import('@/pages/admin/AdminUsersPage'), 'AdminUsersPage');
+const AdminPsychometricsPage = lazyPage(() => import('@/pages/admin/AdminPsychometricsPage'), 'AdminPsychometricsPage');
+const AdminQuestionBankPage = lazyPage(() => import('@/pages/admin/AdminQuestionBankPage'), 'AdminQuestionBankPage');
+const AdminMlResearchPage = lazyPage(() => import('@/pages/admin/AdminMlResearchPage'), 'AdminMlResearchPage');
+const AdminAiQuestionsPage = lazyPage(() => import('@/pages/admin/AdminAiQuestionsPage'), 'AdminAiQuestionsPage');
+const AdminKnowledgeLibraryPage = lazyPage(() => import('@/pages/admin/AdminKnowledgeLibraryPage'), 'AdminKnowledgeLibraryPage');
+const AdminFeedbackPage = lazyPage(() => import('@/pages/admin/AdminFeedbackPage'), 'AdminFeedbackPage');
+const BadgesPage = lazyPage(() => import('@/pages/BadgesPage'), 'BadgesPage');
+const LeaderboardPage = lazyPage(() => import('@/pages/LeaderboardPage'), 'LeaderboardPage');
+const StudyNotesPage = lazyPage(() => import('@/pages/StudyNotesPage'), 'StudyNotesPage');
+const ProfilePage = lazyPage(() => import('@/pages/ProfilePage'), 'ProfilePage');
 
 function App() {
   return (
@@ -53,6 +65,7 @@ function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="admin/login" element={<AdminLoginPage />} />
+        <Route path="*" element={<NotFoundPage />} />
         <Route path="auth/callback" element={<AuthCallbackPage />} />
 
         <Route element={<RequireAuth />}>

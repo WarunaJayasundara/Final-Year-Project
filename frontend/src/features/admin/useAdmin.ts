@@ -2,11 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   analyzeSourceDocument,
   approveAiQuestion,
+  checkSinhala,
+  translateToSinhala,
   bulkApproveAiQuestions,
   createAdminUser,
   createCategory,
   createQuestion,
-  deleteCategory,
   deleteQuestion,
   deleteSourceDocument,
   deleteUser,
@@ -54,14 +55,6 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: Partial<AdminCategory> }) => updateCategory(id, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] }),
-  });
-}
-
-export function useDeleteCategory() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => deleteCategory(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] }),
   });
 }
@@ -231,5 +224,16 @@ export function useRejectStudyNote() {
   return useMutation({
     mutationFn: (id: number) => rejectStudyNote(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'study-notes'] }),
+  });
+}
+
+/** Drafts Sinhala for a question. Call with mutateAsync and handle the result where it is awaited. */
+export function useTranslateToSinhala() {
+  return useMutation({ mutationFn: (fields: Record<string, string>) => translateToSinhala(fields) });
+}
+
+export function useCheckSinhala() {
+  return useMutation({
+    mutationFn: (fields: Parameters<typeof checkSinhala>[0]) => checkSinhala(fields),
   });
 }

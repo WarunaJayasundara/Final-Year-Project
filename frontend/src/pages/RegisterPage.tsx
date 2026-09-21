@@ -1,5 +1,6 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { apiErrorMessage } from '@/lib/apiError';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -57,16 +58,14 @@ export function RegisterPage() {
   });
 
   return (
-    <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
-      <div className="gradient-orb -left-20 top-0 h-56 w-56 bg-primary/25" />
-      <div className="gradient-orb -right-16 bottom-0 h-48 w-48 bg-[color:var(--chart-2)]/20" />
+    <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-12">
 
       <FadeIn className="flex w-full flex-col items-center gap-6">
         <HelaIQMark variant="compact" />
 
-        <Card className="glass w-full shadow-xl">
+        <Card className="w-full shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('registerTitle')}</CardTitle>
+            <CardTitle role="heading" aria-level={1} className="text-2xl">{t('registerTitle')}</CardTitle>
             <CardDescription>{t('registerSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -120,8 +119,7 @@ export function RegisterPage() {
 
               {registerUser.isError && (
                 <p className="text-sm text-destructive">
-                  {(registerUser.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-                    t('registerFailed')}
+                  {apiErrorMessage(registerUser.error, t)}
                 </p>
               )}
 

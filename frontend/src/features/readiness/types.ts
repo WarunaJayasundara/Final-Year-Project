@@ -5,6 +5,8 @@ export interface ReadinessReason {
   message: string;
   direction: 'positive' | 'negative';
   impact: number;
+  /** Change of this feature since the previous prediction, in percent; null when there is no earlier prediction. */
+  pct_change_since_last?: number | null;
 }
 
 export interface RiskOfDroppingPractice {
@@ -38,12 +40,6 @@ export interface ReadinessPrediction {
   // Time-aware upgrade fields - optional for the same reason as above.
   time_management_readiness_percent?: number | null;
   predicted_score_range?: PredictedScoreRange | null;
-}
-
-export interface ReadinessHistoryPoint {
-  predicted_at: string;
-  readiness_percent: number;
-  readiness_label: ReadinessLabel;
 }
 
 export interface DailyCheckin {

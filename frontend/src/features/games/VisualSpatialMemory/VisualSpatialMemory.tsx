@@ -34,6 +34,8 @@ function shuffled<T>(items: T[]): T[] {
 interface RoundLog {
   type: MemoryRound['type'];
   correct: boolean;
+  /** Difficulty this round was played at: items on the grid (scene) or path length (path). */
+  level: number;
 }
 
 export function VisualSpatialMemory() {
@@ -48,7 +50,7 @@ export function VisualSpatialMemory() {
   const [pathInput, setPathInput] = useState<number[]>([]);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [logs, setLogs] = useState<RoundLog[]>([]);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
   const submitScore = useSubmitGameScore('visual_spatial_memory', {
@@ -73,7 +75,7 @@ export function VisualSpatialMemory() {
 
   const advance = (correct: boolean) => {
     setLastCorrect(correct);
-    setLogs((prev) => [...prev, { type: round.type, correct }]);
+    setLogs((prev) => [...prev, { type: round.type, correct, level: round.type === 'scene' ? itemCount : pathSpan }]);
     const newConsecutive = correct ? consecutiveCorrect + 1 : 0;
     const newItemCount = correct && consecutiveCorrect >= 1 ? Math.min(MAX_ITEMS, itemCount + 1) : correct ? itemCount : Math.max(MIN_ITEMS, itemCount - 1);
     const newPathSpan = correct && consecutiveCorrect >= 1 ? Math.min(MAX_PATH_SPAN, pathSpan + 1) : correct ? pathSpan : Math.max(MIN_PATH_SPAN, pathSpan - 1);
@@ -104,7 +106,7 @@ export function VisualSpatialMemory() {
   };
 
   const handleSceneAnswer = (given: string | number) => {
-    if (round.type !== 'scene') return;
+    if (round.type !== 'scene' || phase !== 'scene-question') return;
     advance(given === round.answer);
   };
 
@@ -122,11 +124,12 @@ export function VisualSpatialMemory() {
     if (phase !== 'finished') return;
     const seconds = Math.round((Date.now() - startedAt) / 1000);
     const correctCount = logs.filter((l) => l.correct).length;
-    const maxItems = Math.max(MIN_ITEMS, itemCount);
-    const maxSpan = Math.max(MIN_PATH_SPAN, pathSpan);
-    const score = Math.max(0, correctCount * 80 + maxItems * 10 + maxSpan * 10 - Math.floor(seconds / 4));
     const sceneLogs = logs.filter((l) => l.type === 'scene');
     const pathLogs = logs.filter((l) => l.type === 'path');
+    // The highest level actually played, not the level the staircase moved to after the last answer.
+    const maxItems = Math.max(MIN_ITEMS, ...sceneLogs.map((l) => l.level));
+    const maxSpan = Math.max(MIN_PATH_SPAN, ...pathLogs.map((l) => l.level));
+    const score = Math.max(0, correctCount * 80 + maxItems * 10 + maxSpan * 10 - Math.floor(seconds / 4));
     setResult({ score });
     submitScore.mutate({
       score,
@@ -143,6 +146,7 @@ export function VisualSpatialMemory() {
   }, [phase]);
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setRoundIndex(0);
     setItemCount(MIN_ITEMS);
     setPathSpan(MIN_PATH_SPAN);
@@ -180,7 +184,7 @@ export function VisualSpatialMemory() {
           )}
 
           {phase === 'feedback' && (
-            <p className={`text-lg font-semibold ${lastCorrect ? 'text-emerald-600' : 'text-destructive'}`}>
+            <p className={`text-lg font-semibold ${lastCorrect ? 'text-success' : 'text-destructive'}`}>
               {lastCorrect ? t('visualSpatialMemory.correct') : t('visualSpatialMemory.incorrect')}
             </p>
           )}

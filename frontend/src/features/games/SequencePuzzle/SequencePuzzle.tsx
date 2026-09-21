@@ -14,7 +14,7 @@ export function SequencePuzzle() {
   const [current, setCurrent] = useState<SequenceRound>(() => generateRound(1));
   const [selected, setSelected] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [finished, setFinished] = useState(false);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
 
@@ -52,6 +52,7 @@ export function SequencePuzzle() {
   };
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setRound(1);
     setCurrent(generateRound(1));
     setSelected(null);
@@ -98,7 +99,7 @@ export function SequencePuzzle() {
                   onClick={() => handleSelect(option)}
                   className={`rounded-xl border p-4 text-lg font-medium transition-colors ${
                     isCorrectOption
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                      ? 'border-success bg-success/10 text-success'
                       : isSelected
                         ? 'border-destructive bg-destructive/10 text-destructive'
                         : 'border-border hover:bg-muted disabled:opacity-70'

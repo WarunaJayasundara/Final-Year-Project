@@ -6,11 +6,6 @@ export async function submitFeedback(input: FeedbackInput): Promise<FeedbackEntr
   return data.data;
 }
 
-export async function fetchMyFeedback(): Promise<FeedbackEntry[]> {
-  const { data } = await api.get<{ data: FeedbackEntry[] }>('/feedback/mine');
-  return data.data;
-}
-
 export async function fetchAdminFeedback(params: FeedbackListParams): Promise<FeedbackListPage> {
   const { data } = await api.get<FeedbackListPage>('/admin/feedback', { params });
   return data;

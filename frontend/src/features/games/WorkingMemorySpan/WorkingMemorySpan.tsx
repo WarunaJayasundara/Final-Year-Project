@@ -38,12 +38,10 @@ export function WorkingMemorySpan() {
   const [nbackStep, setNbackStep] = useState(0);
   const [nbackResponded, setNbackResponded] = useState(false);
   const [nbackHits, setNbackHits] = useState(0);
-  const [, setNbackJudged] = useState(0);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [logs, setLogs] = useState<TrialLog[]>([]);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
-  const encodeStartRef = useRef(Date.now());
   const nbackRespondedRef = useRef(false);
 
   const submitScore = useSubmitGameScore('working_memory_span', {
@@ -52,7 +50,6 @@ export function WorkingMemorySpan() {
 
   useEffect(() => {
     if (phase !== 'encoding') return;
-    encodeStartRef.current = Date.now();
     if (encodeStep >= trial.sequence.length) {
       setPhase(trial.type === 'interference' ? 'distractor' : 'recall');
       setEncodeStep(0);
@@ -75,7 +72,6 @@ export function WorkingMemorySpan() {
     const timer = setTimeout(() => {
       if (nbackStep >= 2 && !nbackRespondedRef.current) {
         const wasTarget = trial.nbackTargets![nbackStep];
-        setNbackJudged((j) => j + 1);
         if (!wasTarget) {
           setNbackHits((h) => h + 1); // correctly withheld a non-match (no click during this step)
         }
@@ -91,7 +87,6 @@ export function WorkingMemorySpan() {
     nbackRespondedRef.current = true;
     setNbackResponded(true);
     const wasTarget = trial.nbackTargets[nbackStep];
-    setNbackJudged((j) => j + 1);
     if (wasTarget) {
       setNbackHits((h) => h + 1);
     }
@@ -122,7 +117,6 @@ export function WorkingMemorySpan() {
       setDistractorAnswered(false);
       setNbackStep(0);
       setNbackHits(0);
-      setNbackJudged(0);
       setLastCorrect(null);
       setPhase(nextType === 'nback' ? 'nback-stream' : 'encoding');
     }, 900);
@@ -172,6 +166,7 @@ export function WorkingMemorySpan() {
   }, [phase]);
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setTrialIndex(0);
     setSpan(MIN_SPAN);
     setConsecutiveCorrect(0);
@@ -182,7 +177,6 @@ export function WorkingMemorySpan() {
     setDistractorAnswered(false);
     setNbackStep(0);
     setNbackHits(0);
-    setNbackJudged(0);
     setLastCorrect(null);
     setLogs([]);
     setResult(null);
@@ -209,7 +203,10 @@ export function WorkingMemorySpan() {
           <p className="text-sm font-medium text-muted-foreground">{taskLabel}</p>
 
           {phase === 'encoding' && (
-            <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-primary bg-primary/10 text-4xl font-bold">
+            <div
+              key={encodeStep}
+              className="flex h-24 w-24 animate-in items-center justify-center rounded-2xl border-2 border-primary bg-primary/10 text-4xl font-bold duration-200 fade-in zoom-in-95"
+            >
               {trial.sequence[encodeStep] ?? ''}
             </div>
           )}
@@ -257,7 +254,10 @@ export function WorkingMemorySpan() {
           {phase === 'nback-stream' && (
             <div className="flex flex-col items-center gap-4">
               <p className="text-xs text-muted-foreground">{t('workingMemorySpan.nbackPrompt')}</p>
-              <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-primary bg-primary/10 text-4xl font-bold">
+              <div
+                key={nbackStep}
+                className="flex h-24 w-24 animate-in items-center justify-center rounded-2xl border-2 border-primary bg-primary/10 text-4xl font-bold duration-200 fade-in zoom-in-95"
+              >
                 {trial.sequence[nbackStep] ?? ''}
               </div>
               <Button onClick={handleNbackMatch} disabled={nbackResponded || nbackStep < 2}>
@@ -267,7 +267,7 @@ export function WorkingMemorySpan() {
           )}
 
           {phase === 'trial-feedback' && (
-            <p className={`text-lg font-semibold ${lastCorrect ? 'text-emerald-600' : 'text-destructive'}`}>
+            <p className={`text-lg font-semibold ${lastCorrect ? 'text-success' : 'text-destructive'}`}>
               {lastCorrect ? t('workingMemorySpan.correct') : t('workingMemorySpan.incorrect')}
             </p>
           )}

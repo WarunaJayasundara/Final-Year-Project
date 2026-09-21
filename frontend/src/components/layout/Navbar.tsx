@@ -84,17 +84,17 @@ export function Navbar() {
   const hasNav = activeNav.length > 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b border-border bg-card">
       <div className="mx-auto grid h-16 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6">
         <Link to={user ? '/dashboard' : '/'} className="flex shrink-0 items-center font-semibold">
           <HelaIQMark variant="full" />
         </Link>
 
-        <nav className="scrollbar-none hidden min-w-0 items-center justify-center gap-1 overflow-x-auto md:flex">
+        <nav className="scrollbar-none hidden min-w-0 items-center justify-center gap-1 overflow-x-auto lg:flex">
           {hasNav && activeNav.map((item) => <NavItem key={item.to} {...item} />)}
         </nav>
 
-        <div className="hidden shrink-0 items-center gap-2 md:flex">
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           <LanguageSwitcher />
           <ThemeToggle />
 
@@ -148,7 +148,7 @@ export function Navbar() {
         {/* Mobile: single hamburger menu containing everything - nav links,
             language, theme, profile/logout or login. Nothing is hidden,
             it's all one tap away instead of duplicated across two triggers. */}
-        <div className="flex items-center justify-end gap-2 md:hidden">
+        <div className="flex items-center justify-end gap-2 lg:hidden">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon-sm" aria-label="Open menu">

@@ -10,6 +10,12 @@ import '@/lib/i18n';
 import './index.css';
 import App from './App.tsx';
 
+// Dev-only design preview (fake data, no login). Stripped from production builds.
+if (import.meta.env.DEV) {
+  void import('./dev/designPreview');
+  void import('./dev/contrastAudit');
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>

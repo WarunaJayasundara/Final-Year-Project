@@ -54,7 +54,235 @@
     "motivation": "Motivation (1-10)",
     "attendedToday": "I studied/attended today",
     "saveCheckin": "Save",
-    "checkinSaved": "Check-in saved."
+    "checkinSaved": "Check-in saved.",
+    "reasonText": {
+      "placement_iq": {
+        "pos": "Strong baseline ability at placement",
+        "neg": "Lower baseline ability at placement"
+      },
+      "current_iq": {
+        "pos": "Strong current IQ estimate",
+        "neg": "Current IQ estimate below target"
+      },
+      "theta": {
+        "pos": "High measured cognitive ability (IRT theta)",
+        "neg": "Cognitive ability estimate needs strengthening"
+      },
+      "avg_test_score": {
+        "pos": "High average test scores",
+        "neg": "Average test scores below target"
+      },
+      "memory_score": {
+        "pos": "Excellent memory performance",
+        "neg": "Weak memory performance"
+      },
+      "logical_score": {
+        "pos": "Excellent logical reasoning",
+        "neg": "Weak logical reasoning"
+      },
+      "numerical_score": {
+        "pos": "Excellent numerical ability",
+        "neg": "Weak numerical ability"
+      },
+      "attention_score": {
+        "pos": "Strong attention/focus performance",
+        "neg": "Weak attention/focus performance"
+      },
+      "spatial_score": {
+        "pos": "Strong spatial/pattern recognition",
+        "neg": "Weak spatial/pattern recognition"
+      },
+      "avg_game_score": {
+        "pos": "Strong cognitive game performance",
+        "neg": "Low cognitive game performance"
+      },
+      "daily_practice_count": {
+        "pos": "Frequent daily practice",
+        "neg": "Low daily practice frequency"
+      },
+      "weekly_practice_count": {
+        "pos": "Good weekly practice volume",
+        "neg": "Low weekly practice volume"
+      },
+      "practice_streak": {
+        "pos": "Strong practice streak/consistency",
+        "neg": "Inconsistent practice - streak is low"
+      },
+      "study_hours": {
+        "pos": "Healthy daily study hours",
+        "neg": "Low daily study hours"
+      },
+      "avg_response_time_sec": {
+        "pos": "Fast, confident response times",
+        "neg": "Slow response times suggest hesitation"
+      },
+      "wrong_answer_percent": {
+        "pos": "Low wrong-answer rate",
+        "neg": "High wrong-answer rate"
+      },
+      "avg_difficulty_solved": {
+        "pos": "Solving high-difficulty questions correctly",
+        "neg": "Struggling with higher-difficulty questions"
+      },
+      "improvement_trend": {
+        "pos": "Clear improvement trend over time",
+        "neg": "Little or negative improvement trend"
+      },
+      "consistency_score": {
+        "pos": "Consistent performance across sessions",
+        "neg": "Inconsistent performance across sessions"
+      },
+      "attendance_percent": {
+        "pos": "Good attendance/engagement",
+        "neg": "Low attendance/engagement"
+      },
+      "days_until_exam": {
+        "pos": "Comfortable amount of time before the exam",
+        "neg": "Limited time remaining before the exam"
+      },
+      "motivation_score": {
+        "pos": "High self-reported motivation",
+        "neg": "Low self-reported motivation"
+      },
+      "ai_coach_usage_count": {
+        "pos": "Actively using the AI coach for support",
+        "neg": "Rarely using the AI coach"
+      },
+      "question_completion_rate": {
+        "pos": "High session-completion rate",
+        "neg": "Frequently leaving sessions/tests incomplete"
+      },
+      "rolling_avg_score": {
+        "pos": "Recent scores trending high",
+        "neg": "Recent scores trending low"
+      },
+      "weekly_trend": {
+        "pos": "Scores improving week over week",
+        "neg": "Scores declining week over week"
+      },
+      "monthly_trend": {
+        "pos": "Scores improving over the past month",
+        "neg": "Scores declining over the past month"
+      },
+      "learning_velocity": {
+        "pos": "Ability increasing at a healthy pace",
+        "neg": "Ability growth has stalled"
+      },
+      "knowledge_gain_rate": {
+        "pos": "Strong score gains per practice session",
+        "neg": "Little score gain per practice session"
+      },
+      "consistency_index": {
+        "pos": "Low variability across sessions",
+        "neg": "High variability across sessions"
+      },
+      "fatigue_score": {
+        "pos": "Little within-session fatigue",
+        "neg": "Accuracy drops noticeably within sessions (fatigue)"
+      },
+      "retention_score": {
+        "pos": "Strong retention of previously learned material",
+        "neg": "Weak retention of previously learned material"
+      },
+      "engagement_score": {
+        "pos": "High overall engagement",
+        "neg": "Low overall engagement"
+      },
+      "practice_intensity": {
+        "pos": "Practice volume above the recommended target",
+        "neg": "Practice volume below the recommended target"
+      },
+      "error_recovery_rate": {
+        "pos": "Good bounce-back after a wrong answer",
+        "neg": "Wrong answers tend to cascade into more mistakes"
+      },
+      "category_mastery": {
+        "pos": "Strong mastery within practiced categories",
+        "neg": "Limited mastery within practiced categories"
+      },
+      "confidence_trend": {
+        "pos": "Growing confidence (faster, more accurate)",
+        "neg": "Confidence not improving"
+      },
+      "reaction_speed_trend": {
+        "pos": "Getting faster over time",
+        "neg": "Not getting any faster over time"
+      },
+      "adaptive_learning_gain": {
+        "pos": "Daily sessions are driving real ability gains",
+        "neg": "Daily sessions show little ability gain"
+      },
+      "difficulty_progression": {
+        "pos": "Successfully tackling harder items over time",
+        "neg": "Not progressing to harder items"
+      },
+      "question_diversity_score": {
+        "pos": "Practicing a wide range of subtopics",
+        "neg": "Practice is narrowly focused on few subtopics"
+      },
+      "time_management_score": {
+        "pos": "Good session time management",
+        "neg": "Sessions often over/under target duration"
+      },
+      "revision_frequency": {
+        "pos": "Regularly revisiting earlier material",
+        "neg": "Rarely revisiting earlier material"
+      }
+    },
+    "featureLabel": {
+      "placement_iq": "placement iq",
+      "current_iq": "current iq",
+      "theta": "theta",
+      "avg_test_score": "average test score",
+      "memory_score": "memory score",
+      "logical_score": "logical reasoning score",
+      "numerical_score": "numerical reasoning score",
+      "attention_score": "attention score",
+      "spatial_score": "spatial reasoning score",
+      "avg_game_score": "avg game score",
+      "daily_practice_count": "daily practice count",
+      "weekly_practice_count": "weekly practice volume",
+      "practice_streak": "practice streak",
+      "study_hours": "daily study hours",
+      "avg_response_time_sec": "avg response time sec",
+      "wrong_answer_percent": "wrong answer percent",
+      "avg_difficulty_solved": "avg difficulty solved",
+      "improvement_trend": "improvement trend",
+      "consistency_score": "study consistency",
+      "attendance_percent": "attendance percent",
+      "days_until_exam": "days until exam",
+      "motivation_score": "motivation score",
+      "ai_coach_usage_count": "ai coach usage count",
+      "question_completion_rate": "question completion rate",
+      "rolling_avg_score": "rolling avg score",
+      "weekly_trend": "weekly trend",
+      "monthly_trend": "monthly trend",
+      "learning_velocity": "learning speed",
+      "knowledge_gain_rate": "knowledge gain rate",
+      "consistency_index": "study consistency",
+      "fatigue_score": "session fatigue",
+      "retention_score": "knowledge retention",
+      "engagement_score": "overall engagement",
+      "practice_intensity": "practice intensity",
+      "error_recovery_rate": "error recovery rate",
+      "category_mastery": "category mastery",
+      "confidence_trend": "confidence trend",
+      "reaction_speed_trend": "reaction speed trend",
+      "adaptive_learning_gain": "adaptive learning gain",
+      "difficulty_progression": "difficulty progression",
+      "question_diversity_score": "question diversity score",
+      "time_management_score": "time management score",
+      "revision_frequency": "revision frequency"
+    },
+    "explain": {
+      "dropped": "your {{label}} dropped by {{pct}}%",
+      "increased": "your {{label}} increased by {{pct}}%",
+      "strength": "your {{label}} was a strength",
+      "weak": "your {{label}} was a weak point",
+      "one": "Your readiness estimate reflects that {{clause}}.",
+      "many": "Your readiness estimate changed because {{clauses}}, and {{last}}.",
+      "none": "Not enough data yet to explain this prediction's biggest drivers."
+    }
   },
   "examProfile": {
     "title": "Exam profile",
@@ -112,10 +340,8 @@
     }
   },
   "studyNotes": {
-    "eyebrow": "Self-learning library",
     "title": "Study Notes",
     "subtitle": "Teaching notes generated from reference books, reviewed by an admin before publishing.",
-    "allCategories": "All categories",
     "none": "No study notes published yet.",
     "recommendation": {
       "title": "You've been struggling here ({{accuracy}}% accuracy). Learn it now.",

@@ -55,7 +55,10 @@ export function AdminAiQuestionsPage() {
         source_document_id: sourceDocumentId,
       },
       {
-        onSuccess: (created) => toast.success(t('aiQuestions.generateSuccess', { count: created.length })),
+        onSuccess: (created) =>
+          created.length > 0
+            ? toast.success(t('aiQuestions.generateSuccess', { count: created.length }))
+            : toast.warning(t('aiQuestions.generateNone')),
         onError: () => toast.error(t('aiQuestions.generateError')),
       },
     );

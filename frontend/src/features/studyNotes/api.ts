@@ -2,7 +2,6 @@ import { api } from '@/lib/api';
 import type {
   PaginatedStudyNotes,
   PracticeQuestion,
-  StudyNote,
   StudyNoteRecommendation,
   StudyNoteReview,
 } from './types';
@@ -12,11 +11,6 @@ export async function fetchStudyNotes(categoryId?: number): Promise<PaginatedStu
     params: categoryId ? { category_id: categoryId } : undefined,
   });
   return data;
-}
-
-export async function fetchStudyNote(id: number): Promise<StudyNote> {
-  const { data } = await api.get<{ data: StudyNote }>(`/study-notes/${id}`);
-  return data.data;
 }
 
 export async function fetchDueToday(): Promise<StudyNoteReview[]> {

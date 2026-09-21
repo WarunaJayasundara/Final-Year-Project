@@ -74,7 +74,7 @@ function MissionGroup({
       {missions.map((mission) => (
         <div key={mission.code} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{t(`missions.codes.${mission.code}`)}</p>
+            <p className="text-sm font-medium leading-snug">{t(`missions.codes.${mission.code}`)}</p>
             <Progress value={Math.min(100, (mission.progress / mission.target) * 100)} className="mt-1.5" />
           </div>
           <div className="flex shrink-0 items-center gap-2">

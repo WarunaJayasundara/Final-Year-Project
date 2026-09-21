@@ -3,6 +3,7 @@ import { Mail, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { FeedbackForm } from '@/features/feedback/FeedbackForm';
 import { useCurrentUser } from '@/features/auth/useAuth';
 
@@ -19,10 +20,7 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <p className="text-muted-foreground">{t('subtitle')}</p>
-      </div>
+      <PageHeader title={t('title')} subtitle={t('subtitle')} pattern="dots" />
 
       {user && (
         <Card>

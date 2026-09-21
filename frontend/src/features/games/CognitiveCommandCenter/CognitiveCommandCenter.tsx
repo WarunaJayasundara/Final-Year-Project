@@ -18,6 +18,8 @@ import {
 } from './generator';
 
 const INHIBITION_WINDOW_MS = 1400;
+/** How long the number to hold is visible in a dual-task round before it is hidden for the arithmetic. */
+const DUAL_HOLD_MS = 1600;
 
 interface RoundLog {
   type: TaskType;
@@ -32,13 +34,16 @@ export function CognitiveCommandCenter() {
   const [difficulty, setDifficulty] = useState(1);
   const [sortRuleIndex, setSortRuleIndex] = useState(0);
   const [lastSortRule, setLastSortRule] = useState<string | null>(null);
-  const [displayHistory, setDisplayHistory] = useState<number[]>([]);
+  // The number each pattern/dual round showed, keyed by round index, so a recall round can ask about round (index - 2).
+  const [shownByRound, setShownByRound] = useState<Record<number, number>>({});
   const [round, setRound] = useState<CommandRound>(() => generatePatternRound(1, 1));
   const [answered, setAnswered] = useState(false);
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [dualMathDone, setDualMathDone] = useState(false);
+  const [dualMathCorrect, setDualMathCorrect] = useState(false);
+  const [holdHidden, setHoldHidden] = useState(false);
   const [logs, setLogs] = useState<RoundLog[]>([]);
-  const [startedAt] = useState(Date.now());
+  const [startedAt, setStartedAt] = useState(Date.now);
   const [result, setResult] = useState<{ score: number; bestScore?: number; isNewBest?: boolean } | null>(null);
   const roundStartRef = useRef(Date.now());
   const inhibitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -49,13 +54,21 @@ export function CognitiveCommandCenter() {
 
   useEffect(() => {
     roundStartRef.current = Date.now();
-    if (round.type === 'inhibition' && !round.isGo) {
+    if (round.type === 'inhibition') {
+      // Both circles are timed: a green one not tapped in time is a miss, a red one not tapped is a correct withhold.
       inhibitionTimerRef.current = setTimeout(() => {
-        recordAnswer(true); // correctly withheld
+        recordAnswer(!round.isGo);
       }, INHIBITION_WINDOW_MS);
       return () => {
         if (inhibitionTimerRef.current) clearTimeout(inhibitionTimerRef.current);
       };
+    }
+    if (round.type === 'dual') {
+      const timer = setTimeout(() => {
+        setHoldHidden(true);
+        roundStartRef.current = Date.now();
+      }, DUAL_HOLD_MS);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round]);
@@ -80,13 +93,10 @@ export function CognitiveCommandCenter() {
     const newDifficulty = correct ? Math.min(5, difficulty + 1) : Math.max(1, difficulty - 1);
     setDifficulty(newDifficulty);
 
-    let newHistory = displayHistory;
-    if (round.type === 'pattern') {
-      newHistory = [...displayHistory, round.answer];
-      setDisplayHistory(newHistory);
-    } else if (round.type === 'dual') {
-      newHistory = [...displayHistory, round.holdValue];
-      setDisplayHistory(newHistory);
+    let newShown = shownByRound;
+    if (round.type === 'pattern' || round.type === 'dual') {
+      newShown = { ...shownByRound, [roundIndex]: round.type === 'pattern' ? round.displayNumber : round.holdValue };
+      setShownByRound(newShown);
     }
 
     setTimeout(() => {
@@ -99,6 +109,8 @@ export function CognitiveCommandCenter() {
       const nextType = TASK_ROTATION[next];
       setAnswered(false);
       setDualMathDone(false);
+      setDualMathCorrect(false);
+      setHoldHidden(false);
       setRoundIndex(next);
 
       if (nextType === 'pattern') {
@@ -112,7 +124,8 @@ export function CognitiveCommandCenter() {
       } else if (nextType === 'dual') {
         setRound(generateDualRound(100 * next + newDifficulty));
       } else {
-        const targetValue = newHistory.length >= 1 ? newHistory[newHistory.length - 1] : 5;
+        const shown = Object.values(newShown);
+        const targetValue = newShown[next - 2] ?? (shown.length ? shown[shown.length - 1] : 5);
         setRound(generateRecallRound(targetValue, 100 * next + newDifficulty));
       }
     }, 700);
@@ -153,15 +166,18 @@ export function CognitiveCommandCenter() {
   }, [roundIndex]);
 
   const reset = () => {
+    setStartedAt(Date.now()); // a replay is timed from its own start, not from the first game
     setRoundIndex(0);
     setDifficulty(1);
     setSortRuleIndex(0);
     setLastSortRule(null);
-    setDisplayHistory([]);
+    setShownByRound({});
     setRound(generatePatternRound(1, 1));
     setAnswered(false);
     setLastCorrect(null);
     setDualMathDone(false);
+    setDualMathCorrect(false);
+    setHoldHidden(false);
     setLogs([]);
     setResult(null);
   };
@@ -235,19 +251,32 @@ export function CognitiveCommandCenter() {
               <button
                 type="button"
                 onClick={() => recordAnswer(round.isGo)}
-                className={`h-20 w-20 rounded-full ${round.isGo ? 'bg-emerald-500' : 'bg-destructive'}`}
+                className={`h-20 w-20 rounded-full ${round.isGo ? 'bg-success' : 'bg-destructive'}`}
                 aria-label={round.isGo ? 'go' : 'no-go'}
               />
             </div>
           )}
 
-          {round.type === 'dual' && !answered && !dualMathDone && (
+          {round.type === 'dual' && !answered && !holdHidden && (
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-sm text-muted-foreground">{t('cognitiveCommandCenter.task.dual')}</p>
+              <p className="text-5xl font-bold">{round.holdValue}</p>
+            </div>
+          )}
+
+          {round.type === 'dual' && !answered && holdHidden && !dualMathDone && (
             <div className="flex flex-col items-center gap-4">
-              <p className="text-xs text-muted-foreground">{t('cognitiveCommandCenter.task.dual')}: {round.holdValue}</p>
               <p className="text-xl font-semibold">{round.mathQuestion}</p>
               <div className="flex gap-3">
                 {round.mathOptions.map((opt, i) => (
-                  <Button key={i} variant="outline" onClick={() => setDualMathDone(true)}>
+                  <Button
+                    key={i}
+                    variant="outline"
+                    onClick={() => {
+                      setDualMathCorrect(i === round.mathAnswerIndex);
+                      setDualMathDone(true);
+                    }}
+                  >
                     {opt}
                   </Button>
                 ))}
@@ -255,12 +284,12 @@ export function CognitiveCommandCenter() {
             </div>
           )}
 
-          {round.type === 'dual' && !answered && dualMathDone && (
+          {round.type === 'dual' && !answered && holdHidden && dualMathDone && (
             <div className="flex flex-col items-center gap-4">
               <p className="text-sm">{t('cognitiveCommandCenter.recallPrompt')}</p>
               <div className="flex gap-2">
                 {round.recallOptions.map((opt, i) => (
-                  <Button key={i} variant="outline" onClick={() => recordAnswer(opt === round.holdValue)}>
+                  <Button key={i} variant="outline" onClick={() => recordAnswer(opt === round.holdValue && dualMathCorrect)}>
                     {opt}
                   </Button>
                 ))}
@@ -269,7 +298,7 @@ export function CognitiveCommandCenter() {
           )}
 
           {answered && (
-            <p className={`text-lg font-semibold ${lastCorrect ? 'text-emerald-600' : 'text-destructive'}`}>
+            <p className={`text-lg font-semibold ${lastCorrect ? 'text-success' : 'text-destructive'}`}>
               {lastCorrect ? t('cognitiveCommandCenter.correct') : t('cognitiveCommandCenter.incorrect')}
             </p>
           )}

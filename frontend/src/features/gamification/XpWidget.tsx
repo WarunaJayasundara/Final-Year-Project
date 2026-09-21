@@ -20,15 +20,15 @@ export function XpWidget() {
           <div>
             <p className="text-sm font-medium text-muted-foreground">{t('widget.title')}</p>
             <p className="text-lg font-semibold">
-              {t('widget.rank', { level: summary.level })} · {summary.level_title}
+              {t('widget.rank', { level: summary.level })} · {t(`widget.levelTitle.${summary.level}`, { defaultValue: summary.level_title })}
             </p>
           </div>
           <div className="flex items-center gap-4 text-sm font-medium">
-            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold)]">
+            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold-ink)]">
               <Coins className="h-4 w-4" /> {summary.coins}
             </span>
-            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold)]">
-              <Flame className="h-4 w-4" /> {summary.streak_days}
+            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold-ink)]">
+              <Flame className="flame-flicker h-4 w-4" /> {summary.streak_days}
             </span>
           </div>
         </div>

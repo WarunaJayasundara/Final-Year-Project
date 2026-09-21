@@ -21,7 +21,7 @@ export function StarRating({
           aria-label={`${star} star`}
           className="rounded p-0.5 transition-colors hover:scale-110"
         >
-          <Star className={`${starClass} ${star <= value ? 'fill-brand-gold text-brand-gold' : 'text-muted-foreground'}`} />
+          <Star className={`${starClass} ${star <= value ? 'fill-brand-gold text-brand-gold-ink' : 'text-muted-foreground'}`} />
         </button>
       ))}
     </div>

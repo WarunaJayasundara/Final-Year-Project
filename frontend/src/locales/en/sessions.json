@@ -31,7 +31,6 @@
     "adaptiveNote": "This test adapts to your answers - the number of questions may vary."
   },
   "daily": {
-    "startError": "Could not start your daily session.",
     "backToDashboard": "Back to dashboard"
   },
   "practice": {

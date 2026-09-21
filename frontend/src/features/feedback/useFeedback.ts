@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminFeedback, fetchFeedbackStats, fetchMyFeedback, markFeedbackReviewed, submitFeedback } from './api';
+import { fetchAdminFeedback, fetchFeedbackStats, markFeedbackReviewed, submitFeedback } from './api';
 import type { FeedbackInput, FeedbackListParams } from './types';
 
 export function useSubmitFeedback(options?: { onSuccess?: () => void; onError?: () => void }) {
@@ -12,10 +12,6 @@ export function useSubmitFeedback(options?: { onSuccess?: () => void; onError?: 
     },
     onError: options?.onError,
   });
-}
-
-export function useMyFeedback() {
-  return useQuery({ queryKey: ['feedback', 'mine'], queryFn: fetchMyFeedback });
 }
 
 export function useAdminFeedback(params: FeedbackListParams) {

@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { QuestionCard } from '@/features/sessions/QuestionCard';
 import { useAdminCategories, useAdminLevels } from './useAdmin';
+import { SinhalaAssistPanel, SinhalaIssueList } from './SinhalaAssistPanel';
+import { useSinhalaAssist } from './useSinhalaAssist';
 import type { QuestionOptionInput } from './types';
 import type { QuestionPayload } from './api';
 
@@ -51,6 +53,17 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
   const [explanationSi, setExplanationSi] = useState('');
   const [difficulty, setDifficulty] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const assist = useSinhalaAssist({
+    textEn,
+    textSi,
+    setTextSi,
+    explanationEn,
+    explanationSi,
+    setExplanationSi,
+    options,
+    setOptions,
+  });
+  const { issues } = assist;
 
   const addOption = () => {
     if (options.length >= OPTION_KEYS.length) return;
@@ -81,6 +94,8 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
     hasImage: questionType === 'mcq_text' || imageFile !== null,
     optionsFilled: options.every((o) => o.text_en.trim() !== '' && o.text_si.trim() !== ''),
     hasCorrectAnswer: options.some((o) => o.key === correctKey),
+    sinhalaClean: !assist.hasBlockingIssue,
+    sinhalaReviewed: !assist.autoTranslated || assist.reviewed,
   };
   const isValid = Object.values(validation).every(Boolean);
 
@@ -185,6 +200,7 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
 
           {step === 1 && (
             <div className="flex flex-col gap-4">
+              <SinhalaAssistPanel assist={assist} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5">
                   <Label>{t('form.questionTextEn')}</Label>
@@ -192,7 +208,8 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label>{t('form.questionTextSi')}</Label>
-                  <Textarea value={textSi} onChange={(e) => setTextSi(e.target.value)} rows={3} />
+                  <Textarea value={textSi} onChange={(e) => setTextSi(e.target.value)} rows={3} lang="si" />
+                  <SinhalaIssueList issues={issues.question} />
                 </div>
               </div>
 
@@ -219,6 +236,7 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
 
           {step === 2 && (
             <div className="flex flex-col gap-3">
+              <SinhalaAssistPanel assist={assist} />
               <div className="flex items-center justify-between">
                 <Label>{t('form.answerOptions')}</Label>
                 <Button type="button" size="sm" variant="outline" onClick={addOption} disabled={options.length >= 6}>
@@ -242,11 +260,15 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
                     value={option.text_en}
                     onChange={(e) => updateOption(option.key, 'text_en', e.target.value)}
                   />
-                  <Input
-                    placeholder={t('form.optionTextSi')}
-                    value={option.text_si}
-                    onChange={(e) => updateOption(option.key, 'text_si', e.target.value)}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <Input
+                      placeholder={t('form.optionTextSi')}
+                      value={option.text_si}
+                      lang="si"
+                      onChange={(e) => updateOption(option.key, 'text_si', e.target.value)}
+                    />
+                    <SinhalaIssueList issues={issues[`option_${option.key}`]} />
+                  </div>
                   <Button type="button" size="icon-sm" variant="ghost" onClick={() => removeOption(option.key)} disabled={options.length <= 2}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -315,14 +337,18 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
           )}
 
           {step === 4 && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-1.5">
-                <Label>{t('form.explanationEn')}</Label>
-                <Textarea value={explanationEn} onChange={(e) => setExplanationEn(e.target.value)} rows={3} />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label>{t('form.explanationSi')}</Label>
-                <Textarea value={explanationSi} onChange={(e) => setExplanationSi(e.target.value)} rows={3} />
+            <div className="flex flex-col gap-4">
+              <SinhalaAssistPanel assist={assist} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <Label>{t('form.explanationEn')}</Label>
+                  <Textarea value={explanationEn} onChange={(e) => setExplanationEn(e.target.value)} rows={3} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>{t('form.explanationSi')}</Label>
+                  <Textarea value={explanationSi} onChange={(e) => setExplanationSi(e.target.value)} rows={3} lang="si" />
+                  <SinhalaIssueList issues={issues.explanation} />
+                </div>
               </div>
             </div>
           )}
@@ -349,6 +375,8 @@ export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
               <ChecklistRow ok={validation.hasImage} label={t('form.wizard.checkImage')} />
               <ChecklistRow ok={validation.optionsFilled} label={t('form.wizard.checkOptions')} />
               <ChecklistRow ok={validation.hasCorrectAnswer} label={t('form.wizard.checkCorrectAnswer')} />
+              <ChecklistRow ok={validation.sinhalaClean} label={t('form.wizard.checkSinhala')} />
+              <ChecklistRow ok={validation.sinhalaReviewed} label={t('form.wizard.checkSinhalaReviewed')} />
 
               <div className="flex items-center gap-2 pt-2">
                 <Checkbox checked disabled />

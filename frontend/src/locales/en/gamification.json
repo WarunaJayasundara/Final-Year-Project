@@ -7,9 +7,19 @@
     "title": "Your Progress",
     "rank": "Rank {{level}}",
     "xpToNext": "{{current}}/{{target}} XP to next level",
-    "coins": "Coins",
-    "streak": "Day streak",
-    "badgesEarned": "{{earned}}/{{total}} badges"
+    "badgesEarned": "{{earned}}/{{total}} badges",
+    "levelTitle": {
+      "1": "Novice",
+      "2": "Learner",
+      "3": "Achiever",
+      "4": "Scholar",
+      "5": "Expert",
+      "6": "Specialist",
+      "7": "Master",
+      "8": "Grandmaster",
+      "9": "Champion",
+      "10": "Legend"
+    }
   },
   "badges": {
     "title": "Badges",
@@ -22,7 +32,6 @@
     "daily": "Daily",
     "weekly": "Weekly",
     "claim": "Claim",
-    "claimed": "Claimed",
     "claimSuccess": "Mission reward claimed!",
     "codes": {
       "daily_practice": "Complete 1 practice session today",
@@ -36,8 +45,6 @@
   "leaderboard": {
     "title": "Leaderboard",
     "subtitle": "Top students by XP across the platform.",
-    "rank": "Rank",
-    "student": "Student",
     "yourRank": "Your rank: #{{rank}}"
   }
 }

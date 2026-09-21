@@ -20,6 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BalancedGrid } from '@/components/ui/balanced-grid';
 import { CardGridSkeleton } from '@/components/skeletons/CardGridSkeleton';
@@ -31,6 +32,7 @@ import {
   useStudyNotes,
   useSubmitReview,
 } from '@/features/studyNotes/useStudyNotes';
+import { categoryColor } from '@/features/categories/categoryStyle';
 import type { StudyNote } from '@/features/studyNotes/types';
 
 type TopicStyle = { icon: typeof BookOpen; accent: string };
@@ -67,9 +69,12 @@ const TOPIC_ORDER = Object.keys(TOPIC_ICONS);
 
 const DEFAULT_STYLE: TopicStyle = { icon: BookOpen, accent: 'var(--primary)' };
 
-function styleFor(subcategory: string | null): TopicStyle {
+function styleFor(subcategory: string | null, categoryCode?: string): TopicStyle {
   if (!subcategory || !TOPIC_ICONS[subcategory]) return DEFAULT_STYLE;
-  const accent = CHART_ACCENTS[TOPIC_ORDER.indexOf(subcategory) % CHART_ACCENTS.length];
+  // A note takes its category color, so a Numerical note looks the same here as on the dashboard.
+  const accent = categoryCode
+    ? categoryColor(categoryCode)
+    : CHART_ACCENTS[TOPIC_ORDER.indexOf(subcategory) % CHART_ACCENTS.length];
   return { icon: TOPIC_ICONS[subcategory], accent };
 }
 
@@ -90,17 +95,7 @@ export function StudyNotesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="relative overflow-hidden rounded-2xl border border-border p-6 sm:p-8">
-        <div className="gradient-orb -right-16 -top-24 h-64 w-64 bg-primary/25" />
-        <div className="gradient-orb -bottom-24 -left-10 h-56 w-56 bg-[color:var(--chart-2)]/20" />
-        <div className="relative flex flex-col gap-2">
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <BookOpen className="h-3.5 w-3.5" /> {t('studyNotes.eyebrow')}
-          </span>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('studyNotes.title')}</h1>
-          <p className="max-w-2xl text-muted-foreground">{t('studyNotes.subtitle')}</p>
-        </div>
-      </div>
+      <PageHeader title={t('studyNotes.title')} subtitle={t('studyNotes.subtitle')} pattern="grid" />
 
       {recommendation && (
         <Card className="border-primary/30 bg-primary/5">
@@ -180,7 +175,7 @@ export function StudyNotesPage() {
 }
 
 function StudyNoteTile({ note, locale, onOpen }: { note: StudyNote; locale: 'en' | 'si'; onOpen: () => void }) {
-  const { icon: Icon, accent } = styleFor(note.subcategory);
+  const { icon: Icon, accent } = styleFor(note.subcategory, note.category?.code);
   const content = locale === 'si' ? note.content_si : note.content_en;
   const preview = content.replace(/\s+/g, ' ').slice(0, 110);
 
@@ -218,7 +213,7 @@ function StudyNoteTile({ note, locale, onOpen }: { note: StudyNote; locale: 'en'
 
 function StudyNoteReader({ note, locale, onClose }: { note: StudyNote; locale: 'en' | 'si'; onClose: () => void }) {
   const { t } = useTranslation('dashboard');
-  const { icon: Icon, accent } = styleFor(note.subcategory);
+  const { icon: Icon, accent } = styleFor(note.subcategory, note.category?.code);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const submitReview = useSubmitReview();
 

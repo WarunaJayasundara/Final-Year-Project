@@ -28,10 +28,6 @@ export async function updateCategory(id: number, payload: Partial<AdminCategory>
   return data.data;
 }
 
-export async function deleteCategory(id: number): Promise<void> {
-  await api.delete(`/admin/categories/${id}`);
-}
-
 export async function fetchAdminLevels(): Promise<AdminLevel[]> {
   const { data } = await api.get<{ data: AdminLevel[] }>('/admin/levels');
   return data.data;
@@ -198,4 +194,30 @@ export async function publishStudyNote(id: number): Promise<StudyNote> {
 export async function rejectStudyNote(id: number): Promise<StudyNote> {
   const { data } = await api.post<{ data: StudyNote }>(`/admin/study-notes/${id}/reject`);
   return data.data;
+}
+
+// --- Sinhala tooling for the question form ---
+export interface SinhalaIssue {
+  severity: 'error' | 'warning';
+  code: string;
+  message: string;
+}
+export type SinhalaIssues = Record<string, SinhalaIssue[]>;
+
+export interface SinhalaTranslation {
+  translations: Record<string, string>;
+  issues: SinhalaIssues;
+}
+
+/** Machine-drafts Sinhala for English fields. The result is only a draft for the admin to review. */
+export async function translateToSinhala(fields: Record<string, string>): Promise<SinhalaTranslation> {
+  const { data } = await api.post<{ data: SinhalaTranslation }>('/admin/sinhala/translate', { fields });
+  return data.data;
+}
+
+export async function checkSinhala(
+  fields: Record<string, { si: string; en?: string; is_option?: boolean }>,
+): Promise<SinhalaIssues> {
+  const { data } = await api.post<{ data: { issues: SinhalaIssues } }>('/admin/sinhala/check', { fields });
+  return data.data.issues;
 }

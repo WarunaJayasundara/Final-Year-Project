@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +28,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { HelaIQMark } from '@/components/brand/HelaIQMark';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { RouteFallback } from './RouteFallback';
+import { AmbientBackground } from '@/components/brand/AmbientBackground';
+import { useCardSpotlight } from '@/lib/useCardSpotlight';
 import { ThemeToggle } from './ThemeToggle';
 import { useCurrentUser, useLogout } from '@/features/auth/useAuth';
 
@@ -79,11 +83,15 @@ export function AdminLayout() {
     { to: '/admin/ml-research', icon: <Microscope className="h-4 w-4" />, label: t('nav.adminMlResearch') },
   ];
 
+  useCardSpotlight();
+
   const activeItem = adminNav.find((item) => location.pathname.startsWith(item.to));
   const pageTitle = activeItem?.label ?? t('nav.admin');
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="relative isolate flex min-h-screen bg-background">
+      <div aria-hidden className="spectrum-bar fixed inset-x-0 top-0 z-[60] h-[3px]" />
+      <AmbientBackground tone="focus" subtle />
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
         <Link to="/admin/dashboard" className="flex items-center gap-2 border-b border-border px-5 py-5">
           <HelaIQMark variant="compact" markClassName="h-7 w-7" />
@@ -122,7 +130,10 @@ export function AdminLayout() {
             <HelaIQMark variant="compact" markClassName="h-6 w-6" />
           </div>
 
-          <h1 className="min-w-0 flex-1 truncate text-sm font-semibold sm:text-base">{pageTitle}</h1>
+          {/* The page repeats its own title below; on a phone this slot is too narrow to be useful (Sinhala
+              titles were cut to "පරිශී…"), so it only appears from the sm breakpoint. */}
+          <div className="flex-1 sm:hidden" />
+          <h1 className="hidden min-w-0 flex-1 truncate text-sm font-semibold sm:block sm:text-base">{pageTitle}</h1>
 
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
@@ -153,7 +164,11 @@ export function AdminLayout() {
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
+          <Suspense fallback={<RouteFallback />}>
+            <div key={location.pathname} className="page-enter">
+              <Outlet />
+            </div>
+          </Suspense>
         </main>
       </div>
     </div>

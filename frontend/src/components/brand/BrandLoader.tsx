@@ -77,15 +77,6 @@ function AnimatedMark({ size = 40 }: { size?: number }) {
   );
 }
 
-/** Full-screen loader shown once per app boot. */
-export function AppBootLoader() {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-      <AnimatedMark size={56} />
-    </div>
-  );
-}
-
 /** Small inline loader (~20px) replacing ad-hoc Loader2/animate-spin usage. */
 export function InlineLoader({ className }: { className?: string }) {
   return (

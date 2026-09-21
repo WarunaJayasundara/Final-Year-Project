@@ -55,7 +55,15 @@ export function BalancedGrid<T>({
           {row.map((item, indexInRow) => {
             const globalIndex = rowIndex * perRow + indexInRow;
             return (
-              <div key={globalIndex} style={{ flexBasis: itemWidth, flexGrow: 1, maxWidth: itemWidth }}>
+              <div
+                key={globalIndex}
+                // A single column (phones) fills the width up to a readable cap; multi-column rows use the fixed item width.
+                style={
+                  columnCount === 1
+                    ? { flexBasis: '100%', flexGrow: 1, maxWidth: '36rem' }
+                    : { flexBasis: itemWidth, flexGrow: 1, maxWidth: itemWidth }
+                }
+              >
                 {renderItem(item, globalIndex)}
               </div>
             );

@@ -114,7 +114,7 @@ export function MemoryMatch() {
               onClick={() => handleFlip(card.id)}
               className={`flex aspect-square items-center justify-center rounded-xl border text-2xl transition-all ${
                 card.matched
-                  ? 'border-emerald-400 bg-emerald-50'
+                  ? 'border-success bg-success/10'
                   : isVisible
                     ? 'border-primary bg-primary/5'
                     : 'border-border bg-muted hover:bg-muted/70'

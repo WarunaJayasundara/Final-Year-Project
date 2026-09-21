@@ -6,7 +6,7 @@ export interface PatternRound {
   sequence: number[];
   answer: number;
   options: number[];
-  displayNumber: number; // last sequence value shown, tracked for 'recall' rounds
+  displayNumber: number; // the last number the player saw (right before the "?"), kept for 'recall' rounds
 }
 
 export interface RecallRound {
@@ -49,20 +49,24 @@ function mulberry32(seed: number) {
   };
 }
 
-/** 12-round rotation covering all 5 task types, with pattern/dual providing "held" values for later recall rounds. */
+/**
+ * 12-round rotation covering all 5 task types. A pattern or dual round shows a number, and each
+ * recall round asks for the number shown exactly two rounds earlier (indices 0 -> 2, 4 -> 6, 8 -> 10),
+ * with a different task in between, as the prompt says.
+ */
 export const TASK_ROTATION: TaskType[] = [
   'pattern',
   'sort',
+  'recall',
   'inhibition',
   'pattern',
-  'recall',
   'sort',
+  'recall',
   'inhibition',
   'dual',
-  'pattern',
+  'sort',
   'recall',
   'inhibition',
-  'sort',
 ];
 
 export const SORT_RULE_SCHEDULE: SortRule[] = ['largest', 'smallestOdd', 'largestEven', 'largest', 'smallestOdd'];
@@ -84,7 +88,7 @@ export function generatePatternRound(seed: number, difficulty: number): PatternR
     if (distractors.length === 3) break;
   }
   const options = shuffle([answer, ...distractors], rng);
-  return { type: 'pattern', sequence, answer, options, displayNumber: answer };
+  return { type: 'pattern', sequence, answer, options, displayNumber: sequence[sequence.length - 1] };
 }
 
 export function generateSortRound(seed: number, rule: SortRule, difficulty: number): SortRound {

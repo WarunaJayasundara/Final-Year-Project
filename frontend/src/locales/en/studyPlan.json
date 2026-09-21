@@ -5,7 +5,6 @@
   "recommendedWeeklyMockTests": "Weekly mock tests",
   "weeksRemaining": "Weeks remaining",
   "phaseTimeline": "Preparation timeline",
-  "currentPhase": "Current phase",
   "phaseRange": "{{from}}-{{to}} days before the exam",
   "weeklySchedule": "This week's schedule",
   "todaysPlan": "Today's plan",

@@ -1,6 +1,7 @@
 import type { SVGProps } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { apiErrorMessage } from '@/lib/apiError';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,16 +46,14 @@ export function LoginPage() {
   });
 
   return (
-    <div className="relative mx-auto flex max-w-md flex-col items-center gap-6 overflow-hidden py-16">
-      <div className="gradient-orb -left-20 top-0 h-56 w-56 bg-primary/25" />
-      <div className="gradient-orb -right-16 bottom-0 h-48 w-48 bg-[color:var(--chart-2)]/20" />
+    <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-12">
 
       <FadeIn className="flex w-full flex-col items-center gap-6">
         <HelaIQMark variant="compact" />
 
-        <Card className="glass w-full shadow-xl">
+        <Card className="w-full shadow-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('loginTitle')}</CardTitle>
+            <CardTitle role="heading" aria-level={1} className="text-2xl">{t('loginTitle')}</CardTitle>
             <CardDescription>{t('loginSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
@@ -94,8 +93,7 @@ export function LoginPage() {
 
               {studentLogin.isError && (
                 <p className="text-sm text-destructive">
-                  {(studentLogin.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-                    t('invalidCredentials')}
+                  {apiErrorMessage(studentLogin.error, t)}
                 </p>
               )}
 

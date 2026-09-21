@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAdminCategories, useAdminLevels } from './useAdmin';
+import { SinhalaAssistPanel, SinhalaIssueList } from './SinhalaAssistPanel';
+import { useSinhalaAssist } from './useSinhalaAssist';
 import type { AdminQuestion, QuestionOptionInput } from './types';
 import type { QuestionPayload } from './api';
 
@@ -52,6 +54,17 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
   const [difficulty, setDifficulty] = useState(initialValues?.difficulty_weight ?? 1);
   const [isActive, setIsActive] = useState(initialValues?.is_active ?? true);
   const [error, setError] = useState<string | null>(null);
+  const assist = useSinhalaAssist({
+    textEn,
+    textSi,
+    setTextSi,
+    explanationEn,
+    explanationSi,
+    setExplanationSi,
+    options,
+    setOptions,
+  });
+  const { issues } = assist;
 
   const addOption = () => {
     if (options.length >= OPTION_KEYS.length) return;
@@ -79,6 +92,14 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
     }
     if (options.some((o) => !o.text_en.trim() || !o.text_si.trim())) {
       setError(t('form.optionsRequireBoth'));
+      return;
+    }
+    if (assist.hasBlockingIssue) {
+      setError(t('form.sinhalaBlocked'));
+      return;
+    }
+    if (assist.autoTranslated && !assist.reviewed) {
+      setError(t('form.reviewRequired'));
       return;
     }
 
@@ -170,6 +191,8 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
         </div>
       </div>
 
+      <SinhalaAssistPanel assist={assist} />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <Label>{t('form.questionTextEn')}</Label>
@@ -177,7 +200,8 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>{t('form.questionTextSi')}</Label>
-          <Textarea value={textSi} onChange={(e) => setTextSi(e.target.value)} rows={3} required />
+          <Textarea value={textSi} onChange={(e) => setTextSi(e.target.value)} rows={3} required lang="si" />
+          <SinhalaIssueList issues={issues.question} />
         </div>
       </div>
 
@@ -206,11 +230,15 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
               value={option.text_en}
               onChange={(e) => updateOption(option.key, 'text_en', e.target.value)}
             />
-            <Input
-              placeholder={t('form.optionTextSi')}
-              value={option.text_si}
-              onChange={(e) => updateOption(option.key, 'text_si', e.target.value)}
-            />
+            <div className="flex flex-col gap-1">
+              <Input
+                placeholder={t('form.optionTextSi')}
+                value={option.text_si}
+                lang="si"
+                onChange={(e) => updateOption(option.key, 'text_si', e.target.value)}
+              />
+              <SinhalaIssueList issues={issues[`option_${option.key}`]} />
+            </div>
             <Button
               type="button"
               size="icon-sm"
@@ -232,7 +260,8 @@ export function QuestionForm({ initialValues, submitLabel, isSubmitting, onSubmi
         </div>
         <div className="flex flex-col gap-1.5">
           <Label>{t('form.explanationSi')}</Label>
-          <Textarea value={explanationSi} onChange={(e) => setExplanationSi(e.target.value)} rows={2} />
+          <Textarea value={explanationSi} onChange={(e) => setExplanationSi(e.target.value)} rows={2} lang="si" />
+          <SinhalaIssueList issues={issues.explanation} />
         </div>
       </div>
 

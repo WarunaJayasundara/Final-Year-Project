@@ -19,7 +19,7 @@ function Stars({ value }: { value: number | null }) {
   return (
     <span className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((star) => (
-        <Star key={star} className={`h-3.5 w-3.5 ${star <= Math.round(value) ? 'fill-brand-gold text-brand-gold' : 'text-muted-foreground/40'}`} />
+        <Star key={star} className={`h-3.5 w-3.5 ${star <= Math.round(value) ? 'fill-brand-gold text-brand-gold-ink' : 'text-muted-foreground/40'}`} />
       ))}
     </span>
   );
@@ -121,7 +121,7 @@ export function AdminFeedbackPage() {
             ) : (
               <p className="text-sm text-muted-foreground">{t('feedback.noTerms')}</p>
             )}
-            <p className="mt-3 text-[11px] text-muted-foreground/80">{t('feedback.topTermsNote')}</p>
+            <p className="mt-3 text-[11px] text-muted-foreground">{t('feedback.topTermsNote')}</p>
           </CardContent>
         </Card>
       </div>

@@ -1,5 +1,9 @@
 {
-  "appName": "HelaIQ",
+  "notFound": {
+    "title": "We could not find that page",
+    "body": "The link may be old or mistyped. Head back to the start and pick up where you left off.",
+    "home": "Back to home"
+  },
   "tagline": "Sri Lanka's cognitive training platform for IQ development",
   "nav": {
     "dashboard": "Dashboard",
@@ -8,8 +12,6 @@
     "dailyPractice": "Daily Practice",
     "practice": "Practice",
     "mockExam": "Mock Exam",
-    "studyPlan": "Study Plan",
-    "studyNotes": "Study Notes",
     "games": "Games",
     "badges": "Badges",
     "leaderboard": "Leaderboard",
@@ -28,24 +30,12 @@
     "logout": "Log out"
   },
   "actions": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "create": "Create",
-    "continue": "Continue",
-    "back": "Back",
-    "submit": "Submit",
     "next": "Next",
-    "finish": "Finish",
-    "retry": "Try again",
-    "loading": "Loading...",
-    "viewAll": "View all"
+    "finish": "Finish"
   },
   "language": {
     "en": "English",
-    "si": "Sinhala",
-    "switch": "Language"
+    "si": "Sinhala"
   },
   "levels": {
     "1": "Level 1 - Foundation",
@@ -68,19 +58,30 @@
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
-    "unauthorized": "You need to log in to view this page."
-  },
-  "emptyState": {
-    "defaultTitle": "Nothing here yet",
-    "defaultDescription": "This will fill in as you use HelaIQ."
-  },
-  "errorState": {
-    "defaultTitle": "We couldn't load this",
-    "defaultDescription": "Check your connection and try again."
+    "api": {
+      "invalidCredentials": "Incorrect email/username or password.",
+      "googleAccount": "This account uses Google sign-in. Choose \"Continue with Google\" instead.",
+      "validationFailed": "Please check your details and try again.",
+      "emailTaken": "An account with this email already exists.",
+      "usernameTaken": "This username is already taken. Please choose another.",
+      "usernameFormat": "Usernames can only contain letters, numbers and underscores.",
+      "passwordShort": "Your password is too short. Use at least 8 characters.",
+      "passwordMismatch": "The two passwords do not match.",
+      "tooYoung": "You must be at least 10 years old to register.",
+      "invalidBirthDate": "Please enter a valid date of birth.",
+      "invalidEmail": "Please enter a valid email address.",
+      "placementRequired": "Complete the placement test first, then come back here.",
+      "placementDone": "You have already completed the placement test.",
+      "noQuestions": "There are not enough questions for this yet. Please try again later.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "forbidden": "You do not have permission to do this.",
+      "tooMany": "Too many requests. Please wait a moment and try again.",
+      "server": "Something went wrong on our side. Please try again shortly.",
+      "offline": "Cannot reach the server. Check your internet connection and try again."
+    }
   },
   "footer": {
     "copyright": "© 2026 Waruna Jayasundara. All rights reserved.",
-    "project": "Final Year Project · University of Kelaniya",
     "poweredBy": "AI feedback powered by Google Gemini"
   },
   "landing": {

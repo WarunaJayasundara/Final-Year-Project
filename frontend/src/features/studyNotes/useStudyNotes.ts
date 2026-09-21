@@ -3,7 +3,6 @@ import {
   fetchDueToday,
   fetchPracticeQuestions,
   fetchRecommendation,
-  fetchStudyNote,
   fetchStudyNotes,
   submitReview,
 } from './api';
@@ -12,14 +11,6 @@ export function useStudyNotes(categoryId?: number) {
   return useQuery({
     queryKey: ['study-notes', categoryId ?? 'all'],
     queryFn: () => fetchStudyNotes(categoryId),
-  });
-}
-
-export function useStudyNote(id: number | undefined) {
-  return useQuery({
-    queryKey: ['study-notes', 'detail', id],
-    queryFn: () => fetchStudyNote(id as number),
-    enabled: id !== undefined,
   });
 }
 

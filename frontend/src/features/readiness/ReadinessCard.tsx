@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useExamProfile } from '@/features/examProfile/useExamProfile';
+import { explanationText, reasonText } from './explain';
 import { useRunReadinessPrediction, useSubmitCheckin, useTodayCheckin, useLatestReadiness } from './useReadiness';
 import type { ReadinessLabel } from './types';
 
@@ -38,14 +39,14 @@ export function ReadinessCard() {
 
   return (
     <Card className="border-primary/30">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
+      <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="flex items-center gap-2 text-base">
           <Gauge className="h-4 w-4" />
           {prediction?.readiness_type === 'exam_specific' && prediction.exam_name
             ? t('readiness.titleForExam', { exam: prediction.exam_name })
             : t('readiness.titleGeneral')}
         </CardTitle>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <CheckinDialog />
           <Button size="sm" onClick={() => predict.mutate()} disabled={predict.isPending}>
             {predict.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('readiness.refresh')}
@@ -65,9 +66,9 @@ export function ReadinessCard() {
             </div>
             <Progress value={prediction.readiness_percent} />
 
-            {prediction.plain_english_explanation && (
+            {prediction.reasons.length > 0 && (
               <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-                {prediction.plain_english_explanation}
+                {explanationText(prediction.reasons, t)}
               </p>
             )}
 
@@ -120,7 +121,7 @@ export function ReadinessCard() {
               </div>
             )}
 
-            <p className="text-[11px] text-muted-foreground/80">{t('readiness.confidenceNote')}</p>
+            <p className="text-[11px] text-muted-foreground">{t('readiness.confidenceNote')}</p>
 
             <div className="flex flex-col gap-2">
               <p className="text-xs font-medium text-muted-foreground">{t('readiness.reasonsTitle')}</p>
@@ -131,7 +132,7 @@ export function ReadinessCard() {
                   ) : (
                     <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
                   )}
-                  <span>{reason.message}</span>
+                  <span>{reasonText(reason, t)}</span>
                 </div>
               ))}
             </div>
