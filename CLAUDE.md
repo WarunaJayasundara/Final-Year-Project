@@ -988,6 +988,122 @@ Section 11 for the full list of bounded, documented scope limits.
 
 ---
 
+### 7.16 Pre-Viva Hardening Pass (new session)
+
+Goal: make the system safe to demo and simple to host four days before the viva. Verified at the end:
+110/110 backend tests, `tsc` clean, oxlint (3 pre-existing benign warnings), Sinhala validator clean, production build passing.
+
+- **ML service was reporting the wrong model version.** `models/metadata.json` (a leftover from the retired
+  `train_model.py`: 24 features, 80,000 rows, version `20260709…`) took priority in `app.py`, so every
+  prediction was stamped with the old version. Deleted both; `app.py` now falls back to
+  `model_comparison_report.json` (version `20260711054426`, 43 features, 73,637 rows). Service title renamed to HelaIQ.
+- **Leakage-aware validation** (`ml-service/grouped_split_validation.py` -> `models/grouped_validation_report.json`):
+  student-disjoint macro-F1 0.6786 vs 0.6846 row-level (leakage inflation ~0.6pp). Soft-voting ensemble gave no gain;
+  class re-weighting +0.25pp (noise, and hurts accuracy) -> live model deliberately NOT changed. Thesis doc section 4.3.5.1.
+- **Live DB**: the 30 boolean-overlay questions' Sinhala text had an empty operator label; patched from the
+  seeder's verified template (a first blind `str_replace` doubled the prefix and was repaired by rebuilding from the template).
+- **Frontend**: every authenticated route is lazy-loaded (`lazyPage()` in `App.tsx`, `Suspense` + `RouteFallback` in both
+  layouts): entry bundle 1,502 KB -> ~748 KB, Recharts is its own chunk. Touch-only larger tap targets via Tailwind
+  `pointer-coarse:` in `button.tsx`/`input.tsx` (desktop look unchanged). Public pages verified at 375px: no horizontal overflow.
+- **Backend style**: Laravel Pint (default preset) applied; 40 files had small cosmetic fixes. NOTE: on Windows Pint flags
+  every CRLF file for `line_ending`; do not add a `pint.json` that disables that rule (it makes Pint expect CRLF and flag everything).
+- **AI coach**: mock coach now recommends attention -> Selective Attention, spatial -> Mental Rotation, memory -> Working Memory,
+  reading game names from the `games` table (no hardcoded Sinhala); keyword matching no longer fires "hi" inside "which".
+  Gemini prompt lists all 8 games. Test: `MockAiCoachKeywordMatchingTest`.
+- **Security**: `SuperAdminSeeder` refuses to create an admin in production without `SUPER_ADMIN_PASSWORD`.
+- **Hosting** (Docker Desktop was not running on the dev machine, so this path is validated only by syntax/unit checks, never built):
+  `docker-compose.yml` (mysql + ml + app), `.env.docker.example`, `ml-service/.dockerignore` (the old ML image would have
+  copied the multi-GB venv), improved `docker/entrypoint.sh` (wait for DB, migrate, `content:import`, admin seed, `storage:link`).
+  New `php artisan content:export` / `content:import`: snapshot of the validated question bank
+  (`backend/database/content/content.json.gz`, 429 KB, round-trip verified: identical checksum on 6,765 rows). This exists because
+  the seeders are NOT idempotent and a fresh `db:seed` yields 7,162 active questions (it resurrects ~400 deliberately retired rows).
+  Question SVGs (1,775 files, 12 MB) were untracked; `storage/app/public/.gitignore` now allows `questions/`.
+- Root `README.md` and `.editorconfig` added. Stale docs numbers fixed (6,759 active questions, 110 tests).
+- **Not done / not verified**: Docker build; a signed-in browser walkthrough of student and admin pages (Google-only student auth; admin
+  password entry is not something the agent does); 3 image questions with generic Sinhala captions (IDs 19755, 24778, 19519) still need human review.
+
+### 7.17 "Academic Professional" Theme Redesign (supersedes the palette in 7.14)
+
+The user judged the sapphire/cyan look "AI-made" (single tinted hue everywhere, glass panels, blurred gradient blobs,
+big glows, dark by default). Replaced at the token level in `frontend/src/index.css`:
+- Neutral paper/ink surfaces (`--background` oklch 0.978 hue 250, white cards, fine borders), deep navy primary
+  (`oklch(0.36 0.1 262)`; soft blue `oklch(0.72 0.1 258)` in dark), one muted amber accent (`--brand-gold`) for
+  streaks/achievements, restrained 5-hue chart palette, radius 0.5rem. **Light theme is the default** (was "system").
+- Serif display face (Source Serif 4) for `h1`/`h2` via `--font-display`. Sinhala keeps Noto Sans Sinhala because the
+  `:lang(si)` rule out-specifies `h1,h2`; do NOT apply a `font-display` *utility class* to text that can be Sinhala
+  (utilities beat the base layer and would drop Sinhala glyphs).
+- Removed the `.glass`, `.glass-strong` and `.gradient-orb` utilities and every usage; cards are flat (`border` + hairline shadow),
+  headers are solid `bg-card`, landing page rebuilt (plain hero, uniform navy icon chips, solid navy closing band; only existing i18n keys used).
+- Hardcoded `emerald/blue/orange` colors in games and `phaseStyles.ts` mapped onto `success`/`primary`/`warning`/`chart-4` tokens.
+- Favicon, manifest and `theme-color` changed to `#1f3a70`.
+- Verified live (public pages only): light + dark, 375px (no overflow on 5 public routes x 2 themes), Sinhala font. NOT verified
+  visually: signed-in student/admin pages (they inherit the tokens; need a real sign-in to eyeball).
+
+### 7.18 Sinhala Quality Tooling + Student Engagement UX (new session)
+
+Triggered by: "make students stay engaged (colors, fonts, UX, cards, responsive)" and "Sinhala must be correct and
+understandable, including when admins add questions; tell me if an LLM is needed".
+
+**Real defect found first: every Gemini feature had been silently falling back to its mock.** All four services
+hardcoded `gemini-2.5-flash`, which Google now rejects for this account (404 "no longer available to new users"), so the AI
+coach, AI feedback, AI question generation and study-note generation never reached Gemini. Fix: `App\Services\Gemini\GeminiEndpoint`
+builds URLs from config (`services.gemini.model` = `GEMINI_MODEL`, default `gemini-flash-latest`; `translation_model` =
+`GEMINI_TRANSLATION_MODEL`, default `gemini-flash-latest`; the `-latest` aliases only exist on v1beta). `gemini-pro-latest` is over quota
+on this key. Verified live: general model HTTP 200; real translation through the service in about 6 s.
+
+- **Answer to "do we need an LLM for Sinhala?"**: Gemini (already configured) translates competitive-exam questions into natural Sinhala
+  well enough to be a DRAFTING aid. It is never trusted blindly: a human must approve every machine draft.
+- **`SinhalaTextGuard`** (`app/Services/QuestionBank`): deterministic script-integrity checks. Errors: stray Indic-block characters
+  (U+0900-0D7F) or U+FFFD, `???` runs, orphaned vowel signs/hal, no Sinhala letters in a sentence. Warnings: mostly Latin (quoted text and
+  ALL-CAPS tokens ignored), identical to English. It cannot judge naturalness; that stays with a human.
+- **Admin question form** (`features/admin/QuestionForm.tsx`): "Draft Sinhala from English" button (`SinhalaTranslationService`: Gemini +
+  the reviewed glossary, JSON mode, 3 attempts on 429/503, no offline fallback by design), live debounced integrity check under each
+  Sinhala field, and a REQUIRED "I have reviewed the Sinhala" tick before a machine draft can be saved. `StoreQuestionRequest`/
+  `UpdateQuestionRequest` (trait `RejectsCorruptedSinhala`) reject corrupted Sinhala server-side. Endpoints: `POST /api/admin/sinhala/translate|check`.
+  The AI-draft validator (`SinhalaSemanticValidationService`) now also fails the script-integrity check. The new admin labels exist in
+  English only (`locales/en/admin.json` form.*); Sinhala falls back to English until a reviewer supplies wording.
+- **`php artisan sinhala:audit`** scans all active questions. First run: 0 corrupted; 6 questions with English in the Sinhala fields
+  (ids 25035, 25036, 25037, 25041, 25042, 25043: leftovers of the old mock generator; their words are not in the verified vocabulary so they
+  could not be rebuilt without inventing Sinhala) were DEACTIVATED (2 have answer history, kept). 158 "count the letters" rows were a false alarm and the guard was fixed.
+  Now: 6,759 active, no issues. Locale files: 738 keys, 0 missing in Sinhala, 0 stray characters. Snapshot re-exported.
+- **Student UX** (verified on a phone-size viewport with browser-only fixture data, no server login): dashboard now leads with rank/XP/streak, then IQ,
+  exam and missions (previously buried under a divider); category bar chart uses one consistent color per category
+  (`features/categories/categoryStyle.ts`); games hub shows personal-best chips; question runner uses `SegmentedProgress` (green/red segment per answer);
+  `Card` no longer double-pads content that sets its own `p-N` (cards about 25% shorter on phones); `BalancedGrid` single-column items fill the phone width;
+  footer clears the floating coach button; missions titles wrap instead of truncating.
+- **Design-preview technique** (no auth bypass): in the browser pane, `await import('/src/lib/api.ts')` and replace `api.defaults.adapter` with a function
+  returning fixture JSON, `queryClient.clear()`, then `history.pushState` + a `popstate` event. A Vite HMR full reload wipes it (re-inject). Screenshots
+  are unreliable above about 500 px wide; use 390 px screenshots and DOM measurements for wide layouts.
+- Tests: 123 backend tests (new: `SinhalaTextGuardTest`, `SinhalaAdminToolsTest`, `MockAiCoachKeywordMatchingTest`).
+- **Still not done**: a human Sinhala reviewer for naturalness (nothing here can replace one); Sinhala labels for the new admin form strings; study plan, study
+  notes, mock exam and placement pages were not eyeballed (they inherit the tokens, `Card` and `BalancedGrid` changes).
+
+### 7.19 Full UI Pass, Shared Sinhala Assist, and a Type-Check Correction (new session)
+
+**Type-check correction (important).** `npx tsc --noEmit` checks NOTHING in this project: the root `frontend/tsconfig.json` has
+`"files": []` and only references sub-configs. A deliberate type error was invisible to it but caught by `npx tsc -b`. Every earlier
+"tsc clean" claim in this file was therefore vacuous. Use `npm run typecheck` (= `tsc -b`) from now on. The first real run of it passes with 0 errors.
+(`vite build` does not type-check either; `npm run build` = `tsc -b && vite build` does.)
+
+- **Dev-only design preview** (`frontend/src/dev/designPreview.ts`, imported only under `import.meta.env.DEV`, verified absent from the production
+  bundle): `await __preview.student()` or `await __preview.admin()` in the browser console answers the app's API calls with fake fixture data, then
+  `__preview.go('/dashboard')`. This is how signed-in pages get eyeballed without a login. Add fixtures there when you add endpoints. A Vite full
+  reload clears it; re-run. Screenshots are only reliable at about 390-820 px wide; for larger widths use DOM measurements.
+- **Every student page was looked at** (phone width, plus dark mode on the dashboard): study plan (stat tiles in one row via the shared `StatTile`;
+  weekly schedule became a readable list with full day names, which also fixes a real bug where `t('days.x').slice(0, 3)` cut Sinhala names mid-letter;
+  the 5-phase timeline is a vertical stepper on phones instead of a clipped horizontal scroller), badges (trophy-shelf grid, progress summary, earned first),
+  practice (compact horizontal cards on phones, category colors), study notes (category colors), games hub, dashboard, question runner.
+- **Category color** is now used consistently: dashboard chart, admin dashboard chart, practice cards, study notes (`features/categories/categoryStyle.ts`).
+- **New question is a 7-step WIZARD (`QuestionWizard`), Edit question is `QuestionForm`.** Earlier in this session the Sinhala tools were added only to the form, so the
+  add-question flow had none. Both now use the shared `useSinhalaAssist` hook + `SinhalaAssistPanel`/`SinhalaIssueList`
+  (`features/admin/useSinhalaAssist.tsx`). "Draft Sinhala from English" now fills only EMPTY Sinhala fields (cannot overwrite an admin's text). The wizard's
+  final checklist gained "Sinhala passes the integrity check" and "machine draft reviewed". New admin labels are English-only (Sinhala falls back).
+- **Backgrounds**: photos were deliberately NOT used (hurt Sinhala text contrast, slow phones, break in dark mode, look generic). Instead `PatternBackdrop` (code-drawn SVG, theme-colored, faint, fades out; variants steps/dots/grid/rings; steps = the logo staircase) and a shared `PageHeader` (title, subtitle, actions, pattern) used by dashboard, games, badges, leaderboard, practice, study plan, study notes and profile; the landing hero and the four sign-in pages use the pattern too.
+- `start-dev.bat` at the repo root starts MySQL (if not running), backend, frontend and the ML service in separate windows (written but not executed
+  in this session because everything was already running).
+- **Still not eyeballed**: profile, mock-exam setup, session report, placement, the 8 game screens, the other admin pages (users, categories, AI questions, knowledge library,
+  psychometrics, ML research, feedback). They inherit the theme, `Card` and `BalancedGrid` fixes.
+
 ## 8. Completed Features (fully working, verified)
 
 - Google OAuth (student) + admin email/password auth, RBAC.
@@ -1195,7 +1311,7 @@ Section 11 for the full list of bounded, documented scope limits.
 
 ## 12. EXACT NEXT TASK (resume here after /compact)
 
-**Most recent session was the Final Deep System Audit (Section 7.15) — complete,
+**Most recent sessions: full UI pass + type-check correction (Section 7.19), Sinhala tooling + student UX (Section 7.18), the theme redesign (7.17) and the Pre-Viva Hardening Pass (Section 7.16); before it, the Final Deep System Audit (Section 7.15) — complete,
 100/100 backend tests passing, 12 real bugs found and fixed, full report
 at `docs/FINAL_SYSTEM_VALIDATION_REPORT.md`.** Nothing blocking remains
 from it; the few things it found but deliberately didn't fix (visual
@@ -1368,7 +1484,9 @@ php artisan time:calibrate                        # learn expected solving time 
 
 # Frontend
 cd frontend && npm run dev                       # :5173
-npx tsc --noEmit                                  # type check (no test runner configured)
+npm run typecheck                                 # = tsc -b. NOT "tsc --noEmit", which checks nothing here (see 7.19)
+npm run check:locales                             # Sinhala/English key parity, placeholders, foreign scripts, style-guide terms
+npm run check:games                               # ~1M generated game rounds: answers correct, exactly one right option (see 7.24)
 
 # ML service
 cd ml-service && ./venv/Scripts/python.exe -m uvicorn app:app --host 127.0.0.1 --port 8100
@@ -1485,3 +1603,129 @@ self-caught, but the lesson is now a hard process, not a suggestion:
   **19** advanced features (not 18) — earlier doc drafts undercounted the
   advanced list by one. Use 43 (24+19) everywhere in the final
   methodology numbers; Section 7.2 above has the corrected full list.
+
+### 7.20 Ambient Background, Calibration Study, Restart Fix (new session)
+
+- **`AmbientBackground`** (v3): tinted grid fading downwards, two horizon glows, film grain, and the HelaIQ staircase that draws itself while a light climbs it
+  (SVG path + SMIL `animateMotion`, 14 s loop; dot and stroke are timed together). Light and dark have separate palettes in `index.css`: light uses saturated
+  oklch colors (the soft chart tokens were invisible on paper), dark reuses the chart tokens. Decorative (`aria-hidden`), staircase hidden on phones (it would run
+  behind text) and in admin (`subtle`), static under `prefers-reduced-motion`. Tone follows the route. The layout wrapper needs `relative isolate`.
+  The per-page `PatternBackdrop` was removed from landing/auth (it fought the grid); it stays in `PageHeader`.
+- **Dark theme** retuned: deeper navy (hue 265), clear elevation steps (page 0.15, card 0.20, popover 0.225), brighter primary, hairline top highlight on cards.
+- **Motion kit** (all in `index.css` unless noted, all off under reduced motion): `.page-enter` route transition (layouts key it by pathname),
+  cursor spotlight on cards (`lib/useCardSpotlight.ts`, fine pointers only), link-card lift, primary-button sheen/press, progress-bar sweep,
+  `.flame-flicker` streak icons, `CountUp` (`components/motion/CountUp.tsx`, used by `StatTile` and the landing preview), landing preview bars/float,
+  `.reveal` (CSS scroll-driven reveal via `animation-timeline: view()`, available for new sections).
+- **Ceylon gem palette** (tokens in `index.css`): primary sapphire `oklch(0.44 0.17 262)` (`#1649ae`, also in favicon/manifest/theme-color), and the five chart tokens are
+  one gem per cognitive category: sapphire (memory), saffron (logical), jade (numerical), ruby (attention), amethyst (spatial). `.spectrum-bar` is a 3px hairline of the five
+  at the top of every page; `.spectrum-text` is gradient text for one decorative numeral only (never Sinhala or body copy).
+- `NotFoundPage` (`path="*"` inside `MainLayout`): unknown URLs used to render a blank page. Its copy is English-only in `locales/en/common.json` (Sinhala falls back).
+  Note the practice list is `/test/practice`, not `/practice`.
+- **Dark-mode readability**: Recharts paints axis text/grid/tooltip in fixed greys, so `index.css` re-colors `.recharts-*` through tokens. Text tokens for tinted chips:
+  `--warning-foreground` is now a readable amber ink (dark amber in light, light amber in dark), `--brand-gold-ink` is saffron for TEXT (`text-[color:var(--brand-gold-ink)]`,
+  `text-brand-gold-ink`; the plain `--brand-gold` is for fills/icons only), light `--success` darkened. **Contrast audit** (`src/dev/contrastAudit.ts`, dev only):
+  `await __preview.student(); await __contrast.pages('dark', ['/dashboard', ...])` checks every text node against WCAG AA (4.5:1, 3:1 large) after animations settle;
+  all student and admin routes with fixture data pass in both themes. Routes without fixtures (empty states) are not meaningful.
+- **Palette v2 (no brown/yellow)**: the amber/saffron family read as brownish yellow. Now: `--brand-gold` (streaks/XP/medals, name kept) is tangerine `oklch(0.7 0.19 52)`, its text ink `--brand-gold-ink` a clear burnt orange, `--warning` orange, and `--chart-2` (Logical Reasoning) is aquamarine `oklch(0.68 0.13 215)`.
+  Category gems are now sapphire, aquamarine, jade, ruby, amethyst. Leaderboard medals use tokens (no `amber-*` classes). Re-run the contrast audit after any palette change.
+- Navbar switches to the hamburger below `lg` (was `md`): the 6-item nav clipped at tablet width.
+- **Model**: `ml-service/calibration_ordinal_study.py` -> `models/calibration_ordinal_report.json`. Deployed model is already well calibrated
+  (ECE 0.017), 99.2% of predictions within one class, QWK 0.816; temperature/isotonic calibration and an ordinal decision rule moved nothing
+  beyond noise, so the live model is unchanged (thesis 4.3.5.2). `PredictionResponse` gained `model_config = {"protected_namespaces": ()}` (removes the startup warning).
+- `.claude/launch.json` gained `frontend-running` (attaches to an already-running Vite on :5173; `frontend` has `autoPort: false`).
+- Startup on a fresh boot: MySQL, then backend, frontend, ML service (`start-dev.bat` does all four).
+
+### 7.21 Full-System Verification Pass (new session)
+
+Every layer was exercised, not just unit-tested. **Real defects found and fixed**:
+1. **All four Gemini services (coach, feedback, question generator, study notes) had silently fallen back to their mocks** since `GeminiEndpoint` was introduced: they called
+   `GeminiEndpoint::url()` without `use App\Services\Gemini\GeminiEndpoint;`, the "class not found" error was swallowed by each service's catch-all fallback, and the
+   mock-driver tests could not see it. Fixed; regression tests in `tests/Unit/GeminiEndpointWiringTest.php` (source scan + a real Guzzle-mocked request that fails without the import).
+   Live-verified afterwards: question generation and Sinhala feedback return real Gemini output; `429`/`503` from Google now retry (`GeminiEndpoint::post`, 3 attempts).
+2. Guzzle error messages contain the request URL **including the API key**, and were being written to `laravel.log`. `GeminiEndpoint::redact()` now strips it from every logged
+   Gemini error; the old log file was scrubbed.
+3. Drafts whose Sinhala is English/corrupted were stored and could be approved into the live bank (the cause of the 6 deactivated questions in 7.18). `QuestionDraftService` now
+   rejects such candidates at generation and refuses `approve()` (HTTP 422; bulk approve skips them). The mock generator has no Sinhala wording for memory/attention/spatial, so with
+   Gemini unavailable those categories yield zero drafts (the admin sees a warning toast) instead of unusable ones. Draft source is labelled `gemini` only when Gemini answered (it was
+   labelled `gemini` even for mock fallbacks before, because the class check ignored the fallback).
+4. `POST /api/auth/logout` returned 500 for a request without a session; `GamificationService::summary` now casts XP to int.
+
+**New tests (133 total, all pass)**: `RouteAccessTest` (all 96 API routes: anonymous 401, students 403 on admin routes, no 500 for read-only routes), `StudentJourneyTest` (placement,
+practice, report, explanation, daily, exam profile, study plan, mock exam, all 8 games, check-in, dashboard, gamification, coach, feedback, study notes), `GeminiEndpointWiringTest`, plus
+two AI-generation tests. Test-harness notes: Sanctum guards cache the first user for the whole test app, so journey tests call `app('auth')->forgetGuards()` before each request; users created
+with `User::create` must be `->fresh()`ed to get DB defaults.
+
+**Data and model checks** (scripts were throwaway, results recorded here): 6,759 active questions, 0 integrity issues (option counts, answer keys, duplicate keys, image files exist, no exact
+duplicates, every category x level pool >= 100). 150 "spelled differently" questions intentionally repeat three identical options. 103 `multi_constraint_seating` questions have a generic (not
+per-question) explanation, a quality gap not an error. ML service: PHP and Python feature order identical (43); `/predict` on 160 stratified real rows, no errors, mean readiness rises with the true
+class (28.5, 47.4, 64.3, 80.7). IRT simulation: item recovery r 0.991, person recovery r 0.915. Visual rotation generator: 200 questions, all valid, answer position uniform.
+Games: all 8 start and run without console errors; question runner, image questions, adaptive placement, mock-exam countdown and report page exercised in the browser with real question data.
+
+**Known and unchanged**: Gemini's free tier returns 429/503 under bursts (the code now retries, then falls back); 17 new EN strings still lack Sinhala (admin form labels, 404 page); a human Sinhala
+reviewer is still needed for naturalness; nothing is committed.
+
+### 7.22 Sinhala Localisation Pass: identity, accuracy and coverage (new session)
+
+Goal: perfect, consistent Sinhala in the student portal, the admin portal and everything they show. **Machine-drafted and machine-checked, not human-verified:**
+a native reader still has to approve `frontend/src/locales/REVIEW_LOG.md` (every changed string, before/after).
+
+- **Identity**: `frontend/src/locales/STYLE_GUIDE.md` (voice, register, vocabulary table, process). Key decisions: formal written register, ඔබ, imperatives in -න්න; dashboard = උපකරණ පුවරුව,
+  placement = මට්ටම් නිර්ණය පරීක්ෂණය, mock exam = ආදර්ශ විභාගය, prediction = පුරෝකථනය (not අනාවැකි = prophecy), areas = අංශ (not ප්‍රදේශ = regions), badge = පදක්කම, leaderboard = ශ්‍රේණි පුවරුව.
+- **Pipeline** (throwaway scripts, described in the guide): Gemini review of all 756 UI strings against the guide -> automatic gates -> line-by-line human-style review (about 60% of proposals rejected as churn,
+  worse, or corrupted) -> targeted re-drafts -> blind back-translation (377 of 382 equivalent, 5 paraphrase artefacts kept) -> `validate_sinhala.py` + `npm run check:locales`.
+  **Do not use `gemini-flash-lite-latest` unsupervised for Sinhala**: about 4% of its outputs contained Kannada, Korean, Amharic, Devanagari or Arabic letters, and subtler garbling (for example a wrong vowel sign) passes
+  a script check. Flash quota was exhausted this session (429 until it resets); lite was used.
+- **384 locale strings changed or added**, 19 database strings (categories, games, badges: DB rows updated and the seeders edited so fresh installs match), the glossary, and the mock coach.
+  Fixed real translation defects, not just style: a tagline that did not match the English, several truncated sentences (confidence note, hints), an inverted meaning risk, nonsense words
+  (`ඔබව පුරන්නා`, `රුසියානු ලකුණු`), and duplicate rank titles.
+- **English no longer leaks into Sinhala screens**: ML reasons, feature names and the "why" sentence are built in the browser from the structured reasons (`features/readiness/explain.ts`,
+  keys `readiness.reasonText/featureLabel/explain`); server errors go through `lib/apiError.ts` (`errors.api.*`); level titles use `widget.levelTitle.*`; the admin Sinhala tool's errors too.
+- **Layout**: Sinhala is 1.3-1.6x longer; the readiness card header and the study-plan row now wrap. All student and admin routes were scanned at 375 px in Sinhala: no page overflow.
+- **New tooling**: `npm run check:locales` (parity, placeholders, foreign scripts, orphaned signs, colloquial endings, discouraged terms).
+- A blind back-translation sample of 300 active questions (stratified by category and subcategory) flagged 32 for human review (10.7%); see `frontend/src/locales/QUESTION_AUDIT.md`.
+- **Question-bank Sinhala corrections** (found by the blind back-translation audit, `frontend/src/locales/QUESTION_AUDIT.md`): 32 of 300 sampled questions flagged; 7 real defect families fixed on the live rows
+  (about 700 rows), mirrored in the seeders and the re-exported content snapshot: age problems said "when Nimal's *father* was born" (160) plus the typo `මව්කගේ`; statement-sufficiency options
+  lost their "but the other alone is not" half, making two options indistinguishable (147); direction-sense and coding-decoding questions were telegraphic fragments with no real question (230) and
+  dropped "shortest" (90); syllogism words collided (athletes = cricketers) or mistranslated (performers = actors) (42). Re-audit of the corrected groups: 67 of 75 equivalent, the 8 flagged are paraphrase
+  differences (sibling gender-neutral, craftsmen/artisans). Five new words were reviewed into `APPROVED_NOVEL_WORDS`. Not covered: image questions, and about 6,400 unsampled questions.
+- **AI Sinhala output is guarded**: `App\Services\Gemini\SinhalaStyle` (voice and preferred terms, appended to the coach, feedback, study-note and question-generation prompts) and
+  `SinhalaStyle::acceptable()` (coach and feedback fall back to the mock when a model answer contains corrupted Sinhala). `SinhalaTextGuard` now rejects Thai, Cyrillic, Hebrew/Arabic, Ethiopic, Hangul, kana and CJK
+  letters as well as the Indic blocks (tests: `SinhalaOutputGuardTest`).
+- Still needed: native review of the log; the question bank's naturalness; AI coach/feedback text is whatever Gemini writes (guarded only by the integrity check on admin-saved content).
+
+### 7.23 Sinhala Typography and Dark-Mode Visibility (new session)
+
+- **Sinhala typography** (`index.css`, block "Sinhala typography", keyed on `html:lang(si)`). Before: only the 400-weight static Noto Sans Sinhala file was loaded (every semibold/bold Sinhala heading was faux-bold),
+  Latin-tuned leading and negative tracking applied, badges clipped. Now: `@fontsource-variable/noto-sans-sinhala` (real weights 100-900, 130 KB, downloaded only when Sinhala text is shown) sits in the same font stack as Geist
+  (`--font-sans`), so Latin, digits and Sinhala mix in one voice. The block retunes Tailwind's own scale variables (`--text-*`, `--leading-*`, `--tracking-*` set to 0) so every existing utility adapts: text sizes +1px for body,
+  display sizes slightly smaller, leading 1.6-1.9, no letter-spacing, `.uppercase` disabled, `text-[10px]/[11px]` raised to 13 px. It is deliberately UNLAYERED (must beat the theme layer). Do not set a `font-weight` on `html:lang(si) h1..h4`
+  (it would override components' own weights). Fixed-height text containers clip Sinhala: `Badge` is now `min-h-5` (was `h-5 overflow-hidden`); check any new pill/chip the same way.
+- **Dark-mode visibility**: (1) no `color-scheme` was declared, so native scrollbars, date pickers and autofill stayed light: `:root{color-scheme:light}`, `.dark{color-scheme:dark}`. (2) `--input` (field/select/checkbox outlines) was about 1.5:1
+  in both themes: now about 3:1 (dark `oklch(1 0 0 / 36%)`, light `oklch(0.63 0.015 255)`; `--border` stays a hairline for cards). (3) disabled default buttons were 50%-opacity primary (unreadable in dark): now `bg-muted` + `text-muted-foreground`.
+  (4) light `--chart-2` deepened (`0.6`) so category icons pass 3:1 on their tinted chips; leaderboard medals use tokens (`text-brand-gold-ink`, `text-muted-foreground`) instead of `slate-400`.
+  Admin top bar no longer repeats the page title on phones (it was cut to "පරිශී…").
+- **Audit tooling** (`src/dev/contrastAudit.ts`, dev only): `__contrast.pages(theme, routes)` (text, AA) and NEW `__contrast.pagesUi(theme, routes)` (WCAG 1.4.11: field outlines, stroked icons, disabled labels). **Important correction:** in a hidden browser pane the earlier
+  text audit silently skipped everything that fades in (framer `whileInView`/rAF never advance), so "clean" could be vacuous. The audit now sets `MotionGlobalConfig.skipAnimations`, finishes CSS animations and forces inline `opacity:0` reveals to 1; it was validated by
+  deliberately breaking a token and confirming it reports 49 findings. Run at most 2-4 routes per `javascript_tool` call (45 s limit). Fixture pages (`__preview.*`) use placeholder `name_si` values ("x", raw codes); those are not real defects.
+- Verified (student + admin, light + dark, Sinhala, 375 px): text audit clean, UI audit clean, no horizontal overflow, no clipped or ellipsized text except intentional table truncation; typecheck, oxlint, `check:locales` and build pass. Not covered: mid-game screens and the open state of every dialog/select.
+
+### 7.24 Game Fine-Tuning, Dead-Code Sweep and Second Question Audit (new session)
+
+- **`npm run check:games`** (`frontend/scripts/check-games.mts`, Node 22 strips the types, no build step): property tests over about a million generated rounds for all game generators (answers correct, options distinct, exactly one right
+  answer, staircases bounded, recall rounds reference a real number two rounds back). Run it after touching any `features/games/*/generator.ts`.
+- **Real game defects found and fixed:** (1) Mental Rotation base shape #1 was mirror-symmetric on the 4x4 grid (its mirror image equalled one of its rotations), so in about a third of rounds ALL four options were correct; the
+  "asymmetric" comment was wrong; replaced with a brute-force-verified chiral shape. (2) Six games (Cognitive Command Center, Mental Rotation, Selective Attention, Sequence Puzzle, Visual Spatial Memory, Working Memory Span) never reset their
+  start time on "Play again", so a replay was timed from the first game and lost points; each `reset()` now restarts the clock (verified live: 6 s idle on the result screen no longer changes the next score).
+  (3) Visual Spatial Memory reported `items_reached`/`path_span_reached` from the level AFTER the last answer, not the highest level played; rounds now log their level. (4) Cognitive Command Center: recall asked about the hidden
+  ANSWER instead of a number the player saw, the rotation put recall right after its source round (the prompt says "2 rounds ago"), the dual task displayed the number to hold during the arithmetic and ignored the arithmetic answer, and
+  go rounds had no response window. Now: recall targets the number shown exactly two rounds earlier, the held number is hidden after 1.6 s, the arithmetic must also be right, and both circle types are timed. (5) Working Memory Span: repeated
+  digits (5, 5) were visually indistinguishable (items now remount and fade in); dead `nbackJudged`/`encodeStartRef` removed.
+- **All 8 games were played in the real UI** (Sinhala, dev fixtures, timers sped up 10x, request log via `__preview.fixtures['/games/<code>/score']`): scores, metadata, replay and result cards verified. Driving tips: scope clicks to
+  `[data-slot=card]` (the header also has buttons), use a MutationObserver to read timed digit streams, and re-inject fixtures after every Vite reload.
+- **Dead code removed** (all confirmed unreferenced): stray `backend/verify_data.php`; the unused Laravel scaffold (`backend/README.md`, `package.json`, `vite.config.js`, `resources/css|js`); frontend `empty-state`, `error-state`, `separator`,
+  `tabs` primitives, the hooks `useDeleteCategory`, `useMyFeedback`, `useInvalidateGamification`, `useReadinessHistory`, `useSession`, `useStudyNote`, `AppBootLoader` and their API functions/types; backend `sampleForPlacement` (superseded by IRT
+  placement), `SpeedAccuracyScoreService::forSession`, `ResearchExportService::categoriesList`; 47 translation keys no code referenced (both languages). `useSinhalaAssist` was split into the hook (`.ts`) and `SinhalaAssistPanel.tsx`
+  (fast-refresh lint), and the two shadcn variant exports carry a documented `oxlint-disable`. `oxlint` now reports 0 warnings; `check:locales` 0 errors / 0 warnings (its digit rule only flags digits Sinhala adds).
+- **Second question audit** (`frontend/src/locales/QUESTION_AUDIT.md`, Result 3): 300 text questions from the 29 families the first audit skipped, 300/300 equivalent. The pipeline was validated first: 12/12 planted defects (changed number, swapped
+  options, dropped sentence) were caught. About 600 of 6,759 questions have now been sampled; image-question captions and the rest are unaudited. Gemini flash was returning 503 this session; flash-lite did both steps.
+- Final state: 137 backend tests, Pint clean (265 files), typecheck, oxlint, `check:locales`, `check:games`, `sinhala:audit` (6,759 active, no issues) and production build all pass. Nothing is committed.

@@ -11,3 +11,7 @@ ml-service/venv
 ml-service/data/raw
 ml-service/catboost_info
 *.log
+backend/public/storage
+backend/storage/logs
+backend/bootstrap/cache/*.php
+backend/database/content/*.tmp

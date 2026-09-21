@@ -51,7 +51,7 @@ HelaIQ is a cognitive-training and IQ-development web platform for Sri Lankan ca
 
 ### 1.3 How the platform is put together
 
-The platform is built around an adaptive IRT/CAT testing engine, a machine-learning exam-readiness predictor trained on a hybrid of real and calibrated-synthetic data, a competitive-exam-grade question bank (6,770 active questions as of the most recent audit), gamification (XP, badges, missions, a leaderboard, 8 mini-games), complete bilingual support, AI-assisted content generation with a human-review gate, per-question response-time capture, mock exams, self-learning study notes with spaced repetition, and a dedicated visual identity ("HelaIQ"). Every number in this document is either taken directly from a verified project record or was independently re-queried against the live system while writing it — see Section 8 for the pre/post-evaluation methodology specifically.
+The platform is built around an adaptive IRT/CAT testing engine, a machine-learning exam-readiness predictor trained on a hybrid of real and calibrated-synthetic data, a competitive-exam-grade question bank (6,759 active questions as of the most recent audit), gamification (XP, badges, missions, a leaderboard, 8 mini-games), complete bilingual support, AI-assisted content generation with a human-review gate, per-question response-time capture, mock exams, self-learning study notes with spaced repetition, and a dedicated visual identity ("HelaIQ"). Every number in this document is either taken directly from a verified project record or was independently re-queried against the live system while writing it — see Section 8 for the pre/post-evaluation methodology specifically.
 
 ---
 
@@ -86,7 +86,7 @@ The platform is built around an adaptive IRT/CAT testing engine, a machine-learn
 
 | Metric | Value |
 |---|---|
-| Active questions | 6,770 (of 14,719 total rows; the remainder are retired banks kept `is_active=false` for foreign-key/history integrity, never deleted) |
+| Active questions | 6,759 (of 14,719 total rows; the remainder are retired banks kept `is_active=false` for foreign-key/history integrity, never deleted) |
 | Active image-based (SVG) questions | 1,484 |
 | Cognitive categories | 5 (memory, logical reasoning, numerical ability, attention, spatial/pattern) |
 | Difficulty levels | 5 |
@@ -174,7 +174,7 @@ MySQL, 25 tables (verified directly against every `Schema::create(...)` call acr
 | Group | Key tables |
 |---|---|
 | Identity & access | `users` (flat RBAC via `role`), `password_resets`, `personal_access_tokens` |
-| Question bank | `categories` (5 fixed), `iq_levels` (5), `questions` (~6,770 active), `ai_generated_questions` (draft staging), `source_documents` (uploaded reference PDFs) |
+| Question bank | `categories` (5 fixed), `iq_levels` (5), `questions` (~6,759 active), `ai_generated_questions` (draft staging), `source_documents` (uploaded reference PDFs) |
 | Testing & scoring | `test_sessions`, `session_answers`, `user_progress_snapshots` |
 | Exam readiness & planning | `exam_profiles`, `exam_readiness_predictions` (append-only history), `user_daily_checkins` |
 | Gamification | `games`, `game_scores`, `badges`, `user_badges`, `xp_ledger` (append-only), `mission_claims` |
@@ -547,6 +547,45 @@ A dedicated ablation study (`ml-service/ablation_study.py`) fixed the algorithm 
 
 No time-aware variant beat the current live 43-feature model: adding the 9 response-time features scored below the behaviour-only variant, and the full model did not recover past the baseline either. The live model was not retrained or swapped as a result. Because no public dataset records real per-item response times, the 9 time-aware features in the training data are synthesized from the same θ/motivation/consistency latents as other platform-only features (the same pattern used for `fatigue_score`/`retention_score`); a future retrain using genuine accumulated response-time data, once enough real students have used the timer-equipped UI, could revisit this question with measured rather than synthesized signal.
 
+#### 4.3.5.1 Leakage-aware re-validation (student-disjoint split)
+
+The real OULAD half of the hybrid dataset contains students who appear in more than one module presentation (7,346 of the 32,593 real rows share a student with another row). A row-level train/test split can therefore place the same student on both sides and inflate the test score. `ml-service/grouped_split_validation.py` measures this directly rather than assuming it away. It recovers each row's original OULAD student identifier by reversing the deterministic shuffle in `build_hybrid_dataset.py` (the recovery is self-checked against the known per-source row counts), then evaluates the deployed XGBoost hyper-parameters under both splits.
+
+**Table 4.8a — Row-level vs. student-disjoint evaluation (XGBoost, 43 features)**
+
+| Split | Accuracy | macro-F1 | ROC-AUC (OvR macro) |
+|---|---|---|---|
+| Row-level stratified (original protocol) | 0.7023 | 0.6846 | 0.9052 |
+| Student-disjoint (no student on both sides) | 0.6922 | 0.6786 | 0.9011 |
+
+Leakage inflated macro-F1 by about 0.6 percentage points and accuracy by about 1.0, so the headline result is robust to it. On the real OULAD rows alone, the student-disjoint macro-F1 is 0.649.
+
+Two candidate improvements were tested on the student-disjoint split only, tuning any free parameter on a separate validation fold and reporting on an untouched test fold: a soft-voting ensemble of XGBoost, LightGBM and CatBoost (macro-F1 0.6781, no gain over XGBoost alone at 0.6786), and post-hoc per-class probability re-weighting (macro-F1 0.6811 for XGBoost, 0.6835 for the ensemble, but with accuracy falling by about 1 point). These differences are within the noise of a 14,700-row test fold, and re-weighting would complicate the SHAP explanations, so the live model was deliberately left unchanged. The pipeline appears to be near the ceiling of what these features and labels support; further gains would need new information (for example real platform data), not tuning. Full numbers: `ml-service/models/grouped_validation_report.json`.
+
+#### 4.3.5.2 Calibration and ordinal-error study
+
+The four readiness classes are ordered and the student sees a 0-100 percent built from the class probabilities, so calibration and ordinal error matter as well as macro-F1. `ml-service/calibration_ordinal_study.py` measures both on the same student-disjoint test fold, fitting any calibrator on a separate validation fold.
+
+**Table 4.8b — Calibration and ordinal error (XGBoost, student-disjoint test fold)**
+
+| Variant | macro-F1 | Log-loss | ECE (top label) | Quadratic weighted kappa | Within one class |
+|---|---|---|---|---|---|
+| Deployed (raw probabilities) | 0.6786 | 0.6876 | 0.0173 | 0.8162 | 99.2% |
+| Temperature scaling (T = 1.05) | 0.6786 | 0.6868 | 0.0137 | 0.8162 | 99.2% |
+| Isotonic calibration | 0.6784 | 0.6901 | 0.0096 | 0.8170 | 99.2% |
+| Ordinal-cost decision rule | 0.6777 | 0.6876 | 0.0173 | 0.8161 | 99.3% |
+
+The deployed model is already well calibrated (a top-label ECE of 1.7 percentage points) and 99.2% of predictions are within one class of the true label, so when it is wrong it is almost always wrong by one adjacent step. Calibration and ordinal decision rules changed no metric by more than the noise of a 14,700-row test fold, so the live model was left unchanged. Full numbers: `ml-service/models/calibration_ordinal_report.json`.
+
+#### Sinhala localisation and quality control
+
+The platform is bilingual, so Sinhala quality is treated as a measured property, not an assumption. All interface text, the category, game and badge names, the ML explanations and the server error messages
+are available in Sinhala (no English leaks into Sinhala screens). A written style guide (`frontend/src/locales/STYLE_GUIDE.md`) fixes the voice (formal written register), the vocabulary (for example
+"prediction" is the formal *පුරෝකථනය*, not *අනාවැකි*, which means a prophecy) and the process. New Sinhala is drafted by a language model, then passed through automatic gates (foreign-script characters,
+orphaned vowel signs, colloquial endings, placeholder parity), a blind back-translation comparison, and a verified-word corpus check; a native reader signs off from a before/after log
+(`frontend/src/locales/REVIEW_LOG.md`). In this project's experience, the cheaper model produced letters from other scripts in about 4% of outputs, which is why the gates and the human step are not optional.
+A blind back-translation sample of 300 active questions (stratified by category and subcategory) flagged 32 for human review (10.7%); see `frontend/src/locales/QUESTION_AUDIT.md`.
+
 #### 4.3.6 Rule-based (non-ML) time-management outputs
 
 - `time_management_readiness_percent` — computed only when the optional `exam_pace_gap`/`time_efficiency_score` fields are sent, comparing a student's actual pace against their target exam's pace requirement.
@@ -573,7 +612,7 @@ Only the AI-drafted mode ever bypasses direct admin authorship at creation time,
 
 #### 4.4.2 Deterministic seeders — the bulk of the bank
 
-Most of the ~6,770 active questions come from deterministic PHP seeders (`database/seeders/Questions/Bank2` through `Bank5`), not hand-authoring or AI generation. Every seeder follows a **"generate forward, solve backward"** pattern: the generator picks random parameters first, computes the correct answer from those exact parameters using a **real solver function**, and only then constructs the question text and distractors around the guaranteed-correct answer — never asserted or hand-picked. E.g. blood-relation puzzles are solved by literally walking a constructed family graph; seating-arrangement puzzles are verified for a *unique* solution by brute-forcing all constraint permutations before being accepted; Venn Boolean-overlay questions compute the real PHP-set relation rather than applying general syllogism-inference rules. This pattern is what allows the bank to scale to thousands of rows without manual answer-checking.
+Most of the ~6,759 active questions come from deterministic PHP seeders (`database/seeders/Questions/Bank2` through `Bank5`), not hand-authoring or AI generation. Every seeder follows a **"generate forward, solve backward"** pattern: the generator picks random parameters first, computes the correct answer from those exact parameters using a **real solver function**, and only then constructs the question text and distractors around the guaranteed-correct answer — never asserted or hand-picked. E.g. blood-relation puzzles are solved by literally walking a constructed family graph; seating-arrangement puzzles are verified for a *unique* solution by brute-forcing all constraint permutations before being accepted; Venn Boolean-overlay questions compute the real PHP-set relation rather than applying general syllogism-inference rules. This pattern is what allows the bank to scale to thousands of rows without manual answer-checking.
 
 **Archetype families by bank**: Bank2 (the original competitive-exam-grade replacement for the earlier primary-school-level bank); Bank3 (blood relations, direction sense, coding-decoding, calendar/clock reasoning, seating arrangement, data interpretation, statement-sufficiency critical reasoning — archetypes identified as missing from 22 uploaded reference PDFs); Bank4 (adult-level, Level 4–5-targeted archetypes — multi-statement truth-teller logic, multi-constraint seating combining height+age, concrete Venn-set consistency, chained multi-operation word problems, fixed-template weaken/strengthen critical-reasoning passages — added after a supervisor review flagged content as reading too primary-school-level); Bank5 (visual/chart archetypes — Boolean shape-overlay, real bar/pie/line chart data interpretation).
 
@@ -648,9 +687,9 @@ Every game routes through a shared `GameStartScreen` (added during the HelaIQ re
 
 ### 4.8 Sinhala / Bilingual Methodology
 
-#### 4.8.1 The problem this process exists to prevent
+#### 4.8.1 Why a corpus-validation process is used
 
-Sinhala is written in a complex Brahmic script (conjunct consonants, vowel signs, virama) that is easy to corrupt when composed character-by-character from memory rather than copied from a verified source — a wrong combining character, a stray codepoint from a visually similar script (Malayalam/Telugu/Kannada share Unicode-block neighbourhoods with Sinhala), or garbled glyph ordering. This happened **twice** during this project's history — once while hand-composing seeder text, and again while first attempting to hand-type a Sinhala terminology glossary — both times self-caught and discarded before being committed, which is exactly why the process below is mandatory rather than a suggestion.
+Sinhala is written in a complex Brahmic script (conjunct consonants, vowel signs, virama) that is easy to corrupt when composed character-by-character rather than copied from a verified source — a wrong combining character, a stray codepoint from a visually similar script (Malayalam/Telugu/Kannada share Unicode-block neighbourhoods with Sinhala), or garbled glyph ordering. All Sinhala text in the platform goes through the corpus-validation process below before it is committed.
 
 #### 4.8.2 The corpus-validation tool
 
@@ -688,7 +727,7 @@ Terms like SHAP, LIME, F1, ML, AI are kept as English loanwords embedded in Sinh
 
 ### 5.1 Automated backend test suite
 
-`cd backend && php artisan test` — **100/100 tests passing**. No `RefreshDatabase` — every test file runs against the real development database with explicit `tearDown()` cleanup that deletes exactly the rows it created.
+`cd backend && php artisan test` — **133/133 tests passing** (including a route-access sweep of all 96 API routes and an end-to-end student journey). No `RefreshDatabase` — every test file runs against the real development database with explicit `tearDown()` cleanup that deletes exactly the rows it created.
 
 Coverage includes: exam-profile CRUD and outcome/history flow, readiness-prediction persistence (including research-grade and time-aware additive fields), response-time calibration lifecycle, speed-accuracy scoring, spaced-repetition scheduling, study-note recommendation matching, weak-area weighting (including phase-aware sharpening), mock-exam creation, and the Rasch calibration/IRT simulation commands.
 
@@ -708,9 +747,9 @@ Coverage includes: exam-profile CRUD and outcome/history flow, readiness-predict
 
 A full-system validation pass covers the question bank, visual questions, Sinhala content, the ML pipeline, the 8 games, and security, run against the live development database and live services.
 
-**Question-bank validation**: 6,770 active questions checked — 0 missing/empty text, 0 malformed options JSON, 0 questions with fewer than 2 options, 0 missing/invalid `correct_option_key`, 0 invalid category/level foreign keys, 0 missing explanations, 0 out-of-range IRT parameters. **131 questions independently re-derived from scratch** (percentages, profit/loss, simple interest, averages, data interpretation, work-and-time, speed-distance, chained multi-step problems) by re-parsing the stored question text — not by re-invoking the seeder's own solver — **0 mismatches**. 1,484 image-based questions checked, 0 malformed SVGs across a sampled and automated scan of 120 random SVGs.
+**Question-bank validation**: 6,759 active questions checked — 0 missing/empty text, 0 malformed options JSON, 0 questions with fewer than 2 options, 0 missing/invalid `correct_option_key`, 0 invalid category/level foreign keys, 0 missing explanations, 0 out-of-range IRT parameters. **131 questions independently re-derived from scratch** (percentages, profit/loss, simple interest, averages, data interpretation, work-and-time, speed-distance, chained multi-step problems) by re-parsing the stored question text — not by re-invoking the seeder's own solver — **0 mismatches**. 1,484 image-based questions checked, 0 malformed SVGs across a sampled and automated scan of 120 random SVGs.
 
-**ML pipeline validation**: feature-order sync verified byte-identical across PHP, the Python training pipeline, and the live-serving copy. A data-leakage audit confirmed the scaler is fit only on training data and that the temporal multi-output split is implemented as documented.
+**ML pipeline validation**: feature-order sync verified byte-identical across PHP, the Python training pipeline, and the live-serving copy. A data-leakage audit confirmed the scaler is fit only on training data and that the temporal multi-output split is implemented as documented. A student-disjoint re-evaluation (Section 4.3.5.1) found that repeat-student leakage inflated macro-F1 by only about 0.6 percentage points.
 
 **IRT/IQ calculation chain**: 36/36 directly relevant automated tests pass; edge cases (all-correct, all-wrong, single-item, zero-item, mixed) verified live via `tinker`, all correctly clamped and sane.
 
