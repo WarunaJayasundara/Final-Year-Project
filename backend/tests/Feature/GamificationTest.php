@@ -13,12 +13,7 @@ use App\Models\XpLedgerEntry;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the gamification module (XP/coins, badges, missions,
- * leaderboard) against the real dev database (no RefreshDatabase - see
- * AdaptivePlacementTest), with explicit tearDown cleanup. Relies on the
- * seeded Badge/Game catalogs (BadgeSeeder/GameSeeder) already being present.
- */
+/** Exercises the gamification module (XP/coins, badges, missions, leaderboard) against the real dev database (no RefreshDatabase. */
 class GamificationTest extends TestCase
 {
     private ?User $testUser = null;

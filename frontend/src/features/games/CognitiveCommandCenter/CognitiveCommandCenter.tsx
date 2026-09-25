@@ -83,10 +83,7 @@ export function CognitiveCommandCenter() {
     setLastCorrect(correct);
     setLogs((prev) => [...prev, { type: round.type, correct, reactionMs, ruleChanged }]);
     if (round.type === 'sort') {
-      // Record AFTER ruleChangedThisRound (computed against the previous
-      // value) was already captured into the log line above - updating
-      // this any earlier would make every sort round compare its rule
-      // against itself and always read as "unchanged".
+      // Record AFTER ruleChangedThisRound (computed against the previous value) was already captured into the log line above.
       setLastSortRule(round.rule);
     }
 

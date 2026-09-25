@@ -6,11 +6,7 @@ use App\Services\QuestionBank\SinhalaTextGuard;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Runs the Sinhala script-integrity guard over every active question and
- * reports what it finds. Read-only: it never edits question text (this project
- * does not machine-rewrite Sinhala; flagged rows go to a human reviewer).
- */
+/** Runs the Sinhala script-integrity guard over every active question and reports what it finds. */
 class SinhalaAudit extends Command
 {
     protected $signature = 'sinhala:audit {--list=10 : How many example question ids to print per issue}';

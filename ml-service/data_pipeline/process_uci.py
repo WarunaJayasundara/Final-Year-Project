@@ -43,10 +43,7 @@ def build() -> pd.DataFrame:
     combined = pd.concat(frames, ignore_index=True)
 
     combined["label"] = combined["G3"].apply(_label_from_g3)
-    # First-half vs second-half analogue: only two prior grades exist (G1,
-    # G2) before the final G3, so the "trend" is simply G2-G1 - the same
-    # early-vs-late split idea as OULAD's assessment_score_trend, just with
-    # fewer data points per student.
+    # First-half vs second-half analogue: only two prior grades exist (G1, G2) before the final G3, so the "trend" is simply G2-G1.
     combined["grade_trend"] = combined["G2"] - combined["G1"]
     combined["avg_grade"] = combined[["G1", "G2", "G3"]].mean(axis=1)
 

@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Sinhala translation-quality fields (brief §16) - all nullable/additive.
- * `ai_generated_questions` already has `reviewed_by` (Phase 5 draft-review
- * table), so only `questions` gains it here; both tables gain the rest.
- * Populated by SinhalaSemanticValidationService's structural-equivalence
- * heuristic (numeric-literal parity, option-count parity, shared answer
- * key), never claimed as deep NLP semantic understanding - see that
- * service's docblock.
- */
+/** Sinhala translation-quality fields (brief §16) - all nullable/additive. */
 return new class extends Migration
 {
     public function up()

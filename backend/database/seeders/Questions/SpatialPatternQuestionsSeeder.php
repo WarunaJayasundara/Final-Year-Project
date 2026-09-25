@@ -4,16 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Spatial & pattern-recognition questions rendered as Unicode shape/emoji
- * sequences (mcq_text) rather than raster images, keeping the bank
- * text-based with no generated image assets needed. The mcq_image type
- * and its upload endpoint (Admin\QuestionController::uploadImage) are
- * still available if real images are wanted later.
- *
- * Combo pools are built once as a single shuffled list per question type,
- * then sliced per level, so the same combo can't be reused across levels.
- */
+/** Spatial & pattern-recognition questions rendered as Unicode shape/emoji sequences (mcq_text) rather than raster images. */
 class SpatialPatternQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

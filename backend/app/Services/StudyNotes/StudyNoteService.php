@@ -10,17 +10,7 @@ use App\Models\User;
 use App\Services\QuestionBank\PdfIngestionService;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Orchestrates study-note generation from an analyzed theory-book source
- * document: re-extracts its text (not stored in full on the model, to keep
- * the DB lean and avoid persisting large copyrighted excerpts - see
- * SourceDocumentController's own docblock), calls the bound generator
- * (Gemini or Mock), and persists the result as a *draft* note - never
- * directly visible to students. Only publish() (an explicit admin action)
- * makes a note visible, same human-in-the-loop gate as
- * QuestionDraftService::approve() and for the same reason: a confidently
- * wrong "teaching" explanation is worse than none at all.
- */
+/** Orchestrates study-note generation from an analyzed theory-book source document: re-extracts its text. */
 class StudyNoteService
 {
     public function __construct(

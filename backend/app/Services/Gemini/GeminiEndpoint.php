@@ -32,9 +32,7 @@ class GeminiEndpoint
     }
 
     /**
-     * POST to Gemini, retrying briefly on 429 (rate limit) and 503 (overloaded). Google returns both often on
-     * the free tier and they usually clear within seconds, so one retry beats falling back to mock output.
-     *
+     * POST to Gemini, retrying briefly on 429 (rate limit) and 503 (overloaded).
      * @throws \GuzzleHttp\Exception\GuzzleException after the final attempt
      */
     public static function post(Client $client, string $url, array $options, int $attempts = 3): ResponseInterface

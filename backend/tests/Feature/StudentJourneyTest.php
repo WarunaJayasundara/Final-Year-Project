@@ -12,11 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * One student walks through every student-facing feature in the order a real user would, against
- * the real dev database (no RefreshDatabase, like the rest of the suite). Everything the journey
- * creates is removed in tearDown.
- */
+/** One student walks through every student-facing feature in the order a real user would, against the real dev database. */
 class StudentJourneyTest extends TestCase
 {
     private ?User $student = null;

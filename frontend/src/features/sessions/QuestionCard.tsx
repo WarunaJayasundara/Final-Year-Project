@@ -18,27 +18,13 @@ interface QuestionCardProps {
   onAdvance: () => void;
   advanceDisabled: boolean;
   advanceLabel: string;
-  /** Only timed contexts (mock exams, explicit timed challenges) show the
-   * expected-time chip - ordinary practice/daily/placement questions still
-   * record response_time_ms silently in the background, they just don't
-   * display it, so students aren't put under unnecessary timer pressure. */
+  /** expected-time chip - ordinary practice/daily/placement questions still record response_time_ms silently in the background. */
   showExpectedTime?: boolean;
 }
 
 const OPTION_KEYS_ORDER = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-/**
- * The shared question-answering surface for SessionRunner, AdaptivePlacementRunner,
- * and MockExamRunner - previously duplicated near-verbatim across all three.
- * Adds: a larger image area for visual questions, a live elapsed-time chip
- * (quiet by default, only when the question sets an expected_time_seconds),
- * keyboard support (1-6/A-F to pick an option, Enter/Space to advance once
- * revealed), and token-driven success/destructive colors instead of hardcoded
- * emerald classes. Once an answer is revealed it auto-advances on its own
- * (longer pause on a wrong answer so the correct option has time to
- * register) - the Next/Finish button and Enter/Space still work, as a way
- * to skip the wait rather than something the student has to press.
- */
+/** The shared question-answering surface for SessionRunner, AdaptivePlacementRunner, and MockExamRunner. */
 export function QuestionCard({
   question,
   selected,

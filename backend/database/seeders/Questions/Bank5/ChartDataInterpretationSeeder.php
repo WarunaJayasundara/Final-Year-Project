@@ -7,12 +7,7 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Chart-based data interpretation (bar/pie/line), rendered as images rather
- * than tables - Bank3's DataInterpretationSeeder only covers text tables.
- * Every answer is computed directly from the generated data series, never
- * asserted independently.
- */
+/** Chart-based data interpretation (bar/pie/line), rendered as images rather than tables. */
 class ChartDataInterpretationSeeder extends Seeder
 {
     use BuildsQuestions;

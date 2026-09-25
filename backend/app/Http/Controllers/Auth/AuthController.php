@@ -25,16 +25,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Find-or-create the user from Google's callback, log them in, redirect
-     * back to the SPA.
-     *
-     * Account linking: matched by google_id first, then by email. Since the
-     * email Socialite returns is already provider-verified by Google, it's
-     * safe to attach google_id to a matching password account. We never do
-     * the reverse (auto-attaching a password to a Google-only account) -
-     * only this direction, only from this callback.
-     */
+    /** Find-or-create the user from Google's callback, log them in, redirect back to the SPA. */
     public function handleGoogleCallback(Request $request)
     {
         try {
@@ -71,11 +62,7 @@ class AuthController extends Controller
         return redirect(config('app.frontend_url').'/auth/callback');
     }
 
-    /**
-     * Student self-registration with username + email + password. If this
-     * email later signs in with Google, handleGoogleCallback() links it
-     * rather than creating a duplicate account.
-     */
+    /** Student self-registration with username + email + password. */
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -110,11 +97,7 @@ class AuthController extends Controller
         return response()->json(['user' => $this->formatUser($user)], 201);
     }
 
-    /**
-     * Student sign-in via username-or-email + password. Google-only accounts
-     * (no password set) cannot use this path - they get a clear error
-     * pointing them at "Continue with Google" instead.
-     */
+    /** Student sign-in via username-or-email + password. */
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -149,11 +132,7 @@ class AuthController extends Controller
         return response()->json(['user' => $this->formatUser($user)]);
     }
 
-    /**
-     * Send a password-reset link. Always returns a generic success message
-     * regardless of whether the account exists, so this endpoint can't be
-     * used to enumerate registered emails.
-     */
+    /** Send a password-reset link. */
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), ['email' => ['required', 'email']]);

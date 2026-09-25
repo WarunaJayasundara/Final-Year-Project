@@ -5,12 +5,7 @@ import { AUTH_QUERY_KEY } from '@/features/auth/useAuth';
 import { fetchMe } from '@/features/auth/api';
 import { FullPageSpinner } from '@/components/auth/RequireAuth';
 
-/**
- * Landing spot after the Laravel backend redirects the browser here once
- * Google OAuth + session login has completed server-side. We just need to
- * (re)fetch /auth/me to pick up the freshly-created session, then route the
- * student to the placement test (first login) or their dashboard.
- */
+/** Landing spot after the Laravel backend redirects the browser here once Google OAuth + session login has completed server-side. */
 export function AuthCallbackPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();

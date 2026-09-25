@@ -4,12 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Optional wall-clock time limit for a session. Nullable/unused by
- * placement/daily/practice sessions today; populated by mock exams (a
- * requested exam duration) and, later, by phase-aware daily sessions that
- * suggest (never enforce) a pace target as the exam approaches.
- */
+/** Optional wall-clock time limit for a session. */
 return new class extends Migration
 {
     public function up()

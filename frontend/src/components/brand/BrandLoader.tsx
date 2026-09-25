@@ -5,13 +5,7 @@ const strokeTransition = (delay: number, duration: number) => ({
   pathLength: { delay, duration, ease: [0.65, 0, 0.35, 1] as const },
 });
 
-/**
- * The animated form of HelaIQMark: the two strokes and 3-step crossbar
- * draw themselves in sequence, then the connection dot springs in - "the
- * mark assembles itself, one connection at a time." Falls back to a
- * static mark under prefers-reduced-motion. Same paths as HelaIQMark, so
- * there's only one visual asset to maintain.
- */
+/** The animated form of HelaIQMark: the two strokes and 3-step crossbar draw themselves in sequence. */
 function AnimatedMark({ size = 40 }: { size?: number }) {
   const reduceMotion = useReducedMotion();
 

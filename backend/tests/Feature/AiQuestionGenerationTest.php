@@ -12,13 +12,7 @@ use App\Services\AiQuestionGeneration\QuestionDraftService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the AI question generation draft -> human-review -> promote
- * pipeline against the real dev database (no RefreshDatabase - see
- * AdaptivePlacementTest), with explicit tearDown cleanup. Uses the Mock
- * generator (default driver, no Gemini key required) so these tests never
- * depend on network access.
- */
+/** Exercises the AI question generation draft -> human-review -> promote pipeline against the real dev database. */
 class AiQuestionGenerationTest extends TestCase
 {
     private ?User $adminUser = null;
@@ -165,10 +159,7 @@ class AiQuestionGenerationTest extends TestCase
         $existingQuestion = Question::where('category_id', $category->id)->first();
         $this->assertNotNull($existingQuestion, 'Fixture requires at least one seeded question in this category.');
 
-        // A generator that always returns the exact text of an existing
-        // question - QuestionDraftService's Jaccard duplicate check should
-        // reject every attempt (retried 3x per requested question) and
-        // therefore persist zero drafts, never a near-duplicate.
+        // A generator that always returns the exact text of an existing question.
         $alwaysDuplicateGenerator = new class($existingQuestion->question_text_en) implements AiQuestionGeneratorServiceInterface
         {
             public function __construct(private string $duplicateText)

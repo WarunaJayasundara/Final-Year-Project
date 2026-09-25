@@ -64,10 +64,7 @@ export function Navbar() {
     .join('')
     .toUpperCase();
 
-  // 5-item top nav (Dashboard / Learn / Practice / Games / Progress) - Daily
-  // Practice and Mock Exam are no longer separate top-level items, they now
-  // live as prominent quick-start cards inside the Practice page itself
-  // (see PracticeTestPage.tsx) so the nav stays uncrowded.
+  // 5-item top nav (Dashboard / Learn / Practice / Games / Progress).
   const studentNav: NavEntry[] = [
     { to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" />, label: t('nav.dashboard') },
     { to: '/study-notes', icon: <Library className="h-4 w-4" />, label: t('nav.learn') },

@@ -44,13 +44,7 @@ export interface MockExamRequest {
   difficulty_mode?: 'standard' | 'adaptive';
 }
 
-/**
- * The placement test is delivered as a real computerized adaptive test (CAT):
- * one item at a time, each chosen to maximize information at the student's
- * current ability estimate (theta), re-estimated after every answer. See
- * backend App\Http\Controllers\Sessions\TestSessionController for the
- * Rasch-model item selection + MLE ability estimation this drives.
- */
+/** The placement test is delivered as a real computerized adaptive test (CAT): one item at a time. */
 export interface AdaptiveSessionData {
   id: number;
   session_type: 'placement';

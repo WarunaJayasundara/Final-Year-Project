@@ -6,16 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Passage-based weaken/strengthen critical reasoning. Built as a fixed
- * causal-argument template (extra exam practice sessions correlating
- * with higher marks), with only the numbers and weaken/strengthen mode
- * varying per row - not freeform generated prose. This keeps correctness
- * guaranteed by construction: a genuine confound always weakens a
- * correlation-implies-causation claim, and ruling it out always
- * strengthens it, so the correct option's logical role is fixed rather
- * than judged case by case.
- */
+/** Passage-based weaken/strengthen critical reasoning. */
 class CriticalReasoningPassageSeeder extends Seeder
 {
     use BuildsQuestions;

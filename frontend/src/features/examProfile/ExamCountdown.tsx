@@ -205,13 +205,7 @@ export function ExamCountdown() {
   );
 }
 
-/**
- * A compact version of StudyPlanPage's own numbered phase stepper (same 5
- * phases, same checkmark/current/upcoming states) - sized for the narrower
- * half-width dashboard card instead of the full-width study-plan page, so
- * circles/gaps/text shrink and every node stays flex-1/min-w-0 (no per-node
- * minimum width) to actually fit instead of overflowing or forcing scroll.
- */
+/** A compact version of StudyPlanPage's own numbered phase stepper (same 5 phases, same checkmark/current/upcoming states). */
 function PhaseTimelineTrack({ plan }: { plan: StudyPlan }) {
   const { t } = useTranslation('studyPlan');
   const currentIdx = PHASE_ORDER.indexOf(plan.phase);
@@ -261,12 +255,7 @@ function PhaseTimelineTrack({ plan }: { plan: StudyPlan }) {
   );
 }
 
-/**
- * A week-at-a-glance strip: one icon per day (same ACTIVITY_ICON mapping
- * StudyPlanPage's own weekly-schedule list uses for the same focus values),
- * today highlighted. Real data (plan.weekly_schedule), not decoration - and
- * icon-only by design so it never needs new translated day-name text.
- */
+/** A week-at-a-glance strip: one icon per day. */
 function WeeklyScheduleStrip({ plan }: { plan: StudyPlan }) {
   const { t } = useTranslation('studyPlan');
   const todayKey = DAY_ORDER[(new Date().getDay() + 6) % 7];
@@ -298,11 +287,7 @@ function WeeklyScheduleStrip({ plan }: { plan: StudyPlan }) {
   );
 }
 
-/**
- * Collapsed by default - only shown expanded when there's no active exam
- * profile (i.e. the student just finished one and hasn't started another),
- * since that's the moment "what happened last time" is most relevant.
- */
+/** Collapsed by default - only shown expanded when there's no active exam profile. */
 function PastExamsList() {
   const { t } = useTranslation('dashboard');
   const { data: history } = useExamHistory();

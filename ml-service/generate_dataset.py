@@ -241,14 +241,7 @@ def _composite_score(df: pd.DataFrame, rng: np.random.Generator):
 
     score += rng.normal(0, 0.35, len(df))
 
-    # Many of the z-scored inputs above are themselves correlated (most derive
-    # from the same latent theta/motivation/consistency traits), so the raw
-    # weighted sum's actual spread is much narrower than "sum of independent
-    # unit-variance terms" would suggest. Re-standardizing the composite
-    # itself (rather than assuming a fixed multiplier) is what makes the
-    # resulting label distribution span all four classes instead of
-    # collapsing onto one - the multiplier is a deliberate design choice
-    # (mean 55, SD 20) for a readable spread, not a further data assumption.
+    # Many of the z-scored inputs above are themselves correlated.
     score_z = (score - score.mean()) / (score.std() + 1e-9)
     percent = 55 + score_z * 20
     percent = np.clip(percent, 1, 99)

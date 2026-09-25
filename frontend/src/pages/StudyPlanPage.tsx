@@ -366,13 +366,7 @@ function GapStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-/**
- * Shown instead of the full exam-phase plan when the student has no exam
- * profile, since the phase/mock-test/pace-gap machinery below assumes an
- * exam date. weak_categories doesn't depend on an exam profile, so a
- * student training generally still gets a concrete "practice this" nudge
- * instead of just a "set up an exam" prompt.
- */
+/** Shown instead of the full exam-phase plan when the student has no exam profile. */
 function NoExamWeakAreaPanel({
   weakCategories,
   locale,

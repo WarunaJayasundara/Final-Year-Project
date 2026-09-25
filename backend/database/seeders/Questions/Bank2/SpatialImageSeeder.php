@@ -7,15 +7,7 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Spatial-intelligence image bank: polyomino shape rotation (true rotation
- * vs mirrored distractors), mirror images of glyph strings, paper folding
- * with punched holes, cube nets (opposite faces), and grid counting. Every
- * answer is exact by construction - rotation uses a chirality check so a
- * mirrored shape can never pass as a rotation, folding computes the
- * unfolded holes as reflections, cube nets use hand-verified fold
- * mappings, and counting uses closed-form formulas.
- */
+/** Spatial-intelligence image bank: polyomino shape rotation (true rotation vs mirrored distractors). */
 class SpatialImageSeeder extends Seeder
 {
     use BuildsQuestions;

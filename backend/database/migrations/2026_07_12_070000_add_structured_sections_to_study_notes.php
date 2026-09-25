@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Restructures a study note from a single text blob into distinguishable
- * teaching sections (learning objective already existed dormant on
- * questions/ai_generated_questions from an earlier session - this is the
- * study_notes equivalent). `content_en`/`content_si` remain as the
- * intro/concept-explanation section (backward compatible with every
- * pre-existing generated note); the 3 new sections are additive and
- * nullable so older notes simply omit them rather than breaking.
- */
+/** Restructures a study note from a single text blob into distinguishable teaching sections. */
 return new class extends Migration
 {
     public function up()

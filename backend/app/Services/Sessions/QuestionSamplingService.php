@@ -11,12 +11,7 @@ use Illuminate\Support\Collection;
 class QuestionSamplingService
 {
     /**
-     * Daily session: sampled across all categories at the user's current level,
-     * falling back to level +/- 1, then to repeats, if a category/level cell is
-     * short. $categoryAllocation (from WeakAreaWeightingService) overrides the
-     * default even split per category when provided - see that service's
-     * docblock for why placement/practice never pass one in.
-     *
+     * Daily session: sampled across all categories at the user's current level, falling back to level +/- 1, then to repeats.
      * @param  array<int,int>|null  $categoryAllocation  category_id => question count
      */
     public function sampleForDaily(int $userId, IqLevel $level, int $totalQuestions = 30, ?array $categoryAllocation = null): Collection
@@ -48,13 +43,7 @@ class QuestionSamplingService
     }
 
     /**
-     * Mock exam: weighted-but-bounded category representation - weak
-     * categories are over-sampled relative to their measured mastery, but
-     * every requested category still gets a guaranteed minimum share so the
-     * mock stays realistic-coverage (brief's own example: a student weak in
-     * Numerical/Spatial gets more of those, while Logical - already strong -
-     * still appears, just less often).
-     *
+     * Mock exam: weighted-but-bounded category representation - weak categories are over-sampled relative to their measured mastery.
      * @param  array<int,float>  $categoryAccuracy  category_id => accuracy_percent (0-100)
      * @param  \Illuminate\Support\Collection<int,int>  $categoryIds  categories to include (full syllabus or a selected subset)
      * @param  bool  $adaptiveDifficulty  when true, nudges each category's level up/down by the user's mastery in that category instead of using a single flat level for every category
@@ -93,13 +82,7 @@ class QuestionSamplingService
     }
 
     /**
-     * Baseline 50% of the exam split evenly across every requested category
-     * (guaranteed minimum coverage); the remaining 50% distributed by
-     * inverse-mastery weight (weaker categories get more of it). Weights are
-     * floored at 5 so an already-mastered category never drops to literally
-     * zero extra share. Rounding remainders are reconciled onto the
-     * lowest-mastery category so the total always matches exactly.
-     *
+     * Baseline 50% of the exam split evenly across every requested category (guaranteed minimum coverage).
      * @return array<int,int> category_id => question count
      */
     private function weightedAllocation(int $totalQuestions, Collection $categoryIds, array $categoryAccuracy): array
@@ -126,11 +109,7 @@ class QuestionSamplingService
         return $allocation;
     }
 
-    /**
-     * +/-1 level nudge per category based on that category's own mastery,
-     * documented heuristic (not a second ability estimate) - clamped to the
-     * platform's 5 authored levels.
-     */
+    /** +/-1 level nudge per category based on that category's own mastery, documented heuristic (not a second ability estimate). */
     private function adaptiveLevelFor(IqLevel $baseLevel, float $categoryAccuracy): IqLevel
     {
         $delta = $categoryAccuracy >= 70 ? 1 : ($categoryAccuracy <= 40 ? -1 : 0);
@@ -139,11 +118,7 @@ class QuestionSamplingService
         return IqLevel::where('level_number', $targetNumber)->first() ?? $baseLevel;
     }
 
-    /**
-     * All question ids ever presented to this user across any past session -
-     * used to keep daily/placement/practice sessions from re-serving the same
-     * question until the category/level pool is genuinely exhausted.
-     */
+    /** All question ids ever presented to this user across any past session. */
     private function seenQuestionIds(int $userId): Collection
     {
         return SessionAnswer::whereHas('session', function ($query) use ($userId) {

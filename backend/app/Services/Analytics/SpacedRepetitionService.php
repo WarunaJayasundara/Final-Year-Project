@@ -7,19 +7,7 @@ use App\Models\StudyNoteReview;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-/**
- * Simplified SM-2 spaced-repetition scheduler for study notes - confirmed
- * genuinely new (no next_review/ease_factor/interval_days concept existed
- * anywhere in the codebase before this). Documented as SIMPLIFIED: fixed
- * ease-factor deltas per grade (not SM-2's original per-grade quality-score
- * formula) and whole-day intervals only - this is deliberately not claimed
- * as a byte-for-byte reimplementation of Anki's algorithm, just the same
- * "graded recall -> growing interval" shape, which is what actually matters
- * for the brief's "schedule weak concepts for future revision" requirement.
- *
- * Grades: again (forgot) / hard / good / easy - the standard SM-2 grade
- * vocabulary, so behavior is checkable against the well-known original.
- */
+/** Simplified SM-2 spaced-repetition scheduler for study notes - confirmed genuinely new. */
 class SpacedRepetitionService
 {
     private const MIN_EASE = 1.3;

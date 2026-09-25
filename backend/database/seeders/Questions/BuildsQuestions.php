@@ -6,11 +6,7 @@ use App\Models\Category;
 use App\Models\IqLevel;
 use Illuminate\Support\Carbon;
 
-/**
- * Shared helpers for the per-category question seeders: resolves the
- * category/level ids once, and inserts a batch of question rows with
- * sensible defaults so each seeder file only has to describe content.
- */
+/** Shared helpers for the per-category question seeders: resolves the category/level ids once. */
 trait BuildsQuestions
 {
     private function categoryId(string $code): int

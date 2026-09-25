@@ -6,16 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Statement-sufficiency critical reasoning (a classic "data sufficiency"
- * archetype), missing from the question bank. Each instance is a
- * genuinely solvable small algebra scenario - whether a statement is
- * sufficient is determined by actually checking if it (alone or
- * combined) pins down a single value for X, never asserted. Restricted
- * to 3 unambiguous patterns (I-alone, II-alone, both-together-only); a
- * "neither is sufficient" pattern was left out since it's much harder to
- * guarantee isn't accidentally ambiguous.
- */
+/** Statement-sufficiency critical reasoning (a classic "data sufficiency" archetype), missing from the question bank. */
 class StatementSufficiencyReasoningSeeder extends Seeder
 {
     use BuildsQuestions;

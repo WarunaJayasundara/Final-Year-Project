@@ -10,11 +10,7 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-/**
- * The shared page title block for student pages: title, one line of context, optional
- * actions, on a bordered surface with a faint pattern. One component means every page
- * opens with the same rhythm instead of each inventing its own header.
- */
+/** The shared page title block for student pages: title, one line of context, optional actions. */
 export function PageHeader({ title, subtitle, pattern = 'steps', actions }: PageHeaderProps) {
   return (
     <header className="relative isolate overflow-hidden rounded-xl border border-border bg-card px-5 py-5 sm:px-6 sm:py-6">

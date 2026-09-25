@@ -10,15 +10,7 @@ interface PatternBackdropProps {
   className?: string;
 }
 
-/**
- * A faint, code-drawn pattern for page headers and empty corners. It is drawn in the
- * current text color (so it follows light/dark mode and the theme automatically), fades out
- * towards the content side so it never competes with text, and costs no image download.
- *
- *  - steps: the ascending staircase from the HelaIQ logo (progress)
- *  - dots / grid: calm structure (practice, games)
- *  - rings: concentric focus circles (attention, achievements)
- */
+/** A faint, code-drawn pattern for page headers and empty corners. */
 export function PatternBackdrop({ variant = 'steps', fade = 'left', className }: PatternBackdropProps) {
   const id = useId();
 

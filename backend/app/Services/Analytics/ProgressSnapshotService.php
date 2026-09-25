@@ -9,10 +9,7 @@ use Illuminate\Support\Carbon;
 
 class ProgressSnapshotService
 {
-    /**
-     * Upsert today's overall snapshot and, for a practice/placement/daily session,
-     * per-category snapshots based on that session's answers.
-     */
+    /** Upsert today's overall snapshot and, for a practice/placement/daily session. */
     public function upsertForSession(TestSession $session): void
     {
         $today = Carbon::today()->toDateString();

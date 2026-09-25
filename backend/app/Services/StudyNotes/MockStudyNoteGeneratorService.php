@@ -5,23 +5,7 @@ namespace App\Services\StudyNotes;
 use App\Contracts\StudyNoteGeneratorServiceInterface;
 use App\Models\Question;
 
-/**
- * Honest fallback note generator - it cannot genuinely summarize or teach
- * from text it has no real comprehension of, so it does NOT attempt to
- * fabricate a prose summary. Instead it surfaces the real, already-computed
- * signal (PdfIngestionService's keyword-matched topics) as a structured
- * "topics found in this document" reference note, clearly framed as a
- * topic index rather than an AI-written explanation. Real explanatory
- * teaching prose is what GeminiStudyNoteGeneratorService is for - same
- * "mock is honest about its limits, real LLM does the real work" pattern
- * as MockAiQuestionGeneratorService.
- *
- * The one place this mock DOES provide real (not fabricated) content: the
- * worked_example fields, which are populated from an actual live question
- * already in the bank for the matched topic/subcategory - a real, solver-
- * verified example, not an invented one, since the mock has no ability to
- * write a new one honestly.
- */
+/** Honest fallback note generator - it cannot genuinely summarize or teach from text it has no real comprehension of. */
 class MockStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterface
 {
     public function generate(string $documentTitle, string $textExcerpt, array $matchedTopics): array

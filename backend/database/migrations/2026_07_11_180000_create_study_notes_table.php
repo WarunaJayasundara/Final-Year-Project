@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * The "self-learning" layer: teaching/study notes generated from admin-
- * uploaded theory-book source documents (never from past-paper-type
- * documents, which have no teaching content to summarize). Same human-in-
- * the-loop draft->review->publish gate as ai_generated_questions - a note
- * is never shown to students until an admin explicitly publishes it, since
- * a hallucinated "teaching" explanation is worse than none at all.
- */
+/** The "self-learning" layer: teaching/study notes generated from admin- uploaded theory-book source documents. */
 return new class extends Migration
 {
     public function up()

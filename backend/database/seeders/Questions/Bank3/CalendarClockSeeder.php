@@ -6,13 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Calendar (day-of-week arithmetic) and clock-angle reasoning, an
- * archetype missing from the question bank. Day-of-week answers are
- * computed with modular arithmetic on a 7-day cycle; clock-angle answers
- * use the real formula |30H - 5.5M| (reduced to 0-180), restricted to
- * even minute values so every answer is a clean integer degree count.
- */
+/** Calendar (day-of-week arithmetic) and clock-angle reasoning, an archetype missing from the question bank. */
 class CalendarClockSeeder extends Seeder
 {
     use BuildsQuestions;

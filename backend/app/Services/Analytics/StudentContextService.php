@@ -7,12 +7,7 @@ use App\Models\TestSession;
 use App\Models\User;
 use App\Models\UserProgressSnapshot;
 
-/**
- * Builds a compact snapshot of a student's current standing (level, streak,
- * category accuracy, IQ estimate) for the AI coach to ground its answers in -
- * this is what makes the coach feel personalized without any model training:
- * every chat call reads the student's latest real data, not a cached profile.
- */
+/** Builds a compact snapshot of a student's current standing (level, streak, category accuracy. */
 class StudentContextService
 {
     public function __construct(private IqScoreService $iqScore, private StreakService $streak)

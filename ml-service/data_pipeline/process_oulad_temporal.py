@@ -127,18 +127,10 @@ def build() -> pd.DataFrame:
     df = df.merge(assess_half, on=["code_module", "code_presentation", "id_student"], how="inner")
     df = df.merge(courses, on=["code_module", "code_presentation"], how="left")
 
-    # A first-half assessment is required for the regression targets (a
-    # student with zero first-half assessments has nothing to compute
-    # first_half_avg_score from) - dropped rather than imputed, since
-    # imputing a fake "first half score" for students with no real one
-    # would fabricate the very ground truth these targets exist to provide.
+    # A first-half assessment is required for the regression targets.
     df = df.dropna(subset=["first_half_avg_score"])
 
-    # Canonically-named feature columns (matching FULL_FEATURE_ORDER's
-    # naming/derivation, computed on first-half-only data) - so the SAME
-    # live feature vector Laravel already sends for the main readiness
-    # classifier can feed these multi-output models too, rather than
-    # requiring a second, incompatible feature contract at inference time.
+    # Canonically-named feature columns (matching FULL_FEATURE_ORDER's naming/derivation, computed on first-half-only data).
     df["module_weeks_half"] = (df["module_presentation_length"] / 2 / 7).clip(lower=1)
     df["avg_test_score"] = df["first_half_avg_score"].round(2)
     df["weekly_practice_count"] = (df["first_half_active_days"] / df["module_weeks_half"]).round(2)

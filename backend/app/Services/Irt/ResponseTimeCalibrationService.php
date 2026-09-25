@@ -6,19 +6,7 @@ use App\Models\Question;
 use App\Models\SessionAnswer;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Learns each question's real expected solving time from actual
- * response_time_ms samples, replacing the author/AI-authored
- * solving_time_seconds baseline once enough data exists - the response-time
- * analogue of RaschCalibrationService, with the same
- * uncalibrated -> provisional -> calibrated lifecycle (irt_calibration_status
- * mirrored as time_calibration_status).
- *
- * Uses the median, not the mean: the brief this was built for explicitly
- * asks for outlier-robust statistics so a few abandoned tabs/browser-inactive
- * sessions don't drag the "expected" time around. Run via
- * `php artisan time:calibrate`.
- */
+/** Learns each question's real expected solving time from actual response_time_ms samples. */
 class ResponseTimeCalibrationService
 {
     /** Below this sample count, a question stays 'uncalibrated' (keeps the authored baseline). */

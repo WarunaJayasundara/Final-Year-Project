@@ -6,14 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Multi-statement truth-count reasoning: "how many of these statements
- * are true" rather than StatementSufficiencyReasoningSeeder's "do these
- * statements pin down a single value" question. Every instance is
- * evaluated by direct integer comparison against the generated X, never
- * asserted. Level 3 reveals X directly (single-step evaluation of 3
- * claims); Level 4-5 derives X from one linear clue first.
- */
+/** Multi-statement truth-count reasoning: "how many of these statements are true" rather than... */
 class TruthTellerLogicSeeder extends Seeder
 {
     use BuildsQuestions;
@@ -101,11 +94,7 @@ class TruthTellerLogicSeeder extends Seeder
     }
 
     /**
-     * Builds 3 independent threshold claims about $x (at_least / more_than /
-     * less_than, each with a randomly offset bound) and returns both the
-     * claim bounds and the real count of true claims - computed by direct
-     * comparison, never asserted.
-     *
+     * Builds 3 independent threshold claims about $x (at_least / more_than / less_than.
      * @return array{0: array<int,array{bound:int}>, 1: int}
      */
     private function buildClaims(int $x, int $seed): array

@@ -7,14 +7,7 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Abstract-reasoning image bank: Raven-style 3x3 matrix reasoning and
- * figure-series completion, rendered as composite SVGs (question figure +
- * labelled A-D answer tiles). Each answer comes from the generating rule,
- * and each distractor is a single-attribute mutation checked for visual
- * distinctness (including shape rotational symmetry) before being
- * accepted - a bad item throws instead of seeding silently.
- */
+/** Abstract-reasoning image bank: Raven-style 3x3 matrix reasoning and figure-series completion, rendered as composite SVGs. */
 class MatrixSeriesImageSeeder extends Seeder
 {
     use BuildsQuestions;
@@ -251,12 +244,7 @@ class MatrixSeriesImageSeeder extends Seeder
     // Shared helpers
     // ---------------------------------------------------------------
 
-    /**
-     * Builds $n distractor specs, each differing from the answer by exactly
-     * one attribute, all pairwise visually distinct (rotation compared
-     * modulo the shape's rotational symmetry). Returns null when a clean
-     * set can't be formed for this config.
-     */
+    /** Builds $n distractor specs, each differing from the answer by exactly one attribute, all pairwise visually distinct. */
     private function mutateSpec(array $answer, array $cfg, int $n): ?array
     {
         $candidates = [];

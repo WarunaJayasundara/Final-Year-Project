@@ -13,11 +13,7 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use Tests\TestCase;
 
-/**
- * Regression tests for a silent failure: four Gemini services referenced GeminiEndpoint without
- * importing it, every call threw "class not found", and the services' catch-all fallback quietly
- * served mock output instead. The mock-driver tests could not see this.
- */
+/** Regression tests for a silent failure: four Gemini services referenced GeminiEndpoint without importing it. */
 class GeminiEndpointWiringTest extends TestCase
 {
     public function test_every_service_that_uses_gemini_endpoint_imports_it()

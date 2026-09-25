@@ -8,11 +8,7 @@ export function useGames() {
 
 type SubmitGameScoreResult = Awaited<ReturnType<typeof submitGameScore>>;
 
-/**
- * onSuccess must be registered here (hook-level), never as a per-call
- * `.mutate(vars, { onSuccess })` argument - the latter is silently dropped
- * under React 18/19 Strict Mode's double-invoke behaviour. See CLAUDE.md.
- */
+/** onSuccess must be registered here (hook-level), never as a per-call `.mutate(vars, { onSuccess })` argument. */
 export function useSubmitGameScore(code: string, options?: { onSuccess?: (result: SubmitGameScoreResult) => void }) {
   const queryClient = useQueryClient();
   return useMutation({

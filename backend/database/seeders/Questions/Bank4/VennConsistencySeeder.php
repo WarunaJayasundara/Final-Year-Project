@@ -6,18 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Venn-diagram consistency reasoning: "which relationship description is
- * NOT contradicted by the given premises." Built via concrete set
- * construction rather than general categorical-syllogism inference rules,
- * which have edge cases that are easy to get subtly wrong: three
- * categories are modelled as real PHP sets over a small universe, A and C
- * are each built to satisfy a chosen relation (subset/disjoint/overlap)
- * against the shared middle category B, and the true relation between A
- * and C is computed directly from set operations, never asserted. The 4
- * answer options are mutually exclusive and jointly exhaustive, so
- * exactly one is correct for the constructed sets.
- */
+/** Venn-diagram consistency reasoning: "which relationship description is NOT contradicted by the given premises." Built via... */
 class VennConsistencySeeder extends Seeder
 {
     private const UNIVERSE_SIZE = 12;

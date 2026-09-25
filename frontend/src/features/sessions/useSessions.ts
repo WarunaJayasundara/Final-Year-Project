@@ -18,10 +18,7 @@ export function useCategories() {
   return useQuery({ queryKey: ['categories'], queryFn: fetchCategories, staleTime: 5 * 60_000 });
 }
 
-// onSuccess/onError are wired as hook-level useMutation callbacks (not passed to
-// .mutate() at the call site) because per-call mutate() callbacks are dropped if the
-// observer has no active subscriber at settle time (e.g. during a React 18 Strict
-// Mode double-invoke remount) - hook-level callbacks always fire.
+// onSuccess/onError are wired as hook-level useMutation callbacks.
 export function useStartPlacement(options?: { onSuccess?: (data: AdaptiveSessionData) => void; onError?: (error: unknown) => void }) {
   return useMutation({ mutationFn: startPlacement, ...options });
 }

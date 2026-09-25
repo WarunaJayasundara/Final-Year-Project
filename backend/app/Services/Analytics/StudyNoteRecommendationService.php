@@ -6,17 +6,7 @@ use App\Models\SessionAnswer;
 use App\Models\StudyNote;
 use App\Models\User;
 
-/**
- * Matches a student's weakest SUBCATEGORY (not just category - a finer
- * grain than WeakAreaWeightingService's own category-level weighting) to a
- * published StudyNote, for the "you struggled with X - learn it now"
- * personalized-remediation prompt (brief §10). Reuses
- * WeakAreaWeightingService::categoryAccuracy()'s exact live-aggregate query
- * shape, just grouped by questions.subcategory instead of category_id -
- * deliberately not a new mastery table, since this project already has two
- * different per-category accuracy computations (see the audit that found
- * this) and a third one at a different grain would just be more drift.
- */
+/** Matches a student's weakest SUBCATEGORY (not just category. */
 class StudyNoteRecommendationService
 {
     private const MIN_SAMPLE_SIZE = 5;

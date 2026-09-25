@@ -6,27 +6,13 @@ use App\Models\Question;
 use App\Models\SessionAnswer;
 use Illuminate\Support\Facades\DB;
 
-/**
- * DB-backed wrapper around RaschMath::calibrateItems(): pulls every answered
- * response from session_answers, runs the PROX joint calibration, and writes
- * the recovered item difficulties back onto questions.irt_difficulty. Run via
- * `php artisan irt:calibrate` (see App\Console\Commands\IrtCalibrate), and
- * safe to re-run at any time as more response data accumulates - each run
- * fully recomputes from the current response history rather than incrementally
- * updating, which is the standard approach for periodic re-calibration.
- */
+/** DB-backed wrapper around RaschMath::calibrateItems(): pulls every answered response from session_answers. */
 class RaschCalibrationService
 {
     /** Items with fewer responses than this keep their prior (level-derived) difficulty. */
     private const MIN_RESPONSES_PER_ITEM = 5;
 
-    /**
-     * Response count at which irt_calibration_status graduates from
-     * 'provisional' to 'calibrated' - same value/rationale as the migration
-     * that introduced the column (2026_07_11_060200_...), kept in sync here
-     * since this is the only place that updates the status after that
-     * migration's one-time backfill.
-     */
+    /** Response count at which irt_calibration_status graduates from 'provisional' to 'calibrated'. */
     private const CALIBRATED_THRESHOLD = 30;
 
     public function calibrate(): array
@@ -112,12 +98,7 @@ class RaschCalibrationService
         ];
     }
 
-    /**
-     * Prior difficulty for an item that hasn't been calibrated yet (or ever will
-     * be, if it's rarely served): derived from its authored level/difficulty_weight
-     * so the system has a sane starting point from day one, then gets refined by
-     * real calibration as response data accumulates.
-     */
+    /** Prior difficulty for an item that hasn't been calibrated yet (or ever will be, if it's rarely served). */
     public static function priorDifficulty(Question $question): float
     {
         $levelNumber = optional($question->level)->level_number ?? 3;

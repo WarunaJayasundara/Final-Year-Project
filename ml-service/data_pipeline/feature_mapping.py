@@ -52,17 +52,10 @@ FEATURE_ORDER = [
 
 FULL_FEATURE_ORDER = FEATURE_ORDER + af.ADVANCED_FEATURE_ORDER
 
-# Superset used only by the new time-aware ablation variants (Model C/D in
-# ablation_study.py) - kept separate from FULL_FEATURE_ORDER so the
-# currently-deployed model's serving contract (app.py, which defines its own
-# FULL_FEATURE_ORDER independently of this module) is completely unaffected
-# by this addition.
+# Superset used only by the new time-aware ablation variants (Model C/D in ablation_study.py).
 FULL_FEATURE_ORDER_TIME_AWARE = FULL_FEATURE_ORDER + tf.TIME_AWARE_FEATURE_ORDER
 
-# Both real sources are end-of-course retrospective records (the assessments/
-# grades already happened) rather than a live "N days before the exam"
-# snapshot - treated as a final-revision-phase snapshot, a documented
-# simplification rather than a measured value.
+# Both real sources are end-of-course retrospective records.
 _RETROSPECTIVE_DAYS_UNTIL_EXAM = 7
 
 # Neither source records a self-reported motivation rating - imputed at the
@@ -113,24 +106,14 @@ def _fill_platform_only_fields(df: pd.DataFrame) -> pd.DataFrame:
     df["avg_difficulty_solved"] = sm.difficulty_solved(theta, rng).round(3)
     df["ai_coach_usage_count"] = sm.ai_coach_usage(motivation_latent, rng)
 
-    # The 7 advanced features with no possible real-data analogue (need
-    # item-level correctness sequences, per-category IRT ability, or
-    # per-question response times that neither OULAD nor UCI record) - see
-    # advanced_features.py's module docstring for the full "platform-only"
-    # list and rationale. Generated from the same real-derived pseudo-theta
-    # as everything else in this function, via the identical structural
-    # model the pure-synthetic rows use.
+    # The 7 advanced features with no possible real-data analogue (need item-level correctness sequences, per-category IRT ability.
     platform_only_advanced = af.synthesize(theta, motivation_latent, consistency_latent, rng)
     for feature in ["fatigue_score", "retention_score", "error_recovery_rate",
                      "category_mastery", "confidence_trend", "reaction_speed_trend",
                      "adaptive_learning_gain"]:
         df[feature] = platform_only_advanced[feature]
 
-    # The 9 time-aware features (see time_features.py's module docstring):
-    # no public dataset records per-item response times, so these are
-    # synthesized from the same real-derived pseudo-theta/consistency_latent
-    # as the platform-only advanced features above - documented as synthetic
-    # even for otherwise-real rows, not measured.
+    # The 9 time-aware features (see time_features.py's module docstring): no public dataset records per-item response times.
     time_aware = tf.synthesize(theta, motivation_latent, consistency_latent, rng)
     for feature in tf.TIME_AWARE_FEATURE_ORDER:
         df[feature] = time_aware[feature]
@@ -144,10 +127,7 @@ def map_oulad() -> pd.DataFrame:
     out = pd.DataFrame(index=raw.index)
     out["avg_test_score"] = raw["avg_assessment_score"].round(2)
     out["wrong_answer_percent"] = (100 - out["avg_test_score"]).round(2)
-    # Real trend is already on the 0-100 assessment-score scale (second-half
-    # minus first-half average); clipped to the synthetic generator's range
-    # for comparability, not rescaled - both are seen as a raw feature value
-    # by the (scale-invariant) tree-based models this trains.
+    # Real trend is already on the 0-100 assessment-score scale (second-half minus first-half average).
     out["improvement_trend"] = raw["assessment_score_trend"].clip(-12, 15).round(2)
     # std of 5-25 typical for OULAD's 0-100 assessment scores; *2 maps that
     # onto a 50-100 consistency band comparable to the synthetic generator's
@@ -217,10 +197,7 @@ def map_uci() -> pd.DataFrame:
 
     studytime_to_daily_hours = {1: 1 / 7, 2: 3.5 / 7, 3: 7.5 / 7, 4: 12 / 7}
     out["study_hours"] = raw["studytime"].map(studytime_to_daily_hours).round(2)
-    # absences is a termly count (0-93 in this dataset); normalized against
-    # a documented reference ceiling of 30 (roughly a school term) rather
-    # than the dataset's own max, so a single extreme outlier doesn't
-    # compress everyone else's attendance_percent toward 100.
+    # absences is a termly count (0-93 in this dataset); normalized against a documented reference ceiling of 30.
     out["attendance_percent"] = (100 * (1 - raw["absences"].clip(0, 30) / 30)).round(2)
     # UCI has no partial-submission records (grades are all-or-nothing per
     # term) - assumed fully completed, documented as an assumption.
@@ -228,22 +205,14 @@ def map_uci() -> pd.DataFrame:
     out["motivation_score"] = _NEUTRAL_MOTIVATION
     out["days_until_exam"] = _RETROSPECTIVE_DAYS_UNTIL_EXAM
 
-    # UCI only has 3 static grades per student (no dated event log), so the
-    # real-derivable advanced features reduce to simple 3-point arithmetic
-    # rather than a true rolling/OLS-trend computation - still genuinely
-    # derived from real grades, just with far less signal than OULAD's
-    # day-level data affords (documented limitation).
+    # UCI only has 3 static grades per student (no dated event log).
     out["rolling_avg_score"] = out["avg_test_score"]  # only 3 points exist; the mean IS the "rolling" average
     out["weekly_trend"] = (raw["grade_trend"] * 5 / 4).clip(-6, 6).round(3)  # G1->G2 approx spans one grading period (~4 weeks)
     out["monthly_trend"] = (raw["grade_trend"] * 5).clip(-10, 10).round(3)
     out["knowledge_gain_rate"] = (raw["grade_trend"] * 5 / 2).round(3)  # per grading transition, /2 transitions available
     out["consistency_index"] = out["consistency_score"]  # same CV-based measure, already computed above
 
-    # No real signal at all for these five in UCI (no clickstream, no
-    # per-item difficulty, no subcategory taxonomy) - filled from the same
-    # structural model as the platform-only fields below, using the
-    # pseudo-theta/consistency_latent this function derives from real
-    # grades, documented as synthetic rather than left unmarked.
+    # No real signal at all for these five in UCI (no clickstream, no per-item difficulty, no subcategory taxonomy).
     rng = np.random.default_rng(RNG_SEED_FOR_PLATFORM_ONLY_FIELDS + 1)
     theta, consistency_latent, motivation_latent = _pseudo_theta_and_latents(out["avg_test_score"], out["consistency_score"])
     proxy_advanced = af.synthesize(theta, motivation_latent, consistency_latent, rng)

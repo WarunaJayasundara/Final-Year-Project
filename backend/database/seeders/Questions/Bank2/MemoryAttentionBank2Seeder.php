@@ -6,14 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Competitive-grade memory and attention banks, using the original
- * seeders' verified bilingual frames but with an adult working-memory
- * load: digit spans up to 9, 4-6 item paired-association lists, 6-9 word
- * visual-search phrases, and 8-14 number scanning lists. Recall positions
- * are capped at 7 since the verified Sinhala ordinal corpus only goes up
- * to "seventh".
- */
+/** Competitive-grade memory and attention banks. */
 class MemoryAttentionBank2Seeder extends Seeder
 {
     use BuildsQuestions;

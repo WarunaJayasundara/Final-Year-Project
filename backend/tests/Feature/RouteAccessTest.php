@@ -7,11 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * Sweeps every API route: anonymous callers are turned away, students cannot reach admin routes,
- * and no read-only route crashes (HTTP 500) for a signed-in student or admin. Uses the real dev
- * database like the rest of the suite (no RefreshDatabase); the users it creates are deleted.
- */
+/** Sweeps every API route: anonymous callers are turned away, students cannot reach admin routes, and no read-only route crashes. */
 class RouteAccessTest extends TestCase
 {
     /** @var User[] */

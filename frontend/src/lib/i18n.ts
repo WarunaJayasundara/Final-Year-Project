@@ -66,10 +66,7 @@ i18n
     },
   });
 
-// Keeps <html lang> in sync with the active i18next language - the
-// :lang(si) CSS rule that switches in the Sinhala font depends on this
-// attribute, which index.html only ever sets once (to "en") and nothing
-// else was updating it.
+// Keeps <html lang> in sync with the active i18next language.
 const syncHtmlLang = (lng: string) => {
   document.documentElement.lang = lng.startsWith('si') ? 'si' : 'en';
 };

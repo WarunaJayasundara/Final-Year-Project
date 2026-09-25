@@ -4,28 +4,10 @@ namespace App\Services\QuestionBank;
 
 use Smalot\PdfParser\Parser;
 
-/**
- * Extracts raw text from admin-uploaded reference PDFs (smalot/pdfparser -
- * pure PHP, no system binary dependency, unlike poppler/pdftoppm) and
- * suggests topics via a documented keyword-frequency match against
- * MindRise's existing taxonomy.
- *
- * IMPORTANT: `suggestTopics()` is an explainable heuristic, not an NLP/ML
- * claim. It counts occurrences of a fixed keyword list per taxonomy topic
- * and ranks by count. It cannot understand the document; it only tells the
- * admin "these keywords appeared this often," which the admin then uses to
- * decide what to generate questions about. This is deliberate - the project
- * does not claim automated deep topic extraction it hasn't actually built.
- */
+/** Extracts raw text from admin-uploaded reference PDFs (smalot/pdfparser - pure PHP, no system binary dependency. */
 class PdfIngestionService
 {
-    /**
-     * category/subcategory => keyword list. Keys mirror `questions.subcategory`
-     * values already in use (Bank2) plus the new Bank3 archetypes this
-     * session adds (blood_relations, direction_sense, coding_decoding,
-     * calendar_clock, seating_arrangement, data_interpretation,
-     * statement_sufficiency).
-     */
+    /** category/subcategory => keyword list. */
     private const TAXONOMY_KEYWORDS = [
         'numerical_ability' => ['percentage', 'ratio', 'average', 'profit', 'loss', 'discount', 'interest', 'speed', 'distance', 'time', 'work', 'number series', 'fraction', 'decimal'],
         'data_interpretation' => ['table', 'bar chart', 'pie chart', 'graph', 'data interpretation', 'line chart', 'statistics'],
@@ -89,31 +71,7 @@ class PdfIngestionService
     }
 
     /**
-     * Segments extracted text into chapter-sized chunks using structural
-     * heading markers actually observed across this project's uploaded
-     * reference PDFs (Sinhala "පරිච්ඡේදය N:", Sinhala "N කොටස:", and
-     * English "Chapter N"), then re-runs suggestTopics() per chunk instead
-     * of once for the whole document.
-     *
-     * IMPORTANT: same honesty constraint as suggestTopics() - this is
-     * regex-based structural segmentation, not a semantic table-of-contents
-     * extraction. A document with no recognizable heading pattern degrades
-     * to a single whole-document entry rather than fabricating structure
-     * that isn't there.
-     *
-     * Deliberately narrower than an earlier version of this method: a
-     * generic "N.N Title" numbered-subsection pattern and a standalone
-     * "(N) Title" pattern were tried first and dropped after live testing
-     * against this project's own uploaded PDFs showed them matching
-     * mid-sentence numeric fragments (e.g. "2.5 miles long..." from a word
-     * problem, or "(4) ANURADAPURA..." from a coding-decoding question) as
-     * if they were real headings - PDF text extraction doesn't reliably
-     * preserve "this is a new visual line" as "this is a new logical
-     * line," so those two patterns had a real false-positive rate this
-     * feature's honesty requirement can't accept. Only the 3 markers below
-     * were confirmed low-false-positive-risk against real uploaded
-     * documents.
-     *
+     * Segments extracted text into chapter-sized chunks using structural heading markers actually observed across this project's...
      * @return array<int, array{chapter: string, topics: array, excerpt_char_count: int}>
      */
     public function buildKnowledgeMap(string $text): array
@@ -162,13 +120,7 @@ class PdfIngestionService
         return array_slice($map, 0, 40);
     }
 
-    /**
-     * Very lightweight structural pattern detection - counts of common
-     * question-paper markers (question numbering, MCQ option letters, answer
-     * key sections) so the admin gets a rough sense of document structure
-     * before deciding whether/how to use it. Not a claim of question
-     * extraction.
-     */
+    /** Very lightweight structural pattern detection - counts of common question-paper markers (question numbering, MCQ option letters. */
     public function detectPatterns(string $text): array
     {
         $unicodeSinhalaCharCount = preg_match_all('/[\x{0D80}-\x{0DFF}]/u', $text);
@@ -178,15 +130,7 @@ class PdfIngestionService
             'mcq_option_markers' => preg_match_all('/\b[a-dA-D][\.\)]\s/u', $text),
             'answer_key_mentions' => preg_match_all('/answer key|correct answer|පිළිතුරු/iu', $text),
             'approx_word_count' => str_word_count(preg_replace('/[^\x20-\x7E]/', ' ', $text)),
-            // Real Unicode Sinhala codepoints found in the extracted text. Some
-            // older Sri Lankan PDFs (seen in this project's own reference set)
-            // use legacy non-Unicode Sinhala fonts (e.g. FM/Kaputa-style glyph
-            // fonts) where the underlying character codes map to Latin-range
-            // bytes - extraction then produces readable-looking but meaningless
-            // mojibake instead of real Sinhala text. A near-zero count here on a
-            // document known/titled to be in Sinhala is a strong signal that
-            // extracted text is NOT reliable for that document and needs manual
-            // review rather than automated topic/theory use.
+            // Real Unicode Sinhala codepoints found in the extracted text.
             'unicode_sinhala_char_count' => $unicodeSinhalaCharCount,
         ];
     }

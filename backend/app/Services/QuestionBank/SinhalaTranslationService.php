@@ -6,16 +6,7 @@ use App\Services\Gemini\GeminiEndpoint;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
-/**
- * Drafts Sinhala for an English question through Gemini, grounded in the
- * project's reviewed terminology glossary. The result is only ever a DRAFT:
- * every string is run through SinhalaTextGuard, and the admin UI requires an
- * explicit human review before a machine-translated question can be saved.
- *
- * There is deliberately no offline fallback: this project never writes
- * Sinhala from templates or guesses. Without a working Gemini key the service
- * says so and the admin types the Sinhala themselves.
- */
+/** Drafts Sinhala for an English question through Gemini, grounded in the project's reviewed terminology glossary. */
 class SinhalaTranslationService
 {
     private const MAX_FIELDS = 14;

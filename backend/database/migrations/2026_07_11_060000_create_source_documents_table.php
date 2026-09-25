@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Admin-uploaded reference PDFs (past papers, IQ/aptitude books, exam-prep
- * guides) used as topic/style/theory inspiration for question generation -
- * never a source of verbatim questions. `extracted_topics`/`detected_patterns`/
- * `extracted_theory_concepts` are populated by PdfIngestionService's
- * keyword-frequency heuristic against the existing taxonomy, not a claim of
- * deep NLP understanding - see PdfIngestionService docblock.
- */
+/** Admin-uploaded reference PDFs (past papers, IQ/aptitude books. */
 return new class extends Migration
 {
     public function up()

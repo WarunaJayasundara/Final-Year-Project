@@ -6,14 +6,7 @@ use App\Models\Category;
 use App\Models\Question;
 use Illuminate\Support\Collection;
 
-/**
- * Picks the next item for the adaptively-delivered placement test: the
- * candidate (within a target category, for content balancing across the 5
- * diagnostic categories - see Kingsbury & Zara (1989) on constrained CAT)
- * whose difficulty is closest to the student's current ability estimate,
- * which is equivalent to maximizing Fisher information at theta for the
- * Rasch model (information peaks exactly where difficulty = ability).
- */
+/** Picks the next item for the adaptively-delivered placement test: the candidate (within a target category. */
 class AdaptiveItemSelectionService
 {
     /** @return int[] category ids in a fixed round-robin content-balancing order */
@@ -33,10 +26,7 @@ class AdaptiveItemSelectionService
         return $this->closestToAbility($candidates, $theta);
     }
 
-    /**
-     * Fallback used when a category's unseen pool is exhausted: picks the closest
-     * match from any category instead of failing the test outright.
-     */
+    /** Fallback used when a category's unseen pool is exhausted. */
     public function selectNextAnyCategory(float $theta, Collection $excludeIds): ?Question
     {
         $candidates = Question::where('is_active', true)

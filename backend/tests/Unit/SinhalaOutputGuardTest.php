@@ -12,10 +12,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Tests\TestCase;
 
-/**
- * A model's Sinhala can arrive with letters from other scripts (Korean, Amharic, Kannada, ...). That must
- * never reach a student, whichever service produced it.
- */
+/** A model's Sinhala can arrive with letters from other scripts (Korean, Amharic, Kannada, ...). */
 class SinhalaOutputGuardTest extends TestCase
 {
     public function test_guard_rejects_letters_from_scripts_models_slip_into_sinhala()

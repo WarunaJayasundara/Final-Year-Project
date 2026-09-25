@@ -48,10 +48,7 @@ class LevelAdjustmentServiceTest extends TestCase
         $this->assertSame($this->service->levelNumberForTheta(-1.5), 6 - $this->service->levelNumberForTheta(1.5));
     }
 
-    /**
-     * Levels must correspond 1:1 with IqScoreService::classify()'s IQ bands
-     * on the same theta scale - the whole point of the realigned cutpoints.
-     */
+    /** Levels must correspond 1:1 with IqScoreService::classify()'s IQ bands on the same theta scale. */
     public function test_levels_agree_with_iq_classification_bands()
     {
         $cases = [

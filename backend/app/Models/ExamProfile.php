@@ -59,10 +59,7 @@ class ExamProfile extends Model
         'other' => 'Other',
     ];
 
-    /**
-     * A heuristic, not measured data: relative-difficulty weight per exam
-     * category, used only to lightly tune StudyPlanService's intensity.
-     */
+    /** A heuristic, not measured data: relative-difficulty weight per exam category. */
     public const DIFFICULTY_WEIGHT = [
         'slas' => 1.2,
         'university_aptitude' => 1.2,
@@ -98,12 +95,7 @@ class ExamProfile extends Model
         return max(0, (int) Carbon::now()->startOfDay()->diffInDays($this->exam_date, false));
     }
 
-    /**
-     * True once the exam date has passed. Distinct from status='completed':
-     * a profile stays 'active' (still prompting for an outcome) until the
-     * student records one or starts a new profile - see
-     * ExamProfileController::store()/outcome().
-     */
+    /** True once the exam date has passed. */
     public function isPastDue(): bool
     {
         return $this->exam_date !== null && $this->exam_date->startOfDay()->isBefore(Carbon::now()->startOfDay());
@@ -119,11 +111,7 @@ class ExamProfile extends Model
         return round(($this->exam_duration_minutes * 60) / $this->exam_total_questions, 1);
     }
 
-    /**
-     * Raw signed day-count from profile creation to exam date - can be zero
-     * or negative if the exam is on/before the creation day. Private: callers
-     * want one of the three clamped views below, not this raw value.
-     */
+    /** Raw signed day-count from profile creation to exam date - can be zero or negative if the exam is on/before the creation day. */
     private function prepTotalDaysRaw(): ?int
     {
         if (! $this->exam_date) {
@@ -133,17 +121,7 @@ class ExamProfile extends Model
         return (int) $this->created_at->startOfDay()->diffInDays($this->exam_date, false);
     }
 
-    /**
-     * How many days this student's own prep window actually spans (from the
-     * day they set up this exam profile to the exam date) - always at least
-     * 1. This is deliberately independent of daysRemaining()/StudyPlanService's
-     * phase boundaries (which only look at time left until the exam): two
-     * students with the same daysRemaining but different prepTotalDays are on
-     * genuinely different journeys - one set a short-notice exam, the other
-     * has been preparing for a while - and the frontend surfaces this
-     * separately as "Day X of your Y-day plan" rather than folding it into
-     * the phase name.
-     */
+    /** How many days this student's own prep window actually spans (from the day they set up this exam profile to the exam date). */
     public function prepTotalDays(): ?int
     {
         $totalDays = $this->prepTotalDaysRaw();

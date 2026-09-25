@@ -52,14 +52,7 @@ from xgboost import XGBClassifier, XGBRegressor
 PROCESSED = Path(__file__).parent / "data" / "processed"
 MODELS_DIR = Path(__file__).parent / "models"
 
-# A SUBSET of FULL_FEATURE_ORDER (see data_pipeline/feature_mapping.py) -
-# using the platform's own canonical feature names/derivations (computed
-# here on first-half-only OULAD data, see process_oulad_temporal.py) means
-# the exact same live feature vector Laravel sends for the main readiness
-# classifier can feed these multi-output models too, with no second,
-# incompatible feature contract at inference time. Using anything from the
-# second half here would leak the very information these targets exist to
-# predict.
+# A SUBSET of FULL_FEATURE_ORDER (see data_pipeline/feature_mapping.py).
 MULTIOUTPUT_FEATURES = [
     "avg_test_score", "weekly_practice_count", "question_completion_rate",
     "engagement_score", "practice_intensity",

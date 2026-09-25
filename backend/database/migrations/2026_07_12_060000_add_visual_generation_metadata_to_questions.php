@@ -4,18 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Persists the transformation rule behind each generated image question -
- * confirmed absent from the schema by the adult-content audit
- * (SvgFigureBuilder's rotation/mirror/etc. parameters previously lived only
- * in seeder PHP code, never stored alongside the question row). Additive
- * and nullable so every pre-existing image question (Bank2's matrix/
- * spatial seeders) remains valid with these simply absent.
- *
- * `visual_complexity_score` is a documented heuristic (independent
- * transformation-dimension count x distractor plausibility), not a
- * validated psychometric difficulty measure - see SvgFigureBuilder.
- */
+/** Persists the transformation rule behind each generated image question. */
 return new class extends Migration
 {
     public function up()

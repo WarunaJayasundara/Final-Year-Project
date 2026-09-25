@@ -4,11 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Harder numerical-ability questions modelled on real Sri Lankan
- * competitive exam papers: work & time, simple interest, age problems,
- * relative speed, and ratio-increase problems. Concentrated at levels 3-5.
- */
+/** Harder numerical-ability questions modelled on real Sri Lankan competitive exam papers: work & time, simple interest. */
 class AdvancedNumericalQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

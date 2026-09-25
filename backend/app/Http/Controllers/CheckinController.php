@@ -6,11 +6,7 @@ use App\Models\UserDailyCheckin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Captures the three exam-readiness inputs that have no other source on the
- * platform (study hours, motivation, attendance) - see the
- * user_daily_checkins migration comment for why these are self-reported.
- */
+/** Captures the three exam-readiness inputs that have no other source on the platform (study hours, motivation, attendance). */
 class CheckinController extends Controller
 {
     public function today(Request $request)

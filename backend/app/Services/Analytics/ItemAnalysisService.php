@@ -6,20 +6,7 @@ use App\Models\Question;
 use App\Models\SessionAnswer;
 use App\Models\User;
 
-/**
- * Psychometric validation of the live item bank and the platform's ability
- * estimates - what turns "2000+ questions" into an empirically checked
- * measurement instrument rather than just a pile of content. Backs the admin
- * "Psychometrics" dashboard.
- *
- * Reliability is reported as *marginal reliability* (Green, Bock, Humphreys,
- * Linn & Reckase, 1984) rather than classical Cronbach's alpha, because
- * students each answer a different, adaptively/randomly sampled set of
- * items - alpha assumes a common fixed test form, which doesn't hold here.
- * Marginal reliability = 1 - mean(SE(theta)^2) / Var(theta) is the standard
- * IRT/CAT analogue and uses exactly the per-student standard errors this
- * platform already computes.
- */
+/** Psychometric validation of the live item bank and the platform's ability estimates. */
 class ItemAnalysisService
 {
     public function summary(): array
@@ -86,12 +73,7 @@ class ItemAnalysisService
             ->all();
     }
 
-    /**
-     * Point-biserial item discrimination: correlation between getting item i
-     * right/wrong and overall ability (theta at time of analysis). Requires
-     * at least 5 responses to an item, from respondents with both a correct
-     * and an incorrect outcome present, to be numerically meaningful.
-     */
+    /** Point-biserial item discrimination: correlation between getting item i right/wrong and overall ability. */
     public function itemDiscrimination(int $limit = 10): array
     {
         $rows = SessionAnswer::whereNotNull('session_answers.answered_at')

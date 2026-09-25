@@ -64,10 +64,7 @@ class AttentionQuestionsSeeder extends Seeder
     }
 
     /**
-     * Picks $needed unique (word-subset, letter) combinations via rejection
-     * sampling instead of building the full combinatorial space, which is
-     * far larger than the ~27 combos actually needed.
-     *
+     * Picks $needed unique (word-subset, letter) combinations via rejection sampling instead of building the full combinatorial space.
      * @return array<int,array{0:array<int,int>,1:int}> [wordIndices, letterIndex]
      */
     private function buildLetterCountCombos(int $level, int $needed): array

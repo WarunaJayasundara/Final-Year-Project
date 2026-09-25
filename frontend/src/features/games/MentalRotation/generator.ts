@@ -2,12 +2,7 @@ export const GRID_SIZE = 4;
 
 export type Cell = [row: number, col: number];
 
-/**
- * Hand-picked chiral shapes: each has four distinct rotations and its mirror image is
- * NOT one of them, so a mirrored option can never also be a valid rotation. That is what
- * gives every round exactly one correct answer. Verified by brute force on the 4x4 grid
- * (an earlier S-shaped entry was mirror-symmetric and made every option correct).
- */
+/** Hand-picked chiral shapes: each has four distinct rotations and its mirror image is NOT one of them. */
 const BASE_SHAPES: Cell[][] = [
   [[0, 0], [0, 1], [0, 2], [1, 0], [2, 0], [2, 1], [3, 0]],
   [[0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [2, 0], [3, 0]],
@@ -66,12 +61,7 @@ export function generateRound(): RotationRound {
   const correctTurns = Math.floor(Math.random() * 4);
   const correct = rotateBy(base, correctTurns);
 
-  // All 4 mirror rotations, deduplicated by shape (verified: every BASE_SHAPES entry's
-  // mirror has 4 distinct rotations, so this always yields exactly 3 after shuffling+slicing).
-  // Enumerating up front and slicing - instead of randomly sampling turns with a capped retry
-  // loop - removes a real rare-but-real bug: a capped random loop can (about 1 in 200,000 rounds,
-  // confirmed by simulation) fail to find 3 distinct values within its attempt budget, and the
-  // old fallback for that case pushed shapes without checking distinctness, producing duplicate options.
+  // All 4 mirror rotations, deduplicated by shape (verified: every BASE_SHAPES entry's mirror has 4 distinct rotations.
   const mirrored = mirror(base);
   const mirrorRotations: Cell[][] = [];
   const mirrorKeys = new Set<string>();

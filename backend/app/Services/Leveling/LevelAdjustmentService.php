@@ -6,29 +6,7 @@ use App\Models\IqLevel;
 use App\Models\TestSession;
 use App\Services\Irt\AbilityEstimationService;
 
-/**
- * Maps a student's Rasch-model ability estimate (theta, a latent trait on a
- * roughly standard-normal logit scale after PROX calibration) onto the
- * platform's 5 authored levels, and updates the student's running theta after
- * every placement/daily session. Practice sessions never change level or
- * theta (they're user-chosen category drills, not adaptively targeted
- * evidence about ability).
- *
- * Cutpoints are chosen to line up exactly with IqScoreService::classify()'s
- * deviation-IQ bands (IQ = 100 + 15*theta), so a student's platform level
- * and their IQ classification always agree instead of being two
- * independently-banded views of the same theta:
- *   Level 1 (theta < -2.0)        <-> IQ < 70   "Extremely Low"
- *   Level 2 (-2.0 <= theta < -1.0) <-> IQ 70-84  "Below Average"
- *   Level 3 (-1.0 <= theta < 1.0)  <-> IQ 85-114 "Average"
- *   Level 4 (1.0 <= theta < 2.0)   <-> IQ 115-129 "Above Average"
- *   Level 5 (theta >= 2.0)         <-> IQ >= 130 "Gifted"
- * Previously used a different, narrower banding (+/-0.5 and +/-1.5 logits)
- * that didn't correspond to the IQ bands at all - e.g. a student could be
- * "Level 5 - Expert" while showing as "Above Average" (not "Gifted") on
- * their dashboard, which read as two systems disagreeing about the same
- * ability estimate.
- */
+/** Maps a student's Rasch-model ability estimate (theta. */
 class LevelAdjustmentService
 {
     private const CUTPOINT_1_2 = -2.0;
@@ -54,12 +32,7 @@ class LevelAdjustmentService
         };
     }
 
-    /**
-     * Apply leveling rules after a session is completed. For placement/daily
-     * sessions this re-estimates the student's overall theta from their full
-     * response history (not just this session) via MLE, then derives
-     * current_level_id from it. Practice sessions are a no-op for level/theta.
-     */
+    /** Apply leveling rules after a session is completed. */
     public function adjustLevelAfterSession(TestSession $session): void
     {
         $user = $session->user;

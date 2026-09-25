@@ -69,12 +69,7 @@ body {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/*
- * HelaIQ theme: "academic professional".
- * Neutral paper-and-ink surfaces, a deep navy primary, and a single muted amber
- * accent reserved for achievements/streaks. No tinted backgrounds, glass or glow:
- * hierarchy comes from spacing, type and fine borders.
- */
+/** HelaIQ theme: "academic professional". */
 :root {
   color-scheme: light;
   --background: oklch(0.972 0.008 255);
@@ -206,14 +201,7 @@ body {
   }
 }
 
-/* ------------------------------------------------------------------------
-   Sinhala typography (html[lang="si"], set by lib/i18n.ts)
-   Sinhala is a tall script: it carries marks above and below the line, its conjuncts need
-   room, and it reads poorly at Latin sizes. Modern Sinhala sites therefore use a slightly
-   larger size, generous leading, real font weights and NO letter-spacing. This block retunes
-   Tailwind's own scale variables, so every existing text-*, leading-* and tracking-* utility
-   adapts without touching a component. It is unlayered on purpose: it must beat the theme layer.
-   ------------------------------------------------------------------------ */
+/** Sinhala typography (html[lang="si"], set by lib/i18n.ts) Sinhala is a tall script: it carries marks above and below the line. */
 html:lang(si) {
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.7;
@@ -296,14 +284,7 @@ html:lang(si) .uppercase {
     display: none;
   }
 }
-/* ------------------------------------------------------------------------
-   Ambient page background (components/brand/AmbientBackground.tsx)
-   A tinted engineering grid that fades downwards, two horizon glows in the section's colors,
-   film grain, and a staircase (the HelaIQ mark) that draws itself while a light climbs it.
-   Light and dark themes have their own palettes: light needs saturated color to be seen on
-   paper, dark reuses the softer chart tokens. Registered color properties let the tone
-   cross-fade when the section changes.
-   ------------------------------------------------------------------------ */
+/** Ambient page background (components/brand/AmbientBackground.tsx) A tinted engineering grid that fades downwards. */
 @property --ambient-a {
   syntax: '<color>';
   inherits: true;

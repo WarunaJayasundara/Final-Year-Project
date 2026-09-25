@@ -6,11 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Loads a snapshot written by content:export. Safe to run on every container
- * start: it does nothing when the question bank already has rows, unless
- * --force is given (which replaces the content tables, never user data).
- */
+/** Loads a snapshot written by content:export. */
 class ContentImport extends Command
 {
     protected $signature = 'content:import {--path= : Snapshot file (default database/content/content.json.gz)} {--force : Replace existing content}';

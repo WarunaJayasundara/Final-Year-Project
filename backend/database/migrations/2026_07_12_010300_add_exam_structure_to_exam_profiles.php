@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Optional real-exam structure, used to compute a target pace
- * (ExamProfile::targetSecondsPerQuestion()) and to size mock exams. All
- * nullable - the student can skip every one of these and the platform keeps
- * working exactly as before (target_score, the existing personal-goal field,
- * is untouched and distinct from pass_mark here).
- */
+/** Optional real-exam structure, used to compute a target pace (ExamProfile::targetSecondsPerQuestion()) and to size mock exams. */
 return new class extends Migration
 {
     public function up()

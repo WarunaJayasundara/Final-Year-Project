@@ -157,18 +157,9 @@ class PredictionRequest(BaseModel):
     question_diversity_score: float = 50.0
     time_management_score: float = 50.0
     revision_frequency: float = 0.0
-    # Optional snapshot of the PREVIOUS prediction's feature vector (Laravel
-    # already stores this in exam_readiness_predictions.features) - enables
-    # the trend-aware plain-English explanation ("your X dropped by Y%")
-    # instead of a static one when this student has a prediction history.
+    # Optional snapshot of the PREVIOUS prediction's feature vector.
     previous_features: Optional[Dict[str, float]] = None
-    # Optional time-aware signals (not yet part of FULL_FEATURE_ORDER / the
-    # live model's input contract - see FeatureExtractionService::
-    # TIME_AWARE_FEATURE_ORDER's docblock for why the cutover is deliberately
-    # deferred to a promoted model). When present, only used to derive the
-    # rule-based time_management_readiness_percent below - never fed into
-    # the classifier itself, so this is safe to send even against the
-    # currently-deployed model.
+    # Optional time-aware signals (not yet part of FULL_FEATURE_ORDER / the live model's input contract.
     exam_pace_gap: Optional[float] = None
     time_efficiency_score: Optional[float] = None
 
@@ -200,11 +191,7 @@ class PredictionResponse(BaseModel):
     reasons: List[Reason]
     model_version: str
     plain_english_explanation: str
-    # This is a MODEL ESTIMATE from a partly-synthetic-trained classifier
-    # (see ML_RESEARCH_METHODOLOGY.md's threats-to-validity section), not a
-    # verified real-world pass probability for any specific examination -
-    # the brief this was built for explicitly requires this distinction be
-    # stated, not just implied by documentation nobody reads at inference time.
+    # This is a MODEL ESTIMATE from a partly-synthetic-trained classifier.
     prediction_confidence_note: str = (
         "This is a research-grade model estimate based on your practice history, "
         "not a guaranteed or verified prediction of your actual exam outcome."
@@ -219,10 +206,7 @@ class PredictionResponse(BaseModel):
     # multioutput_metadata.json) - a rough calibrated band around the point
     # estimate, not a formal statistical prediction interval.
     predicted_score_range: Optional[ScoreRange] = None
-    # Rule-based (not a trained sub-model - see FeatureExtractionService::
-    # TIME_AWARE_FEATURE_ORDER's docblock on why this avoids overclaiming a
-    # new supervised output): null unless the caller sends exam_pace_gap AND
-    # time_efficiency_score.
+    # Rule-based (not a trained sub-model - see FeatureExtractionService.
     time_management_readiness_percent: Optional[float] = None
 
 

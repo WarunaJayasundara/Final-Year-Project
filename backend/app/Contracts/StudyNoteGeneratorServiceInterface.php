@@ -5,11 +5,7 @@ namespace App\Contracts;
 interface StudyNoteGeneratorServiceInterface
 {
     /**
-     * Generate one teaching/study note from a bounded excerpt of a theory
-     * document's extracted text. Returns a plain array matching the shape
-     * expected by StudyNoteService (not yet persisted) - the caller handles
-     * persistence and the draft->review->publish workflow.
-     *
+     * Generate one teaching/study note from a bounded excerpt of a theory document's extracted text.
      * @param  string  $documentTitle The source document's title, for context.
      * @param  string  $textExcerpt A bounded excerpt of extracted text (never
      *   the full document) - implementations must not reproduce this

@@ -12,11 +12,7 @@ interface ErrorStateProps {
   className?: string;
 }
 
-/**
- * What a page shows when its data could not be loaded: says so in the user's language and offers a
- * retry. It never shows a raw backend message. Use it for every query whose failure would otherwise
- * leave a page blank or on a skeleton forever.
- */
+/** What a page shows when its data could not be loaded: says so in the user's language and offers a retry. */
 export function ErrorState({ title, description, onRetry, className }: ErrorStateProps) {
   const { t } = useTranslation('common');
 

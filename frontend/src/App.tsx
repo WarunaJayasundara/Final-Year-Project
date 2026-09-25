@@ -13,11 +13,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import { AdminLoginPage } from '@/pages/AdminLoginPage';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 
-/**
- * Code-splitting helper: every authenticated page (student, games, admin) is
- * downloaded on first visit instead of shipping in one large entry bundle.
- * Pages use named exports, so the loader maps the export to `default`.
- */
+/** Code-splitting helper: every authenticated page (student, games. */
 function lazyPage<K extends string>(loader: () => Promise<Record<K, ComponentType>>, name: K) {
   return lazy(() => loader().then((m) => ({ default: m[name] })));
 }

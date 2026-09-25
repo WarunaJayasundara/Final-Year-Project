@@ -5,12 +5,7 @@ const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
 
 export type BreakpointName = keyof typeof BREAKPOINTS;
 
-/**
- * Tracks the widest matching Tailwind breakpoint below `xl`, so components
- * can pick a per-viewport value that plain CSS grid can't compute for them
- * (e.g. BalancedGrid's preferred-column count, which depends on item count
- * as well as viewport width).
- */
+/** Tracks the widest matching Tailwind breakpoint below `xl`. */
 export function useBreakpoint(): BreakpointName | 'base' {
   const [breakpoint, setBreakpoint] = useState<BreakpointName | 'base'>('base');
 

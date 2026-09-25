@@ -13,15 +13,7 @@ interface BalancedGridProps<T> {
   gap?: string;
 }
 
-/**
- * Splits `items` into evenly-sized, centered rows instead of leaving an
- * orphaned tail on a fixed `grid-cols-N`. For N items and a preferred
- * column count C: rows = ceil(N/C), then each row actually gets
- * ceil(N/rows) items (the balancing step) - e.g. 5 items/preferred 4
- * becomes 3+2 (not 4+1), 7 items/preferred 4 becomes 4+3, 8 items/
- * preferred 4 becomes 4+4. Plain CSS grid can't do this because it has no
- * way to know the total item count while laying out a single row.
- */
+/** Splits `items` into evenly-sized, centered rows instead of leaving an orphaned tail on a fixed `grid-cols-N`. */
 export function BalancedGrid<T>({
   items,
   renderItem,
@@ -48,11 +40,7 @@ export function BalancedGrid<T>({
     rows.push(items.slice(i, i + perRow));
   }
 
-  // Every card - in a full row or a shorter trailing row - targets the exact same width: the width
-  // `perRow` equal columns would take up in the row's own available space. A full row's cards fill it
-  // edge to edge by construction (perRow * share + gaps = 100%); a shorter trailing row's cards come out
-  // the same size as the row above it and simply leave the leftover space as centered margin, instead of
-  // being capped to a smaller, unrelated `itemWidth` and looking like a different card size.
+  // Every card - in a full row or a shorter trailing row - targets the exact same width.
   const gapRem = parseFloat(/gap-(\d+(?:\.\d+)?)/.exec(gap)?.[1] ?? '4') * 0.25;
   const share = `calc((100% - ${gapRem * (perRow - 1)}rem) / ${perRow})`;
 

@@ -79,13 +79,7 @@ function styleFor(subcategory: string | null, categoryCode?: string): TopicStyle
   return { icon: TOPIC_ICONS[subcategory], accent };
 }
 
-/**
- * The "self-learning" reading list: teaching notes generated from admin-
- * uploaded theory books (see AdminKnowledgeLibraryPage), shown here only
- * once an admin has explicitly published them. Also surfaces the spaced-
- * repetition due-today queue and a weak-area-triggered lesson
- * recommendation.
- */
+/** The "self-learning" reading list: teaching notes generated from admin- uploaded theory books (see AdminKnowledgeLibraryPage). */
 export function StudyNotesPage() {
   const { t, i18n } = useTranslation('dashboard');
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';

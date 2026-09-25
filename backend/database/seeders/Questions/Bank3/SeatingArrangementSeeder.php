@@ -6,14 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Linear seating/ranking arrangement reasoning, an archetype missing from
- * the question bank. Restricted to closed-form rank arithmetic (left-rank
- * <-> right-rank conversion, and the "people between two ranks" count)
- * rather than multi-constraint puzzles that risk an ambiguous or
- * contradictory arrangement - every answer is a direct formula
- * (total - rank + 1, or |rankA - rankB| - 1), never asserted.
- */
+/** Linear seating/ranking arrangement reasoning, an archetype missing from the question bank. */
 class SeatingArrangementSeeder extends Seeder
 {
     use BuildsQuestions;

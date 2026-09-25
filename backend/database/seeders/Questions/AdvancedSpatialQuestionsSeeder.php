@@ -4,11 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Harder spatial-reasoning questions modelled on the rotating-diagram
- * puzzles in reference exam papers, using 8-direction arrows as a
- * text-safe stand-in for rotating shapes. Concentrated at levels 3-5.
- */
+/** Harder spatial-reasoning questions modelled on the rotating-diagram puzzles in reference exam papers. */
 class AdvancedSpatialQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

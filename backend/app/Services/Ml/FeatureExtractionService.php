@@ -16,19 +16,7 @@ use App\Services\Analytics\StreakService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Computes the fixed 24-feature vector consumed by the exam-readiness ML
- * model, exclusively from data the platform already has (IRT theta, session
- * history, game scores, progress snapshots) plus the small amount of
- * self-reported data (study hours, motivation, attendance, target exam date)
- * that has no other source - see the migration comments for why those three
- * are self-reported rather than derived.
- *
- * FEATURE_ORDER is the single source of truth for feature naming/ordering;
- * the Python training pipeline (ml-service/generate_dataset.py) mirrors these
- * exact names so a feature vector produced here matches what the model was
- * trained on without any translation layer.
- */
+/** Computes the fixed 24-feature vector consumed by the exam-readiness ML model, exclusively from data the platform already has. */
 class FeatureExtractionService
 {
     public const FEATURE_ORDER = [
@@ -58,14 +46,7 @@ class FeatureExtractionService
         'question_completion_rate',
     ];
 
-    /**
-     * The 19 advanced behavioural features added by the research-grade ML
-     * upgrade (ml-service/data_pipeline/advanced_features.py holds the
-     * canonical mathematical definition for every one of these - this class
-     * mirrors those exact formulas against MindRise's own tables). Additive
-     * to FEATURE_ORDER, never replacing it, so the ML service's /predict
-     * endpoint accepts a caller that only sends the original 24.
-     */
+    /** The 19 advanced behavioural features added by the research-grade ML upgrade. */
     public const ADVANCED_FEATURE_ORDER = [
         'rolling_avg_score',
         'weekly_trend',
@@ -88,20 +69,7 @@ class FeatureExtractionService
         'revision_frequency',
     ];
 
-    /**
-     * The time-aware behavioural features added by the response-time
-     * upgrade (all objectively measured from session_answers.response_time_ms
-     * and test_sessions duration - none are self-reported). Deliberately
-     * NOT yet merged into extract()'s output: the currently-deployed model
-     * was trained on exactly FEATURE_ORDER+ADVANCED_FEATURE_ORDER (43
-     * values, in this exact order), so appending more values would silently
-     * break its input contract. extractTimeAware() exists as a fully
-     * implemented, independently-testable building block; it gets wired
-     * into extract() (and into ml-service's FULL_FEATURE_ORDER on the
-     * Python side, atomically) only once a new model trained on this wider
-     * vector is registered and promoted - see model_registry.php's
-     * promote() and ml-service/ablation_study.py.
-     */
+    /** The time-aware behavioural features added by the response-time upgrade. */
     public const TIME_AWARE_FEATURE_ORDER = [
         'median_response_time_sec',
         'response_time_std',
@@ -200,14 +168,7 @@ class FeatureExtractionService
         );
     }
 
-    /**
-     * The 18 advanced features, computed against MindRise's own tables
-     * using the exact formulas documented in
-     * ml-service/data_pipeline/advanced_features.py's module docstring.
-     * Kept in its own method (rather than inline in extract()) since it's
-     * a self-contained, separately-testable addition layered on top of the
-     * original 24-feature extraction, not a rewrite of it.
-     */
+    /** The 18 advanced features, computed against MindRise's own tables using the exact formulas documented in... */
     private function extractAdvanced(User $user, Collection $completedSessions): array
     {
         $scores = $completedSessions->pluck('score_percent')->map(fn ($s) => (float) $s)->values();
@@ -238,13 +199,7 @@ class FeatureExtractionService
         ];
     }
 
-    /**
-     * beta_1 from an OLS fit of session score against elapsed-time-in-units
-     * (units = $unitDays, e.g. 7 for weekly, 30 for monthly) - the same
-     * closed-form slope math as the Python pipeline's _ols_slope(). Uses
-     * only the most recent 8 units (matching advanced_features.py's
-     * documented 8-week / 6-month lookback).
-     */
+    /** beta_1 from an OLS fit of session score against elapsed-time-in-units (units = $unitDays, e.g. 7 for weekly, 30 for monthly). */
     private function olsSlope(Collection $dates, Collection $scores, int $unitDays): float
     {
         if ($scores->count() < 2) {
@@ -299,10 +254,7 @@ class FeatureExtractionService
         return round(($now - (float) $past) / 4, 4);
     }
 
-    /**
-     * FS = accuracy(first half of session's questions) - accuracy(second half),
-     * averaged over the last 5 sessions with >= 4 answers.
-     */
+    /** FS = accuracy(first half of session's questions) - accuracy(second half), averaged over the last 5 sessions with >= 4 answers. */
     private function fatigueScore(User $user): float
     {
         $sessionIds = TestSession::where('user_id', $user->id)
@@ -361,13 +313,7 @@ class FeatureExtractionService
         return round((array_sum($retentionChecks) / count($retentionChecks)) * 100, 2);
     }
 
-    /**
-     * Composite of session frequency + active days over the last 30 days,
-     * squashed to [0,100] via a logistic transform against a documented
-     * reference rate (a real-time cohort z-score, as the Python pipeline
-     * uses on static training data, isn't practical to compute per live
-     * request - this is the documented simplification for online inference).
-     */
+    /** Composite of session frequency + active days over the last 30 days. */
     private function engagementScore(User $user): float
     {
         $activeDays = TestSession::where('user_id', $user->id)
@@ -444,11 +390,7 @@ class FeatureExtractionService
     }
 
     /**
-     * Per-session average inter-answer response time (seconds), for the
-     * user's most recent $limit completed sessions, oldest first - shared
-     * by confidenceTrend() and reactionSpeedTrend() so both derive their
-     * OLS input from the exact same per-session timing computation.
-     *
+     * Per-session average inter-answer response time (seconds), for the user's most recent $limit completed sessions, oldest first.
      * @return array<int,array{session_id:int,avg_seconds:float}>
      */
     private function sessionAvgResponseTimes(User $user, int $limit = 8): array
@@ -798,10 +740,7 @@ class FeatureExtractionService
         return round(($completed / $total) * 100, 2);
     }
 
-    /**
-     * The 9 objective time-aware features - see TIME_AWARE_FEATURE_ORDER's
-     * docblock for why this isn't called from extract() yet.
-     */
+    /** The 9 objective time-aware features - see TIME_AWARE_FEATURE_ORDER's docblock for why this isn't called from extract() yet. */
     public function extractTimeAware(User $user): array
     {
         $responseTimesMs = $this->recentResponseTimesMs($user);
@@ -848,13 +787,7 @@ class FeatureExtractionService
             ->all();
     }
 
-    /**
-     * Sum of completed test_sessions' wall-clock duration over the last 30
-     * days - an objective replacement for the self-reported study_hours
-     * checkin field. Game time isn't included: game_scores has no duration
-     * column (only played_at), so including an estimated game duration
-     * here would be a fabricated number rather than a measured one.
-     */
+    /** Sum of completed test_sessions' wall-clock duration over the last 30 days. */
     private function activePracticeMinutes(User $user): float
     {
         $sessions = TestSession::where('user_id', $user->id)

@@ -9,16 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Admin "Knowledge & Question Source Library": upload a reference PDF,
- * extract its text and suggest topics (see PdfIngestionService), then hand
- * off to QuestionDraftService::generateDrafts() (via
- * AiQuestionController::generate, passing source_document_id) for drafts
- * grounded in the selected document.
- *
- * Files live on the private `local` disk, never publicly served - several
- * uploaded reference works are copyrighted commercial books/past papers.
- */
+/** Admin "Knowledge & Question Source Library": upload a reference PDF, extract its text and suggest topics. */
 class SourceDocumentController extends Controller
 {
     public function __construct(private PdfIngestionService $ingestion)

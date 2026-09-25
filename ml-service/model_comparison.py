@@ -44,12 +44,7 @@ from data_pipeline.feature_mapping import FULL_FEATURE_ORDER as FEATURE_ORDER
 
 LABEL_ORDER = ["high_risk", "needs_improvement", "almost_ready", "ready"]
 
-# Rows used for the SVM candidate specifically - SVC's training cost scales
-# roughly O(n^2)-O(n^3), making the full ~74K-row set impractical (would
-# dominate total runtime for one candidate out of nine). A stratified
-# 15,000-row subsample keeps SVM in the comparison (it's a legitimate,
-# commonly-used candidate) without letting it bottleneck the whole pipeline -
-# documented here rather than silently training it on less data.
+# Rows used for the SVM candidate specifically - SVC's training cost scales roughly O(n^2)-O(n^3).
 SVM_SUBSAMPLE_SIZE = 15_000
 
 SCREENING_CV_FOLDS = 5
@@ -336,10 +331,7 @@ def main(args):
 
     print(f"\nSaved model artifacts + comparison report to {models_dir}/ (version {version})")
 
-    # X_test_scaled/y_test/source_test/best_model are consumed by evaluate.py
-    # (task: comprehensive evaluation suite) - persisted here so that script
-    # doesn't need to repeat the train/test split (which must stay identical
-    # for the evaluation numbers to be meaningful).
+    # X_test_scaled/y_test/source_test/best_model are consumed by evaluate.py (task: comprehensive evaluation suite).
     np.savez(
         models_dir / "test_split.npz",
         X_test_scaled=X_test_scaled, y_test=y_test, source_test=source_test,

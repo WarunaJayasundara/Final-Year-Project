@@ -25,26 +25,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TestSessionController extends Controller
 {
-    /**
-     * The placement test is the platform's true computerized adaptive test
-     * (CAT): items are delivered one at a time, each chosen to maximize
-     * information at the student's current ability estimate, re-estimated via
-     * MLE after every answer. It stops once either the max item count is
-     * reached, or (after a minimum number of items, to avoid stopping on a
-     * lucky/unlucky early streak) the ability estimate's standard error drops
-     * below the stopping threshold - both are standard CAT termination rules.
-     */
+    /** The placement test is the platform's true computerized adaptive test (CAT): items are delivered one at a time. */
     private const PLACEMENT_MIN_ITEMS = 15;
 
     private const PLACEMENT_MAX_ITEMS = 25;
 
     private const PLACEMENT_SE_STOP_THRESHOLD = 0.35;
 
-    /**
-     * A response taking longer than this multiple of the expected time is
-     * still "within expected time" - a soft margin, not a hard cutoff, since
-     * expected times are themselves estimates (see Question::expectedTimeSeconds()).
-     */
+    /** A response taking longer than this multiple of the expected time is still "within expected time" - a soft margin. */
     private const TIME_PERFORMANCE_TOLERANCE = 1.15;
 
     public function __construct(
@@ -243,10 +231,7 @@ class TestSessionController extends Controller
         $answers = $session->answers()->get();
         $answeredCount = $answers->whereNotNull('answered_at')->count();
 
-        // Mirrors the stopping rule already enforced in handleAdaptiveAnswer()
-        // (which keeps serving items until it's met) - repeated here as a
-        // server-side guard so a placement session can never be marked
-        // complete with too few items even if /complete is called directly.
+        // Mirrors the stopping rule already enforced in handleAdaptiveAnswer() (which keeps serving items until it's met).
         if ($session->session_type === 'placement' && $answeredCount < self::PLACEMENT_MIN_ITEMS) {
             return response()->json([
                 'message' => 'The placement test needs at least '.self::PLACEMENT_MIN_ITEMS.' answered questions before it can be completed.',
@@ -317,12 +302,7 @@ class TestSessionController extends Controller
         return response()->json(['data' => ['ai_feedback_text' => $answer->fresh()->ai_feedback_text]]);
     }
 
-    /**
-     * After each placement answer: re-estimate theta from the session's
-     * answers so far, decide via the CAT stopping rule whether to serve
-     * another item or signal the frontend to call /complete, and if
-     * continuing, adaptively select + persist the next item.
-     */
+    /** After each placement answer: re-estimate theta from the session's answers so far. */
     private function handleAdaptiveAnswer(Request $request, TestSession $session, SessionAnswer $answer, Question $question)
     {
         $answeredCount = $session->answers()->whereNotNull('answered_at')->count();

@@ -55,10 +55,7 @@ class Boundary extends Component<BoundaryProps, BoundaryState> {
   }
 }
 
-/**
- * Catches any error thrown while a page renders, so one bad response or one bug shows a message with a
- * retry button instead of a blank white screen. Navigating to another page clears the error.
- */
+/** Catches any error thrown while a page renders. */
 export function RouteErrorBoundary({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   return <Boundary resetKey={pathname}>{children}</Boundary>;

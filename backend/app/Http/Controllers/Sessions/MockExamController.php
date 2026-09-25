@@ -12,15 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Personalized mock-exam generator: student-configured question
- * count/duration/scope/difficulty, with weak categories over-represented
- * (QuestionSamplingService::sampleForMockExam()). A mock exam is a
- * TestSession like any other (session_type='mock', a real
- * time_limit_seconds) - everything after creation reuses
- * TestSessionController's generic answers/complete/report endpoints rather
- * than a parallel data model.
- */
+/** Personalized mock-exam generator: student-configured question count/duration/scope/difficulty. */
 class MockExamController extends Controller
 {
     public function __construct(private QuestionSamplingService $sampler)

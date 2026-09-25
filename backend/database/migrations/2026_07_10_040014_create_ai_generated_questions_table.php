@@ -4,20 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Draft staging table for AI-generated question candidates - never served to
- * students directly. An admin must explicitly approve a draft (which copies
- * it into the real `questions` table) or reject it. This human-in-the-loop
- * gate exists because generated content feeds a real assessment instrument,
- * where a hallucinated wrong "correct answer" would silently corrupt a
- * student's ability estimate - unlike AI feedback text, which is advisory
- * and low-stakes if imperfect.
- */
+/** Draft staging table for AI-generated question candidates - never served to students directly. */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -48,7 +39,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

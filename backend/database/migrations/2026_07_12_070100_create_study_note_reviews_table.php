@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Per-student spaced-repetition schedule for study notes - confirmed
- * genuinely absent from the codebase before this migration (no
- * next_review/ease_factor/interval_days table existed anywhere). Implements
- * a SIMPLIFIED SM-2 (documented in SpacedRepetitionService, not claiming
- * full Anki-grade sophistication): one row per (user, study_note) pair,
- * created lazily on first review rather than for every published note up
- * front.
- */
+/** Per-student spaced-repetition schedule for study notes - confirmed genuinely absent from the codebase before this migration. */
 return new class extends Migration
 {
     public function up()

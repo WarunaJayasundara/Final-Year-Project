@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Mirrors the existing irt_difficulty/irt_calibration_status lifecycle
- * (uncalibrated -> provisional -> calibrated) for expected solving time.
- * solving_time_seconds (Phase 6) stays the author/AI-estimated baseline;
- * learned_expected_time_seconds is the platform-observed value once enough
- * real response_time_ms samples exist (see ResponseTimeCalibrationService).
- */
+/** Mirrors the existing irt_difficulty/irt_calibration_status lifecycle. */
 return new class extends Migration
 {
     public function up()

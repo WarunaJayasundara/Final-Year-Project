@@ -10,10 +10,7 @@ interface StatTileProps {
   accent?: string;
 }
 
-/**
- * A single headline number. Stacked (icon above text) on phones so three tiles
- * fit in one row, and side by side (icon left of text) from `sm` up.
- */
+/** A single headline number. */
 export function StatTile({ icon, label, value, accent = 'var(--primary)' }: StatTileProps) {
   return (
     <Card>

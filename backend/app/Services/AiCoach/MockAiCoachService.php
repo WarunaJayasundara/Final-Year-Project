@@ -7,12 +7,7 @@ use App\Models\Game;
 use App\Models\User;
 use App\Services\Analytics\StudentContextService;
 
-/**
- * Rule-based coach used until a Gemini API key is configured. No external
- * calls - it does simple keyword-intent matching on the student's message and
- * writes a bilingual, templated reply grounded in their live StudentContextService
- * snapshot, so it still feels personalized without any AI call or model training.
- */
+/** Rule-based coach used until a Gemini API key is configured. */
 class MockAiCoachService implements AiCoachServiceInterface
 {
     /** Weakest category -> the game that trains it. Display names come from the games table. */

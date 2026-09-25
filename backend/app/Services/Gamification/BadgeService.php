@@ -12,14 +12,7 @@ use App\Models\User;
 use App\Models\UserBadge;
 use App\Services\Analytics\StreakService;
 
-/**
- * Evaluates the fixed badge catalog (seeded by BadgeSeeder) against a
- * user's current stats and awards any newly-earned ones. Called after any
- * action that could plausibly unlock a badge (session completion, game
- * score submission, exam-profile setup, readiness prediction) - cheap to
- * over-call since already-earned badges are skipped via the unique
- * (user_id, badge_id) constraint check up front.
- */
+/** Evaluates the fixed badge catalog (seeded by BadgeSeeder) against a user's current stats and awards any newly-earned ones. */
 class BadgeService
 {
     public function __construct(private GamificationService $gamification, private StreakService $streak)

@@ -4,13 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Second wave of exam-authentic numerical questions modelled on Sri Lankan
- * aptitude papers (SLAS / A-L Common General style): profit-and-loss selling
- * prices, averages after removing a value, second-difference number series,
- * and missing-number matrices. Each archetype draws from a single shuffled
- * combo pool consumed by a cursor so no two questions share parameters.
- */
+/** Second wave of exam-authentic numerical questions modelled on Sri Lankan aptitude papers (SLAS / A-L Common General style). */
 class ExamNumericalQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

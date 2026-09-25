@@ -156,13 +156,7 @@ export function ReadinessCard() {
   );
 }
 
-/**
- * Same-day-only signals (motivation, attendance) - "how long can you use the
- * system" is intentionally NOT asked here. That capacity question is asked
- * once during exam-profile setup (ExamProfileDialog's dailyHours field) and
- * reused automatically for every check-in's study_hours value below, so the
- * student is never re-asked it on a daily basis.
- */
+/** Same-day-only signals (motivation, attendance) - "how long can you use the system" is intentionally NOT asked here. */
 function CheckinDialog() {
   const { t } = useTranslation('dashboard');
   const [open, setOpen] = useState(false);

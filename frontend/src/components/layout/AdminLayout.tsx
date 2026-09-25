@@ -43,17 +43,7 @@ interface AdminNavEntry {
   label: string;
 }
 
-/**
- * Admin's own persistent-sidebar dashboard shell, separate from the public/
- * student MainLayout+Navbar - a 9-item admin nav genuinely doesn't fit a top
- * bar without either overflow-scrolling (the pre-HelaIQ-rebrand fix) or
- * feeling cramped, and dashboard-style apps conventionally use a left rail
- * for this many sections. Sidebar carries only branding + nav links (both
- * breakpoints); the top bar carries every contextual control - page title,
- * language, theme, admin profile/logout - present on desktop AND mobile so
- * nothing is hidden behind an extra tap on either. Below lg, the sidebar
- * itself collapses into a hamburger-triggered nav-links menu instead.
- */
+/** Admin's own persistent-sidebar dashboard shell, separate from the public/ student MainLayout+Navbar. */
 export function AdminLayout() {
   const { t } = useTranslation('common');
   const { data: user } = useCurrentUser();

@@ -1,13 +1,4 @@
-// Sinhala/English locale consistency check. Run: npm run check:locales
-//
-// Fails (exit 1) on:
-//   - a key present in English but missing in Sinhala (or the reverse)
-//   - {{placeholders}} that differ between the two languages
-//   - characters from other scripts (a known failure of machine drafts: Kannada, Korean, Amharic ...)
-//   - orphaned vowel signs (a garbled word)
-//   - colloquial verb endings in a UI that uses the formal written register
-//   - a discouraged term that the style guide replaced (see src/locales/STYLE_GUIDE.md)
-// Warns on: values with no Sinhala letters that are not on the allowed list, and digits that differ.
+// Sinhala/English locale consistency check.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

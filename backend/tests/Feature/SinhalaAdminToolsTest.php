@@ -14,12 +14,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Admin Sinhala tooling: integrity check, machine-drafted translation and the
- * save-time rejection of corrupted Sinhala. Runs against the real dev database
- * (no RefreshDatabase, see AdaptivePlacementTest) with explicit cleanup. The
- * Gemini call is replaced by a Guzzle mock, so no network access is needed.
- */
+/** Admin Sinhala tooling: integrity check, machine-drafted translation and the save-time rejection of corrupted Sinhala. */
 class SinhalaAdminToolsTest extends TestCase
 {
     private ?User $admin = null;

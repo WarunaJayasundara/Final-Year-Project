@@ -6,13 +6,7 @@ use App\Models\Question;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Quality gate for the competitive question bank. Read-only assertions
- * against the seeded dev database (this suite has no RefreshDatabase - see
- * AdaptivePlacementTest), so it doubles as a post-seed integrity check:
- * volume, full category x level coverage, bilingual completeness,
- * option/answer-key validity, duplicate freedom, and image-asset existence.
- */
+/** Quality gate for the competitive question bank. */
 class QuestionBankTest extends TestCase
 {
     public function test_bank_has_competitive_volume()

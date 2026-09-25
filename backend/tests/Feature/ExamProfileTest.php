@@ -8,11 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the exam-profile CRUD + rule-based study planner against the
- * real dev database (no RefreshDatabase in this project - see
- * AdaptivePlacementTest), with explicit tearDown cleanup.
- */
+/** Exercises the exam-profile CRUD + rule-based study planner against the real dev database (no RefreshDatabase in this project. */
 class ExamProfileTest extends TestCase
 {
     private ?User $testUser = null;

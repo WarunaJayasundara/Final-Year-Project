@@ -2,26 +2,10 @@
 
 namespace App\Services\QuestionBank;
 
-/**
- * Script-level integrity checks for text that is meant to be Sinhala.
- *
- * This project has been bitten by silently corrupted Sinhala before (stray
- * Malayalam/Telugu/Kannada code points, dropped characters). These checks catch
- * that class of defect deterministically, so bad text can be rejected when an
- * admin saves a question instead of reaching students. They say nothing about
- * whether the wording is natural: that still needs a human reviewer.
- *
- * Severity:
- *   error   - the text is corrupted; it must not be saved
- *   warning - the text is suspicious; a reviewer should look at it
- */
+/** Script-level integrity checks for text that is meant to be Sinhala. */
 class SinhalaTextGuard
 {
-    /**
-     * Every script a language model has been seen to slip into Sinhala text: the Indic blocks below Sinhala
-     * (Devanagari .. Malayalam), Thai/Lao, Cyrillic, Hebrew/Arabic, Ethiopic, Hangul, kana and CJK, plus U+FFFD.
-     * Greek is deliberately allowed (theta and pi appear in maths and statistics text).
-     */
+    /** Every script a language model has been seen to slip into Sinhala text: the Indic blocks below Sinhala (Devanagari .. Malayalam). */
     private const STRAY_SCRIPT = '/[\x{0900}-\x{0D7F}\x{0E00}-\x{0EFF}\x{0400}-\x{052F}\x{0590}-\x{08FF}\x{1100}-\x{11FF}\x{1200}-\x{139F}\x{2E80}-\x{9FFF}\x{AC00}-\x{D7AF}\x{FB1D}-\x{FDFF}\x{FE70}-\x{FEFF}\x{FFFD}]/u';
 
     /** A dependent sign (virama, vowel sign, anusvara) needs a consonant before it, never a space/digit/punctuation. */

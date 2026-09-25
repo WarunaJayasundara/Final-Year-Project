@@ -4,16 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Superseded by the exam_profiles table (see the sibling migration created
- * moments earlier) - these two columns were a minimal Phase-1 stopgap for
- * the days_until_exam ML feature, now replaced by a full exam profile.
- */
+/** Superseded by the exam_profiles table (see the sibling migration created moments earlier). */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -25,7 +20,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

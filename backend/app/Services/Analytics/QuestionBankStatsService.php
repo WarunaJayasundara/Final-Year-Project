@@ -4,11 +4,7 @@ namespace App\Services\Analytics;
 
 use App\Models\Question;
 
-/**
- * Read-only bank-composition statistics for the admin question-bank QA
- * dashboard (Phase 6). Purely aggregate queries over the active bank - no
- * caching, since this is an admin-only, low-traffic view.
- */
+/** Read-only bank-composition statistics for the admin question-bank QA dashboard (Phase 6). */
 class QuestionBankStatsService
 {
     public function overview(): array

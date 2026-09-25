@@ -2,35 +2,7 @@
 
 namespace App\Services\QuestionBank;
 
-/**
- * A documented STRUCTURAL-EQUIVALENCE heuristic between an English question
- * and its Sinhala counterpart - explicitly NOT a claim of deep NLP semantic
- * understanding (this project's "never fabricate" standard, matching how
- * PdfIngestionService's topic-tagging is a keyword-frequency heuristic, not
- * an "AI detected" claim). Since both language versions of a MindRise
- * question are generated together from the same underlying data (a single
- * solver/template or a single LLM call producing both fields at once),
- * true independent-translation semantic drift isn't the main risk here -
- * structural corruption (a number changed, an option dropped, one language
- * silently empty) is. This service catches that class of defect and flags
- * anything it can't verify for human review, per the brief's explicit
- * "Do NOT automatically publish low-quality Sinhala AI translations."
- *
- * Checks performed:
- *   1. Both texts non-empty and of comparable relative length (a Sinhala
- *      version under 30% of the English length likely lost content).
- *   2. Numeric-literal parity: every digit-sequence appearing in the English
- *      text (e.g. "42", "100") must also appear in the Sinhala text - this
- *      codebase writes numbers as Arabic numerals even in Sinhala strings
- *      (confirmed throughout backend/database/seeders/Questions/Bank2|Bank3),
- *      so a genuine mismatch here is a real structural defect, not a false
- *      positive from numeral-system differences.
- *   3. Option-count parity (when options are supplied): both language
- *      versions must expose the same number of answer choices.
- *   4. Answer-key presence: a correct_option_key must be set (the answer
- *      itself is language-agnostic - a shared key - so this checks the
- *      draft didn't lose it, not that both languages "agree" on it).
- */
+/** A documented STRUCTURAL-EQUIVALENCE heuristic between an English question and its Sinhala counterpart. */
 class SinhalaSemanticValidationService
 {
     private const MIN_RELATIVE_LENGTH = 0.30;

@@ -5,13 +5,7 @@ namespace Database\Seeders;
 use App\Models\Badge;
 use Illuminate\Database\Seeder;
 
-/**
- * Fixed achievement catalog evaluated live by BadgeService. Spans
- * onboarding, streak, mastery/volume, and cross-feature milestones
- * (exam_ready ties into the ML readiness model, study_planner ties into
- * the study planner) so gamification reinforces the platform's other
- * features instead of sitting alongside them as an unrelated bolt-on.
- */
+/** Fixed achievement catalog evaluated live by BadgeService. */
 class BadgeSeeder extends Seeder
 {
     public function run(): void

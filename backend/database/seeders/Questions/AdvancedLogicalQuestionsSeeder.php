@@ -4,12 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Harder logical-reasoning questions modelled on real Sri Lankan
- * competitive exam papers: coding-decoding ciphers, blood relations,
- * custom-operator arithmetic, and letter series. Concentrated at
- * levels 3-5.
- */
+/** Harder logical-reasoning questions modelled on real Sri Lankan competitive exam papers: coding-decoding ciphers, blood relations. */
 class AdvancedLogicalQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

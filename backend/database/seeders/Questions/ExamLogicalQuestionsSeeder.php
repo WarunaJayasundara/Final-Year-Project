@@ -4,11 +4,7 @@ namespace Database\Seeders\Questions;
 
 use Illuminate\Database\Seeder;
 
-/**
- * Second wave of exam-authentic logical-reasoning questions modelled on Sri
- * Lankan aptitude papers: alphabet-position coding, direction-sense walks
- * (Pythagorean triples), categorical syllogisms, and number odd-one-out sets.
- */
+/** Second wave of exam-authentic logical-reasoning questions modelled on Sri Lankan aptitude papers: alphabet-position coding. */
 class ExamLogicalQuestionsSeeder extends Seeder
 {
     use BuildsQuestions;

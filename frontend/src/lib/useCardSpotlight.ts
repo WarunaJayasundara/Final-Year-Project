@@ -1,10 +1,6 @@
 import { useEffect } from 'react';
 
-/**
- * Cursor spotlight for cards: one delegated pointer listener writes the pointer position into
- * `--mx` / `--my` on the card under the cursor; the CSS in index.css draws the glow from them.
- * Desktop pointers only (touch has no hover), throttled to one write per frame.
- */
+/** Cursor spotlight for cards: one delegated pointer listener writes the pointer position into `--mx` / `--my` on the card under... */
 export function useCardSpotlight(): void {
   useEffect(() => {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;

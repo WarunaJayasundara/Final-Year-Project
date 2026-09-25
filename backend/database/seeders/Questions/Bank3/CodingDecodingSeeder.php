@@ -6,12 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Coding-decoding (letter-shift cipher) reasoning, an archetype missing
- * from the question bank. Every code is a real Caesar-shift computation
- * (mod 26) on a real word pool - the answer is computed by the same
- * shiftWord() function that builds the question, never asserted.
- */
+/** Coding-decoding (letter-shift cipher) reasoning, an archetype missing from the question bank. */
 class CodingDecodingSeeder extends Seeder
 {
     use BuildsQuestions;

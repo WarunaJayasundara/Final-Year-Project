@@ -4,16 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * One row per AI-coach chat message, used only to derive an
- * "ai_coach_usage_count" feature for the exam-readiness model and an
- * admin-facing engagement stat - not a full chat transcript store.
- */
+/** One row per AI-coach chat message, used only to derive an "ai_coach_usage_count" feature for the exam-readiness model and an... */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -30,7 +25,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

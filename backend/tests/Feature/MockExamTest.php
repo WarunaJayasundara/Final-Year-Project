@@ -11,11 +11,7 @@ use App\Models\UserProgressSnapshot;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the mock-exam generator (MockExamController + QuestionSamplingService::
- * sampleForMockExam()) against the real dev database (no RefreshDatabase -
- * see AdaptivePlacementTest), with explicit tearDown cleanup.
- */
+/** Exercises the mock-exam generator (MockExamController + QuestionSamplingService. */
 class MockExamTest extends TestCase
 {
     private ?User $testUser = null;

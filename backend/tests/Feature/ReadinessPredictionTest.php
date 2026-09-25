@@ -15,15 +15,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * The exam-readiness ML service is a separate FastAPI process (ml-service/),
- * not something the test suite should require running - so these tests bind
- * ReadinessPredictionService with a Guzzle mock handler returning a canned
- * /predict response, exercising every other layer (feature extraction,
- * controller, persistence, response shape) against the real dev database
- * (no RefreshDatabase in this project - see AdaptivePlacementTest), with
- * explicit tearDown cleanup.
- */
+/** The exam-readiness ML service is a separate FastAPI process (ml-service/), not something the test suite should require running. */
 class ReadinessPredictionTest extends TestCase
 {
     private ?User $testUser = null;
@@ -126,10 +118,7 @@ class ReadinessPredictionTest extends TestCase
 
     public function test_research_grade_fields_are_null_when_service_omits_them()
     {
-        // A deployed model before train_multioutput.py has ever been run
-        // returns a response with no multi-output keys at all - the whole
-        // pipeline (service -> model -> controller) must degrade to null
-        // fields rather than erroring.
+        // A deployed model before train_multioutput.py has ever been run returns a response with no multi-output keys at all.
         $this->testUser = User::create([
             'name' => 'Readiness Backward Compat Test User',
             'email' => 'readiness-backcompat-'.uniqid().'@test.local',

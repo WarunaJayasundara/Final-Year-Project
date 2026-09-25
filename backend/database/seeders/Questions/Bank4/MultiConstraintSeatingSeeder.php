@@ -6,17 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Multi-constraint reasoning combining two independent orderings (height
- * rank + age rank across 4 people) - the kind of puzzle Bank3's
- * SeatingArrangementSeeder deliberately avoided due to ambiguity risk.
- * This seeder solves that risk directly: a ground-truth (height, age)
- * permutation pair is generated first, true clues are revealed one at a
- * time, and after each addition all 576 possible permutation-pairs are
- * brute-force checked. A puzzle is only kept once its clue set is
- * satisfied by exactly one pair - non-ambiguous by exhaustive search,
- * not by hand-checking.
- */
+/** Multi-constraint reasoning combining two independent orderings (height rank + age rank across 4 people). */
 class MultiConstraintSeatingSeeder extends Seeder
 {
     use BuildsQuestions;
@@ -111,10 +101,7 @@ class MultiConstraintSeatingSeeder extends Seeder
     }
 
     /**
-     * Greedily reveals true clues about (heightPerm, agePerm) until exactly
-     * one permutation-pair in the full 576-pair space satisfies all of them,
-     * then asks about one further true fact NOT among the revealed clues.
-     *
+     * Greedily reveals true clues about (heightPerm.
      * @return array{clues_en: string[], clues_si: string[], question_en: string, question_si: string, answer: string}|null
      */
     private function buildUniquePuzzle(array $heightPerm, array $agePerm, array $allPerms, int $seed): ?array

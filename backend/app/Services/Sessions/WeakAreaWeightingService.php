@@ -6,20 +6,7 @@ use App\Models\Category;
 use App\Models\SessionAnswer;
 use Illuminate\Support\Collection;
 
-/**
- * Biases daily-session category allocation toward a student's weakest
- * categories, instead of the flat even split QuestionSamplingService used
- * before. Deliberately NOT applied to the placement test (which needs even
- * coverage across categories to produce an unbiased theta estimate) or
- * practice sessions (single-category by definition - the student already
- * chose what to drill).
- *
- * Weighting is accuracy-inverse: a category the student answers less
- * accurately gets more questions next time, floored so no category is ever
- * starved below half of what an even split would give it - a student
- * should keep seeing their strong categories too, both to confirm mastery
- * and to avoid the session feeling punitive.
- */
+/** Biases daily-session category allocation toward a student's weakest categories. */
 class WeakAreaWeightingService
 {
     private const MIN_SHARE_OF_EVEN_SPLIT = 0.5;
@@ -27,16 +14,7 @@ class WeakAreaWeightingService
     /** A category needs at least this many past answers before its accuracy is trusted as a real signal. */
     private const MIN_SAMPLE_SIZE = 5;
 
-    /**
-     * Exam-approaching training mode (brief §14): as the exam gets closer,
-     * sharpen (don't replace) the existing weak-area bias by raising the
-     * weight exponent - a category at 20% accuracy already gets ~4x an
-     * 80%-accuracy category's weight at exponent 1; at exponent 1.6 (final
-     * revision) that same gap widens further, without ever violating
-     * MIN_SHARE_OF_EVEN_SPLIT's floor (a strong category still always gets
-     * at least half an even share - "make it harsher," never "starve it").
-     * foundation/practice/exam_day keep the original, un-sharpened bias.
-     */
+    /** Exam-approaching training mode (brief §14): as the exam gets closer, sharpen. */
     private const PHASE_WEIGHT_EXPONENT = [
         'foundation' => 1.0,
         'practice' => 1.0,
@@ -60,11 +38,7 @@ class WeakAreaWeightingService
         $minCount = (int) floor($evenShare * self::MIN_SHARE_OF_EVEN_SPLIT);
         $exponent = self::PHASE_WEIGHT_EXPONENT[$phase] ?? 1.0;
 
-        // Weight = (1 - accuracy) ^ exponent, clamped so no category ever
-        // gets a zero or runaway weight from a fluke 0%/100% streak.
-        // Categories with too little history default to a neutral 0.5
-        // (even split) rather than being treated as either strong or weak
-        // on no evidence.
+        // Weight = (1 - accuracy) ^ exponent, clamped so no category ever gets a zero or runaway weight from a fluke 0%/100% streak.
         $weights = $categories->mapWithKeys(function (Category $category) use ($accuracy, $exponent) {
             $acc = $accuracy[$category->id] ?? 0.5;
             $acc = max(0.05, min(0.95, $acc));
@@ -82,11 +56,7 @@ class WeakAreaWeightingService
     }
 
     /**
-     * Independent per-category rounding can drift the sum away from
-     * $totalQuestions by a few items; the difference is applied to the
-     * single weakest category (highest weight) since that's where an extra
-     * or missing question matters least to the student's experience.
-     *
+     * Independent per-category rounding can drift the sum away from $totalQuestions by a few items.
      * @param  Collection<int,int>  $allocation
      * @param  Collection<int,float>  $weights
      * @return array<int,int>

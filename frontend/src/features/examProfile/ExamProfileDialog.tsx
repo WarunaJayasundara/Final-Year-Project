@@ -20,16 +20,7 @@ import { useExamProfile, useSaveExamProfile } from './useExamProfile';
 const HOUR_OPTIONS = Array.from({ length: 17 }, (_, i) => i); // 0-16 hours
 const MINUTE_OPTIONS = [0, 30]; // matches the daily_study_hours_target decimal(4,1) column's precision
 
-/**
- * Exam-profile setup: no fixed exam-category picker (removed - the platform
- * covers far more exams than any fixed list could enumerate). The student
- * just names their exam, sets the date, states the marks they need out of
- * 100, and says how long per day they can realistically use the system -
- * asked once here, not re-asked on every check-in (see ReadinessCard.tsx's
- * check-in dialog, which only asks same-day motivation/attendance now).
- * StudyPlanService and the ML feature pipeline both read
- * daily_study_hours_target from this profile.
- */
+/** Exam-profile setup: no fixed exam-category picker (removed. */
 export function ExamProfileDialog({ trigger }: { trigger: React.ReactNode }) {
   const { t } = useTranslation('dashboard');
   const [open, setOpen] = useState(false);

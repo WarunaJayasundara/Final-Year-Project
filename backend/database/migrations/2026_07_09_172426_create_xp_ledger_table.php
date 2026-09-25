@@ -4,17 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Append-only ledger of every XP/coin award - the audit trail behind
- * users.xp/coins (which are denormalized running totals for fast reads).
- * reason is a short code (e.g. "session_complete", "badge:streak_7") used
- * for the "recent activity" list on the gamification dashboard.
- */
+/** Append-only ledger of every XP/coin award - the audit trail behind users.xp/coins. */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -33,7 +27,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

@@ -12,14 +12,7 @@ use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Real Gemini-backed coach. Not active until AI_COACH_DRIVER=gemini and
- * GEMINI_API_KEY are set in .env - see AppServiceProvider::register(). Falls
- * back to MockAiCoachService if the API call fails, so a missing/invalid key
- * never breaks the chat widget. Every call rebuilds the student's context
- * fresh from the database, so answers stay grounded in current data without
- * any fine-tuning or persisted "memory" of the student.
- */
+/** Real Gemini-backed coach. */
 class GeminiAiCoachService implements AiCoachServiceInterface
 {
     private StudentContextService $context;

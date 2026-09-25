@@ -11,12 +11,7 @@ export function reasonText(reason: ReadinessReason, t: TFunction): string {
   });
 }
 
-/**
- * The "why did my estimate change" sentence, built from the structured reasons so it can be shown in
- * either language (the server's own sentence is English only). Mirrors the wording rules of the
- * ML service: a change of 10% or more since the previous prediction is called out, otherwise the
- * feature is described as a strength or a weak point.
- */
+/** The "why did my estimate change" sentence, built from the structured reasons so it can be shown in either language. */
 export function explanationText(reasons: ReadinessReason[], t: TFunction): string {
   const clauses = reasons.slice(0, 3).map((reason) => {
     const label = t(`readiness.featureLabel.${reason.feature}`, { ns: NS, defaultValue: reason.feature.replace(/_/g, ' ') });

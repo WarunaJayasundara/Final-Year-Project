@@ -7,14 +7,7 @@ use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Boolean visual-overlay reasoning: AND/OR/XOR of two overlapping shapes,
- * built with SvgFigureBuilder::combineCells(). The answer tile and all 3
- * distractor tiles are each a real boolean combination of the same two
- * source cell sets, never hand-drawn, so correctness is guaranteed by
- * construction. A signature-uniqueness check rejects any instance where
- * two of the 4 resulting tiles would look identical.
- */
+/** Boolean visual-overlay reasoning: AND/OR/XOR of two overlapping shapes, built with SvgFigureBuilder::combineCells(). */
 class BooleanOverlaySeeder extends Seeder
 {
     use BuildsQuestions;

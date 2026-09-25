@@ -36,12 +36,7 @@ const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   'calendar-check': CalendarCheck,
 };
 
-/**
- * Every earned badge used to render in the exact same brand-gold tint regardless of what it was
- * for, so 14 different achievements looked like one repeated color. Each icon now gets its own
- * accent from the app's existing palette (no new hues beyond --streak, matching the flame badges
- * to the same color used for streaks everywhere else) instead of leaving the whole page monotone.
- */
+/** Every earned badge used to render in the exact same brand-gold tint regardless of what it was for. */
 const BADGE_ACCENT: Record<string, string> = {
   footprints: 'var(--chart-1)',
   flame: 'var(--streak)',

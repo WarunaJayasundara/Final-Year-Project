@@ -10,13 +10,7 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Real Gemini-backed explanation generator. Not active until
- * AI_FEEDBACK_DRIVER=gemini and GEMINI_API_KEY are set in .env - see
- * AppServiceProvider::register() for the driver binding. Falls back to the
- * mock service's wording if the API call fails, so a missing/invalid key
- * never breaks the student-facing report page.
- */
+/** Real Gemini-backed explanation generator. */
 class GeminiAiFeedbackService implements AiFeedbackServiceInterface
 {
     private Client $client;

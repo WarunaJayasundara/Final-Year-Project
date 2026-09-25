@@ -6,31 +6,12 @@ use App\Contracts\AiQuestionGeneratorServiceInterface;
 use App\Models\Category;
 use App\Models\IqLevel;
 
-/**
- * Rule-based question generator used until a Gemini API key is configured -
- * same "works today without a key, real intelligence behind a swappable
- * driver" pattern as MockAiFeedbackService. Produces a genuinely valid,
- * scored MCQ per category (not placeholder text), so the whole
- * generate -> duplicate-check -> admin-review -> promote pipeline is
- * exercisable end-to-end without any external dependency.
- *
- * The Sinhala text below is deliberately kept to short, simple phrases
- * (numbers/letters embedded in a fixed sentence frame) rather than long
- * composed sentences, since this is the offline fallback path - real,
- * naturally-phrased Sinhala generation is what GeminiAiQuestionGeneratorService
- * (a live LLM) is for.
- */
+/** Rule-based question generator used until a Gemini API key is configured - same "works today without a key. */
 class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterface
 {
     public function generate(Category $category, IqLevel $level, ?string $examCategoryLabel, array $avoidQuestionTexts, ?string $sourceContext = null): array
     {
-        // The mock generator's fixed archetype templates can't genuinely
-        // incorporate arbitrary source-document content (that needs a real
-        // LLM reading the material - see GeminiAiQuestionGeneratorService).
-        // $sourceContext is accepted for interface compatibility so the
-        // admin PDF-ingestion flow works end-to-end even without a Gemini
-        // key configured, but is intentionally not used to fabricate a
-        // false impression of document-grounded generation here.
+        // The mock generator's fixed archetype templates can't genuinely incorporate arbitrary source-document content.
         unset($sourceContext);
         $difficulty = min(3, max(1, (int) ceil($level->level_number / 2)));
 
@@ -66,18 +47,7 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
         );
     }
 
-    /**
-     * Same word/translation source as LogicalReasoningQuestionsSeeder::CATEGORIES
-     * (copied verbatim, already corpus-validated Sinhala) - reused here
-     * rather than duplicating a smaller, separately-invented word pool. The
-     * seeder's own combinatorial "3 words from a main category + 1 odd word
-     * from a different category" design is mirrored below for the same
-     * reason: a handful of fixed templates exhausts fast once real seeded
-     * content already contains every combination, which is exactly what
-     * happened with the previous 6-template pool (every one of its outputs
-     * was already a duplicate of existing questions, so generation for this
-     * category silently produced zero drafts - see git history/audit notes).
-     */
+    /** Same word/translation source as LogicalReasoningQuestionsSeeder::CATEGORIES (copied verbatim, already corpus-validated Sinhala). */
     private const CATEGORIES = [
         ['en' => ['Apple', 'Mango', 'Banana', 'Grape'], 'si' => ['ඇපල්', 'අඹ', 'කෙසෙල්', 'මිදි'], 'name_en' => 'fruit', 'name_si' => 'පලතුරු'],
         ['en' => ['Car', 'Bus', 'Train', 'Bicycle'], 'si' => ['මෝටර් රථය', 'බස් රථය', 'දුම්රිය', 'බයිසිකලය'], 'name_en' => 'vehicle', 'name_si' => 'වාහන'],
@@ -128,21 +98,13 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
             }
         }
 
-        // The word list is embedded in the question text itself (not left
-        // implicit in the options alone) - this makes the text
-        // self-contained AND gives QuestionDraftService's text-based
-        // duplicate check something meaningful to compare, since a fixed
-        // generic stem ("Which word does not belong?") would be identical
-        // across every group and defeat duplicate detection entirely.
+        // The word list is embedded in the question text itself (not left implicit in the options alone).
         $wordListEn = implode(', ', $wordsEn);
         $wordListSi = implode(', ', $wordsSi);
 
         return [
             'question_text_en' => "Which word does not belong with the others: {$wordListEn}?",
-            // Word list (verified vocabulary from CATEGORIES above) prefixed
-            // onto LogicalReasoningQuestionsSeeder::renderOddOneOut()'s own
-            // verified Sinhala question stem, unmodified - not a new
-            // composed sentence.
+            // Word list (verified vocabulary from CATEGORIES above) prefixed onto LogicalReasoningQuestionsSeeder::renderOddOneOut()'s own...
             'question_text_si' => "{$wordListSi} - මේවායින් අනෙක් ඒවාට වඩා වෙනස් වන්නේ කුමක්ද?",
             'options' => $options,
             'correct_option_key' => $correctKey,
@@ -154,13 +116,7 @@ class MockAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterf
         ];
     }
 
-    /**
-     * Deterministic lookup (not a guess): a fixed baseline plus a per-
-     * difficulty-step increment, matching the same order-of-magnitude
-     * (level 1 ~30s, harder items ~120s) as the brief's own worked example -
-     * see Question::expectedTimeSeconds()/ResponseTimeCalibrationService for
-     * how this authored baseline later gets replaced by a learned value.
-     */
+    /** Deterministic lookup (not a guess): a fixed baseline plus a per- difficulty-step increment, matching the same order-of-magnitude. */
     private function estimatedTimeFor(int $difficulty): int
     {
         return 25 + ($difficulty - 1) * 15;

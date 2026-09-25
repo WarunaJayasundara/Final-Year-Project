@@ -29,11 +29,7 @@ DEMOGRAPHIC_GROUPS = {
     "age_band": "_demographic_age_band",
 }
 
-# imd_band midpoint is continuous - bucketed into terciles for group
-# comparison. UK IMD convention: "0-10%" denotes the MOST deprived decile,
-# so ascending midpoint runs most-deprived -> least-deprived (the opposite
-# of what an unexamined reading of "0-10%, ..., 90-100%" might suggest) -
-# these labels are ordered to match that, not simple ascending-number order.
+# imd_band midpoint is continuous - bucketed into terciles for group comparison.
 IMD_TERCILE_LABELS = ["most_deprived_third", "mid_deprivation_third", "least_deprived_third"]
 
 
@@ -76,10 +72,7 @@ def build() -> dict:
     model = joblib.load(model_path) if have_model else None
     scaler = joblib.load(scaler_path) if have_model else None
 
-    # Guards against running this against a stale model.joblib trained on
-    # the pre-upgrade 24-feature schema (model_comparison.py not yet run) -
-    # the outcome-distribution analysis below is still meaningful on its
-    # own; only the model-accuracy breakdown needs a schema-matched model.
+    # Guards against running this against a stale model.joblib trained on the pre-upgrade 24-feature schema.
     if have_model and getattr(scaler, "n_features_in_", None) != len(FULL_FEATURE_ORDER):
         print(f"WARNING: deployed scaler expects {getattr(scaler, 'n_features_in_', '?')} features, "
               f"but FULL_FEATURE_ORDER has {len(FULL_FEATURE_ORDER)} - skipping model-accuracy-by-group "

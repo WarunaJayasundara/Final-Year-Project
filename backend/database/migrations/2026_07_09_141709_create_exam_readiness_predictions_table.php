@@ -4,16 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * One row per prediction run, kept as a history (not just the latest value)
- * so the student dashboard can show an exam-readiness trend line, and so
- * admin analytics can compute cohort-wide readiness distributions over time.
- */
+/** One row per prediction run, kept as a history. */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -35,7 +30,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

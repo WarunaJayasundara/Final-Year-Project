@@ -8,11 +8,7 @@ use App\Models\IqLevel;
 interface AiQuestionGeneratorServiceInterface
 {
     /**
-     * Generate one candidate MCQ question for the given category/level, in
-     * both languages. Returns a plain array matching the shape expected by
-     * QuestionDraftService (not yet persisted, not yet validated for
-     * duplicates - the caller handles both).
-     *
+     * Generate one candidate MCQ question for the given category/level, in both languages.
      * @param  string|null  $examCategoryLabel Optional government-exam context
      *   (e.g. "Sri Lanka Administrative Service (SLAS)") to bias question style.
      * @param  string[]  $avoidQuestionTexts A sample of existing question texts

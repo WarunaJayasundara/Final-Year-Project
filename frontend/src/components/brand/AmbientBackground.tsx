@@ -3,10 +3,7 @@ import { cn } from '@/lib/utils';
 
 export type AmbientTone = 'focus' | 'play' | 'reward' | 'study';
 
-/**
- * Page-section mood: the background takes the colors of what the student is doing.
- * The palettes live in index.css (saturated for light mode, the soft chart tokens for dark).
- */
+/** Page-section mood: the background takes the colors of what the student is doing. */
 const TONE_BY_PATH: Array<[RegExp, AmbientTone]> = [
   [/^\/games/, 'play'],
   [/^\/(badges|leaderboard)/, 'reward'],
@@ -27,12 +24,7 @@ interface AmbientBackgroundProps {
   subtle?: boolean;
 }
 
-/**
- * The page backdrop: a tinted grid that fades downwards, two horizon glows, film grain, and a
- * staircase that draws itself while a light climbs it (progress, the platform's core loop).
- * Decorative only: hidden from assistive tech, ignores the pointer, sits below all content, and
- * is static under `prefers-reduced-motion`. Place it inside an element with `relative isolate`.
- */
+/** The page backdrop: a tinted grid that fades downwards, two horizon glows, film grain. */
 export function AmbientBackground({ tone, subtle = false }: AmbientBackgroundProps) {
   const { pathname } = useLocation();
   const active = tone ?? toneFor(pathname);

@@ -4,12 +4,7 @@ namespace App\Services\Gemini;
 
 use App\Services\QuestionBank\SinhalaTextGuard;
 
-/**
- * The product's Sinhala voice, as a block of instructions for any prompt that asks a model to write
- * Sinhala, plus a check for what comes back. Mirrors frontend/src/locales/STYLE_GUIDE.md: keep the
- * two in step. A model's Sinhala is only a draft; rules() steers it and acceptable() refuses the
- * obviously corrupted answers (letters from other scripts, broken vowel signs).
- */
+/** The product's Sinhala voice, as a block of instructions for any prompt that asks a model to write Sinhala. */
 class SinhalaStyle
 {
     /** Instructions to append to a prompt whose answer is Sinhala. */

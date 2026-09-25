@@ -2,35 +2,14 @@
 
 namespace App\Services\Irt;
 
-/**
- * Pure, framework-free implementation of the two core Rasch-model (1PL Item
- * Response Theory) computations used by this platform's adaptive testing
- * engine. Kept independent of Eloquent/the database on purpose so the exact
- * same code path can be:
- *  - run against real response data (via RaschCalibrationService / AbilityEstimationService), and
- *  - run against a synthetic dataset with a known ground truth (via the
- *    "php artisan irt:validate-simulation" Monte Carlo recovery study),
- * which is what lets that simulation genuinely validate this code rather
- * than a re-implementation of it.
- *
- * References:
- *  - Rasch, G. (1960). Probabilistic Models for Some Intelligence and Attainment Tests.
- *  - Wright, B.D. & Stone, M.H. (1979). Best Test Design. Chicago: MESA Press.
- *    (source of the PROX / "Normal Approximation" joint calibration algorithm below)
- *  - Lord, F.M. (1980). Applications of Item Response Theory to Practical Testing Problems.
- */
+/** Pure, framework-free implementation of the two core Rasch-model. */
 class RaschMath
 {
     /** Continuity-correction bound so proportions of 0 or 1 never produce an infinite logit. */
     private const PROX_VARIANCE_CONSTANT = 2.89; // (pi^2/3) / (pi^2/3 + 1) normalising constant used by PROX, per Wright & Stone (1979)
 
     /**
-     * PROX (Normal Approximation) joint calibration: recovers item difficulty
-     * (and, incidentally, person ability) from a response matrix in one closed-form
-     * pass - no iteration needed, unlike full joint maximum likelihood estimation.
-     * Works on sparse data (not every person needs to answer every item), which is
-     * essential here since each student only ever sees a sampled subset of the bank.
-     *
+     * PROX (Normal Approximation) joint calibration: recovers item difficulty (and, incidentally.
      * @param  array<int,array{person: int|string, item: int|string, correct: bool}>  $responses
      * @return array{item_difficulty: array<int|string,float>, person_ability: array<int|string,float>}
      */
@@ -67,10 +46,7 @@ class RaschMath
         $varItemLogit = self::variance($itemLogits, $meanItemLogit);
         $varPersonLogit = self::variance($personLogits, $meanPersonLogit);
 
-        // Expansion factors correct for the fact that logits from finite item/person
-        // samples are more spread out than the underlying logistic distribution - see
-        // Wright & Stone (1979) ch.4. Without this correction PROX systematically
-        // under-estimates the true spread of item difficulty / person ability.
+        // Expansion factors correct for the fact that logits from finite item/person samples are more spread out than the underlying...
         $itemExpansion = sqrt(1 + $varItemLogit / self::PROX_VARIANCE_CONSTANT);
         $personExpansion = sqrt(1 + $varPersonLogit / self::PROX_VARIANCE_CONSTANT);
 
@@ -88,11 +64,7 @@ class RaschMath
     }
 
     /**
-     * Maximum-likelihood ability (theta) estimation via Newton-Raphson, given a
-     * fixed set of item difficulties. This is what re-estimates a student's
-     * ability after every answer during an adaptive placement test, and after
-     * every completed daily session using their full response history.
-     *
+     * Maximum-likelihood ability (theta) estimation via Newton-Raphson, given a fixed set of item difficulties.
      * @param  array<int|string,float>  $itemDifficulties  item key => difficulty (b)
      * @param  array<int|string,bool>  $responses  item key => correct? (only keys present in both arrays are used)
      * @return array{theta: float, se: float, items_used: int}

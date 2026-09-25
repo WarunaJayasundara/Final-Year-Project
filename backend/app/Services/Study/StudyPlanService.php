@@ -11,15 +11,7 @@ use App\Models\UserProgressSnapshot;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Rule-based adaptive study planner - deliberately not a machine-learning
- * model. A well-specified rules engine is the right tool here: the inputs
- * (days remaining, weak categories, stated daily availability) and the
- * desired behaviour ("get harder and more mock-test-heavy as the exam
- * approaches") are fully known upfront, so a transparent, auditable rule
- * set is both simpler and more defensible than training a model to
- * approximate the same thing.
- */
+/** Rule-based adaptive study planner - deliberately not a machine-learning model. */
 class StudyPlanService
 {
     private const PHASE_BOUNDARIES = [
@@ -60,14 +52,7 @@ class StudyPlanService
     /** Used as the readiness target when the student hasn't set a real exam pass_mark. */
     private const DEFAULT_TARGET_READINESS_PERCENT = 80.0;
 
-    /**
-     * Documented rule-of-thumb, not a fitted coefficient: roughly how many
-     * minutes of additional weekly focused practice tend to move readiness
-     * by one percentage point, based on the same order-of-magnitude as
-     * BASE_DAILY_QUESTIONS/PHASE_INTENSITY's existing hand-picked constants.
-     * Used only to size the "is the current plan enough?" warning below -
-     * never presented as a precise prediction.
-     */
+    /** Documented rule-of-thumb, not a fitted coefficient. */
     private const MINUTES_PER_READINESS_POINT_PER_WEEK = 12.0;
 
     /** Below this many days remaining, an insufficient-plan warning becomes worth surfacing at all. */
@@ -120,16 +105,7 @@ class StudyPlanService
         ];
     }
 
-    /**
-     * "Is the current plan actually enough?" (brief's own critical §11
-     * feature): compares latest predicted readiness against a target,
-     * current answering pace against the real exam's pace requirement (if
-     * supplied), and - only when the exam is genuinely close AND the gap is
-     * meaningful AND the current daily-hours plan can't plausibly close it -
-     * a warning object the frontend can surface. Never guarantees anything;
-     * always explains why, per the brief's explicit "do not guarantee
-     * success" instruction.
-     */
+    /** "Is the current plan actually enough?" (brief's own critical §11 feature): compares latest predicted readiness against a target. */
     private function readinessGap(User $user, $examProfile, ?int $daysRemaining, float $dailyHours, Collection $weakCategories): array
     {
         $currentReadiness = ExamReadinessPrediction::where('user_id', $user->id)
@@ -246,12 +222,7 @@ class StudyPlanService
         });
     }
 
-    /**
-     * Pure function of days-remaining -> phase, made public/static so other
-     * services (e.g. WeakAreaWeightingService's exam-approaching training
-     * mode) can derive the same phase without duplicating the boundary
-     * logic or depending on a full generate() call.
-     */
+    /** Pure function of days-remaining -> phase, made public/static so other services. */
     public static function determinePhase(?int $daysRemaining): string
     {
         if ($daysRemaining === null) {
@@ -269,14 +240,7 @@ class StudyPlanService
         return 'final_revision';
     }
 
-    /**
-     * "Today's Plan" (and the dashboard's "First focus"/"Today's goal") used to always blend every
-     * activity regardless of what day it actually was, while buildWeeklySchedule() below rotates a
-     * real weak_1/weak_2/mixed/mock/rest pattern across the week - so a student could open the
-     * dashboard on a day the weekly schedule itself marked "Rest" and still be told to do 20 practice
-     * questions. $todayFocus is PHASE_WEEKLY_PATTERN[$phase] for the current day, i.e. exactly what
-     * buildWeeklySchedule() shows for today, so the two can never disagree.
-     */
+    /** "Today's Plan" (and the dashboard's "First focus"/"Today's goal") used to always blend every activity regardless of what day... */
     private function buildDailyPlan(string $phase, string $todayFocus, float $dailyHours, Collection $weakCategories, ?array $strongestCategory): array
     {
         if ($phase === 'exam_day') {

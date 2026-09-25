@@ -5,12 +5,7 @@ namespace App\Services\AiFeedback;
 use App\Contracts\AiFeedbackServiceInterface;
 use App\Models\Question;
 
-/**
- * Rule-based explanation generator used until a Gemini API key is configured.
- * Builds a locale-aware explanation from the question's authored explanation
- * fields plus a small templated wrapper, so every question always has usable
- * feedback even without a live AI call.
- */
+/** Rule-based explanation generator used until a Gemini API key is configured. */
 class MockAiFeedbackService implements AiFeedbackServiceInterface
 {
     public function explainAnswer(Question $question, string $selectedOptionKey, string $locale): string

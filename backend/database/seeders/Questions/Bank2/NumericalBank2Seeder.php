@@ -6,14 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Competitive-exam numerical reasoning bank. Every archetype reuses a
- * bilingual sentence frame already verified in the existing seeders -
- * only numbers change - and every answer is computed, never authored.
- * Parameter ranges are kept disjoint from ExamNumericalQuestionsSeeder /
- * AdvancedNumericalQuestionsSeeder (which run first), backed by a
- * run-time check against active question text for any duplicates.
- */
+/** Competitive-exam numerical reasoning bank. */
 class NumericalBank2Seeder extends Seeder
 {
     use BuildsQuestions;

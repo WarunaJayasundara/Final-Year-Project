@@ -12,12 +12,7 @@ use App\Models\UserDailyCheckin;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Deletes every is_demo_user / is_demo_feedback row created by
- * `demo:generate` - a standalone cleanup command for when you want the demo
- * accounts gone without immediately regenerating them (demo:generate --fresh
- * does the same removal inline before regenerating).
- */
+/** Deletes every is_demo_user / is_demo_feedback row created by `demo:generate`. */
 class RemoveDemoData extends Command
 {
     protected $signature = 'demo:remove';

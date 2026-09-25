@@ -9,10 +9,7 @@ interface CountUpProps {
 
 const NUMBER = /\d[\d,]*/;
 
-/**
- * Counts the leading number of a display string up from zero once, when it first appears.
- * Values with no number, and users who prefer reduced motion, see the final text immediately.
- */
+/** Counts the leading number of a display string up from zero once, when it first appears. */
 export function CountUp({ value, durationMs = 900 }: CountUpProps) {
   const reduced = useReducedMotion();
   const match = NUMBER.exec(value);

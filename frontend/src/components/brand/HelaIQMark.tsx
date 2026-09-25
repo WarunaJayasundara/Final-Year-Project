@@ -8,14 +8,7 @@ interface HelaIQMarkProps {
   markClassName?: string;
 }
 
-/**
- * The HelaIQ mark: two vertical strokes (an abstract "H") joined by a
- * 3-step ascending crossbar - reads simultaneously as the H's crossbar and
- * as the app's own 5-level progression system, with one connection-point
- * dot at the crossbar's terminus. Deliberately avoids every excluded
- * cliche (brain, robot, sparkle, lightbulb, graduation cap, generic
- * multi-node neural web) - a single dot, never a web.
- */
+/** The HelaIQ mark: two vertical strokes (an abstract "H") joined by a 3-step ascending crossbar. */
 export function HelaIQMark({ variant = 'full', className, markClassName }: HelaIQMarkProps) {
   const isCompact = variant === 'compact';
   const strokeColor =

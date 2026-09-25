@@ -14,13 +14,7 @@ use App\Services\Analytics\StudyNoteRecommendationService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises StudyNoteRecommendationService's weak-SUBCATEGORY-to-note
- * matching (brief §10: "you struggled with X - learn it now"), against the
- * real dev database (no RefreshDatabase), with explicit tearDown. Uses a
- * dedicated test-only subcategory/question/note trio rather than real bank
- * content, to stay isolated from production data.
- */
+/** Exercises StudyNoteRecommendationService's weak-SUBCATEGORY-to-note matching (brief §10: "you struggled with X - learn it now"). */
 class StudyNoteRecommendationServiceTest extends TestCase
 {
     private const TEST_SUBCATEGORY = 'recommendation_test_subcategory';

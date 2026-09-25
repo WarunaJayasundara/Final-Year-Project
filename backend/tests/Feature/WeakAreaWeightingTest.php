@@ -12,11 +12,7 @@ use App\Services\Sessions\WeakAreaWeightingService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises WeakAreaWeightingService against the real dev database (no
- * RefreshDatabase - see AdaptivePlacementTest), with explicit tearDown
- * cleanup of every row this test creates.
- */
+/** Exercises WeakAreaWeightingService against the real dev database (no RefreshDatabase - see AdaptivePlacementTest). */
 class WeakAreaWeightingTest extends TestCase
 {
     private ?User $testUser = null;

@@ -74,11 +74,7 @@ class GamificationController extends Controller
         ]);
     }
 
-    /**
-     * Cohort-wide XP ranking. Names are shown (not anonymized) - consistent
-     * with the existing admin analytics, which already display full student
-     * names to the small, trusted cohort this platform serves.
-     */
+    /** Cohort-wide XP ranking. */
     public function leaderboard(Request $request)
     {
         $top = User::where('role', 'user')

@@ -18,16 +18,7 @@ function formatClock(totalSeconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-/**
- * A mock exam is a real TestSession like any other (see MockExamController)
- * with one difference the UI must actually enforce: time_limit_seconds. This
- * is the first countdown timer of this kind in the test-taking flow -
- * SessionRunner/AdaptivePlacementRunner have no time pressure at all. On
- * expiry, the exam auto-submits/locks exactly where the student is (brief
- * §13/§10: real exam conditions, not an untimed practice set). The countdown
- * stays calm (neutral border) until the final 60 seconds, when it shifts to
- * a warning tone - not a constant red pulse for the whole exam.
- */
+/** A mock exam is a real TestSession like any other (see MockExamController) with one difference the UI must actually enforce. */
 export function MockExamRunner({ session }: { session: SessionData }) {
   const { t } = useTranslation(['common', 'sessions']);
   const navigate = useNavigate();

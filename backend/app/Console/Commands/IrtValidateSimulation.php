@@ -6,20 +6,7 @@ use App\Services\Irt\RaschMath;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Monte Carlo parameter-recovery study for the Rasch/PROX calibration and MLE
- * ability estimation implemented in App\Services\Irt\RaschMath. This is a
- * standard IRT validation method (see e.g. Harwell, Stone, Hsu & Kirisci
- * (1996) "Monte Carlo studies in item response theory") used precisely
- * because the platform's real usage data is still too thin to validate
- * calibration against - here we generate data with a *known* ground truth
- * (true item difficulties and true person abilities), run it through exactly
- * the same code path the live app uses, and measure how well the true
- * parameters are recovered. This is independent of question content: it
- * validates the statistical engine itself, not any particular question bank.
- *
- * Does not touch the application database - entirely self-contained.
- */
+/** Monte Carlo parameter-recovery study for the Rasch/PROX calibration and MLE ability estimation implemented in... */
 class IrtValidateSimulation extends Command
 {
     protected $signature = 'irt:validate-simulation
@@ -72,10 +59,7 @@ class IrtValidateSimulation extends Command
         $calibration = RaschMath::calibrateItems($responses);
         $recoveredDifficulty = $calibration['item_difficulty'];
 
-        // Rasch/IRT item difficulty is only identified up to an additive constant
-        // (a well-known property of the model - see Lord 1980, ch.2) - so before
-        // comparing recovered to true parameters we mean-equate them, which is the
-        // standard correction used in IRT parameter-recovery studies.
+        // Rasch/IRT item difficulty is only identified up to an additive constant (a well-known property of the model - see Lord 1980.
         $offset = $this->meanOf($trueDifficulty) - $this->meanOf($recoveredDifficulty);
         $equatedDifficulty = array_map(fn ($b) => $b + $offset, $recoveredDifficulty);
 
@@ -173,7 +157,6 @@ class IrtValidateSimulation extends Command
 
     /**
      * Pearson correlation between two parallel arrays keyed the same way.
-     *
      * @param  array<string,float>  $a
      * @param  array<string,float>  $b
      */

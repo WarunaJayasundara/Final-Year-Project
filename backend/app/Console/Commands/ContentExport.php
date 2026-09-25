@@ -5,15 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Writes the curated learning content (levels, categories, games, badges and
- * the ACTIVE question bank) to a single compressed JSON snapshot. Paired with
- * content:import, this lets a fresh host (or a new developer) get exactly the
- * validated question bank without re-running the non-idempotent seeders, which
- * would also resurrect questions that were deliberately retired.
- *
- * User data, sessions and history are never exported.
- */
+/** Writes the curated learning content (levels, categories, games. */
 class ContentExport extends Command
 {
     protected $signature = 'content:export {--path= : Output file (default database/content/content.json.gz)}';

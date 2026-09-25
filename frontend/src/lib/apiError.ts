@@ -37,11 +37,7 @@ function validationKey(errors: Record<string, string[]>): string {
   return 'validationFailed';
 }
 
-/**
- * Turns a failed API call into a message in the user's language. The backend's own text is English,
- * so it is never displayed directly: known messages and validation rules map to translated keys and
- * everything else falls back to a message chosen from the HTTP status.
- */
+/** Turns a failed API call into a message in the user's language. */
 export function apiErrorMessage(error: unknown, t: TFunction): string {
   const response = (error as { response?: { status?: number; data?: ApiErrorBody } } | null)?.response;
   const tr = (key: string) => t(`errors.api.${key}`, { ns: 'common' });

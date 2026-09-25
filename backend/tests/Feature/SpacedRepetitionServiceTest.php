@@ -10,11 +10,7 @@ use App\Services\Analytics\SpacedRepetitionService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the simplified SM-2 spaced-repetition scheduler (brief §9:
- * "schedule weak concepts for future revision") against the real dev
- * database (no RefreshDatabase), with explicit tearDown.
- */
+/** Exercises the simplified SM-2 spaced-repetition scheduler (brief §9. */
 class SpacedRepetitionServiceTest extends TestCase
 {
     private ?User $testUser = null;

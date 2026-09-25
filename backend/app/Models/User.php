@@ -85,11 +85,7 @@ class User extends Authenticatable
         return $this->hasMany(ExamReadinessPrediction::class);
     }
 
-    /**
-     * The student's current active exam profile, if any - only one is ever
-     * 'active' at once (see ExamProfileController::store()'s rollover);
-     * examProfileHistory() holds the rest.
-     */
+    /** The student's current active exam profile, if any - only one is ever 'active' at once. */
     public function examProfile(): HasOne
     {
         return $this->hasOne(ExamProfile::class)->where('status', 'active')->latestOfMany();

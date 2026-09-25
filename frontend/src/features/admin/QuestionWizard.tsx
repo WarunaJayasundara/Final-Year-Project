@@ -23,12 +23,7 @@ interface Props {
   isSubmitting?: boolean;
 }
 
-/**
- * Step-based question creation wizard (brief #12): one focused screen per
- * step instead of every field on one long form, plus a live preview using
- * the exact same QuestionCard component students see in a real session -
- * not a separate mockup that could drift from the real UI.
- */
+/** Step-based question creation wizard (brief #12): one focused screen per step instead of every field on one long form. */
 export function QuestionWizard({ onSubmit, isSubmitting }: Props) {
   const { t } = useTranslation('admin');
   const { data: categories } = useAdminCategories();

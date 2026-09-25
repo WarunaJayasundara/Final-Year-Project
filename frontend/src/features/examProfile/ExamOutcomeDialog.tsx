@@ -8,12 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useSubmitExamOutcome } from './useExamProfile';
 import type { ExamProfile } from './types';
 
-/**
- * Shown in place of the countdown once an exam's date has passed and no
- * outcome has been recorded yet. Submitting (even a bare "no, I skipped it")
- * archives the profile so the student can start a new one - see
- * ExamProfileController::outcome()'s docblock for why this never blocks.
- */
+/** Shown in place of the countdown once an exam's date has passed and no outcome has been recorded yet. */
 export function ExamOutcomeDialog({ profile }: { profile: ExamProfile }) {
   const { t } = useTranslation('dashboard');
   const [attended, setAttended] = useState<'yes' | 'no' | null>(null);

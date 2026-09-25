@@ -9,12 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises the real sequential CAT placement flow end-to-end against the
- * live app database (this project's test setup has no RefreshDatabase/
- * transactional rollback - see AGENTS notes), so every test user/session/
- * answer created here is explicitly cleaned up in tearDown.
- */
+/** Exercises the real sequential CAT placement flow end-to-end against the live app database. */
 class AdaptivePlacementTest extends TestCase
 {
     private ?User $testUser = null;

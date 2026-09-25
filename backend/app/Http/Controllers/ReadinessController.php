@@ -58,13 +58,7 @@ class ReadinessController extends Controller
         return response()->json(['data' => $predictions]);
     }
 
-    /**
-     * "readiness_type" is a presentation-layer distinction only (derived
-     * from the CURRENT exam profile, not stored per-prediction): without an
-     * active exam to be "ready" for, the same model output is shown as a
-     * general cognitive-training indicator instead of implying a pass
-     * probability for a named exam.
-     */
+    /** "readiness_type" is a presentation-layer distinction only (derived from the CURRENT exam profile, not stored per-prediction). */
     private function present(ExamReadinessPrediction $prediction, ?User $user = null): array
     {
         $examProfile = $user?->examProfile()->first();

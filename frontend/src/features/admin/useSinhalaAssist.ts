@@ -16,13 +16,7 @@ interface SinhalaAssistInput {
   setOptions: (updater: (prev: QuestionOptionInput[]) => QuestionOptionInput[]) => void;
 }
 
-/**
- * Sinhala tooling shared by the "new question" wizard and the "edit question" form:
- *  - a debounced integrity check of whatever Sinhala is typed (red = corrupted, blocks saving),
- *  - a "draft Sinhala from English" action that fills only EMPTY Sinhala fields, so it can
- *    never overwrite text an admin has written or corrected,
- *  - a review gate: a machine draft must be ticked as reviewed before the question can be saved.
- */
+/** Sinhala tooling shared by the "new question" wizard and the "edit question" form. */
 export function useSinhalaAssist(input: SinhalaAssistInput) {
   const { t } = useTranslation('admin');
   const { textEn, textSi, setTextSi, explanationEn, explanationSi, setExplanationSi, options, setOptions } = input;

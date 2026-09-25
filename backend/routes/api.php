@@ -24,11 +24,7 @@ use App\Http\Controllers\Sessions\TestSessionController;
 use App\Http\Controllers\StudyNoteController;
 use Illuminate\Support\Facades\Route;
 
-// --- Auth ---
-// Note: /auth/google/redirect and /auth/google/callback live in routes/web.php
-// instead (see comment there) - a top-level browser redirect from Google
-// needs the unconditional session support the "web" middleware group
-// provides, which "api" doesn't give it.
+// --- Auth --- Note: /auth/google/redirect and /auth/google/callback live in routes/web.php instead (see comment there).
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

@@ -55,10 +55,7 @@ class RaschMathTest extends TestCase
 
     public function test_calibrate_items_recovers_relative_item_ordering()
     {
-        // Three items of clearly different true difficulty, answered by a modest
-        // spread of simulated persons of varying ability - PROX should recover them
-        // in the correct relative order (easy < medium < hard), which is the
-        // property the adaptive item-selection logic actually depends on.
+        // Three items of clearly different true difficulty, answered by a modest spread of simulated persons of varying ability.
         mt_srand(42);
         $trueDifficulty = ['easy' => -1.5, 'medium' => 0.0, 'hard' => 1.5];
         $responses = [];

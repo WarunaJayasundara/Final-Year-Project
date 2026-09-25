@@ -4,17 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Fixed achievement catalog (seeded by BadgeSeeder), evaluated by
- * BadgeService after session completion, game scores, exam-profile setup,
- * and readiness predictions. xp_reward/coin_reward are granted the moment a
- * badge is newly earned (see user_badges).
- */
+/** Fixed achievement catalog (seeded by BadgeSeeder), evaluated by BadgeService after session completion, game scores. */
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
@@ -35,7 +29,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

@@ -2,13 +2,7 @@ import { toast } from 'sonner';
 import i18n from '@/lib/i18n';
 import type { RewardResult } from './types';
 
-/**
- * Shared toast trigger for any action that can award XP/coins/badges
- * (session completion, game scores, exam-profile setup, readiness
- * predictions) - called from mutation onSuccess callbacks, not component
- * render, so it reads the locale-resolved i18n instance directly rather
- * than requiring a `t` function to be threaded through every call site.
- */
+/** Shared toast trigger for any action that can award XP/coins/badges (session completion, game scores, exam-profile setup. */
 export function showRewardToast(rewards: RewardResult | undefined | null): void {
   if (!rewards) {
     return;

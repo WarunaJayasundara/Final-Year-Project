@@ -97,13 +97,7 @@ class QuestionController extends Controller
         return response()->json(['data' => $question->fresh()]);
     }
 
-    /**
-     * Generates a preview-only visual question via VisualQuestionGeneratorService
-     * and writes its SVG to storage. To actually save it, POST the same
-     * payload (incl. this response's image_path) to store() - there's no
-     * separate creation path. Only 'shape_rotation' is wired up; other
-     * SvgFigureBuilder archetypes remain seeder-only (documented scope cut).
-     */
+    /** Generates a preview-only visual question via VisualQuestionGeneratorService and writes its SVG to storage. */
     public function generateVisualPreview(Request $request, VisualQuestionGeneratorService $generator)
     {
         $validated = $request->validate([

@@ -8,17 +8,11 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
      * @return void
      */
     public function up()
     {
-        // A student can now accumulate multiple exam_profiles rows over time
-        // (one active + any number of completed/past ones for the "Past
-        // Exams" history), so the original one-row-per-user unique
-        // constraint no longer holds - replaced with a plain index. The
-        // plain index must be created BEFORE the unique one is dropped,
-        // since MySQL requires an index to always back the foreign key.
+        // A student can now accumulate multiple exam_profiles rows over time.
         Schema::table('exam_profiles', function (Blueprint $table) {
             $table->index('user_id', 'exam_profiles_user_id_index');
         });
@@ -38,7 +32,6 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
      * @return void
      */
     public function down()

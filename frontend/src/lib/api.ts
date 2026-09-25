@@ -1,9 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
-/**
- * Longest a single request may take. Without a limit a stalled connection leaves the page on a
- * spinner forever; the slowest legitimate calls (AI generation with retries) finish well inside this.
- */
+/** Longest a single request may take. */
 const REQUEST_TIMEOUT_MS = 60_000;
 
 export const api = axios.create({
@@ -19,11 +16,7 @@ export const api = axios.create({
 
 let csrfReady: Promise<void> | null = null;
 
-/**
- * Sanctum requires a CSRF cookie to be present before any state-changing
- * request. Call this once before the first login/mutation; subsequent calls
- * reuse the same in-flight/completed promise.
- */
+/** Sanctum requires a CSRF cookie to be present before any state-changing request. */
 function ensureCsrfCookie(): Promise<void> {
   if (!csrfReady) {
     csrfReady = axios

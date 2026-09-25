@@ -9,14 +9,7 @@ use App\Models\User;
 use App\Services\Analytics\StreakService;
 use Illuminate\Support\Carbon;
 
-/**
- * Daily/weekly missions are defined in code (not stored) and evaluated live
- * from existing session/game data each time they're listed - only the
- * *claim* is persisted (mission_claims), both to prevent double-claiming
- * within a period and to record which periods a student has already
- * collected. This mirrors StudyPlanService's "transparent rules engine, not
- * a database of state to keep in sync" philosophy.
- */
+/** Daily/weekly missions are defined in code. */
 class MissionService
 {
     private const DAILY_QUESTIONS_TARGET = 15;

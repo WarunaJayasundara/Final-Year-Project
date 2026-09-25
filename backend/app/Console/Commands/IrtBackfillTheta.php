@@ -8,15 +8,7 @@ use App\Services\Irt\AbilityEstimationService;
 use App\Services\Leveling\LevelAdjustmentService;
 use Illuminate\Console\Command;
 
-/**
- * One-time migration utility: users who completed placement before the
- * Rasch/IRT engine existed have current_level_id set (via the old
- * percentage-band system) but no theta_estimate, so their IQ estimate and
- * future level changes would otherwise stay frozen until their next session
- * completes. This recomputes theta from each such user's existing response
- * history (via the same AbilityEstimationService the live app uses) so their
- * account is immediately consistent with the new system.
- */
+/** One-time migration utility: users who completed placement before the Rasch/IRT engine existed have current_level_id set. */
 class IrtBackfillTheta extends Command
 {
     protected $signature = 'irt:backfill-theta';

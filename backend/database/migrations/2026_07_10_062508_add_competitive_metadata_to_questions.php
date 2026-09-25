@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Metadata for the competitive-exam question bank redesign: a fine-grained
- * subcategory taxonomy (the 7-category exam taxonomy maps onto the 5 fixed
- * platform categories via these), an estimated solving time, Bloom's
- * taxonomy level, government-exam tags, and the cognitive skill assessed.
- * All nullable so the pre-existing bank and admin-authored questions remain
- * valid without backfill.
- */
+/** Metadata for the competitive-exam question bank redesign: a fine-grained subcategory taxonomy. */
 return new class extends Migration
 {
     public function up()

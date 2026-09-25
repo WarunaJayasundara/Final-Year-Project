@@ -9,14 +9,7 @@ import { useQuestionTimer } from './useQuestionTimer';
 import { QuestionCard, type RevealState } from './QuestionCard';
 import type { AdaptiveSessionData, SessionQuestion } from './types';
 
-/**
- * Drives the placement test's real computerized-adaptive-testing (CAT) flow:
- * unlike SessionRunner (which paginates through a fixed pre-loaded question
- * array), each answer here is submitted individually and the backend responds
- * with the *next adaptively-selected question* (or a signal that the test has
- * gathered enough information to stop) - see TestSessionController's
- * handleAdaptiveAnswer for the Rasch-model item selection driving this.
- */
+/** Drives the placement test's real computerized-adaptive-testing (CAT) flow: unlike SessionRunner. */
 export function AdaptivePlacementRunner({ session }: { session: AdaptiveSessionData }) {
   const { t } = useTranslation(['common', 'sessions']);
   const navigate = useNavigate();

@@ -6,15 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Multi-step (2-3 chained operations) adult numeric word problems: ages,
- * weighted-ratio profit-sharing, chained work-and-time, and relative-speed
- * problems. Fills a gap in the existing numerical seeders, which don't go
- * past a single chained operation at Level 4-5. Every row is generated
- * forward, never asserted: the scenario's hidden target value is picked
- * first, then the visible clues are derived from it, so the printed
- * answer is always the exact value used to build the question.
- */
+/** Multi-step (2-3 chained operations) adult numeric word problems: ages, weighted-ratio profit-sharing, chained work-and-time. */
 class AdultWordProblemSeeder extends Seeder
 {
     use BuildsQuestions;

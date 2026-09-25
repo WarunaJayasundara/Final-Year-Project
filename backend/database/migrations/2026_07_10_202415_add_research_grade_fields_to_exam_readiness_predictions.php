@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Additive columns for the research-grade ML upgrade's multi-output
- * predictions (ml-service/app.py's expanded /predict response) - all
- * nullable so every pre-existing row (predicted before this upgrade)
- * remains perfectly valid with these fields simply absent, and the
- * `features` JSON column already accommodates the 18 new advanced
- * features with no schema change at all.
- */
+/** Additive columns for the research-grade ML upgrade's multi-output predictions (ml-service/app.py's expanded /predict response). */
 return new class extends Migration
 {
     public function up()

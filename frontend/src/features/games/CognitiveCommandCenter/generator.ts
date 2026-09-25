@@ -49,11 +49,7 @@ function mulberry32(seed: number) {
   };
 }
 
-/**
- * 12-round rotation covering all 5 task types. A pattern or dual round shows a number, and each
- * recall round asks for the number shown exactly two rounds earlier (indices 0 -> 2, 4 -> 6, 8 -> 10),
- * with a different task in between, as the prompt says.
- */
+/** 12-round rotation covering all 5 task types. */
 export const TASK_ROTATION: TaskType[] = [
   'pattern',
   'sort',

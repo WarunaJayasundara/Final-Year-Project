@@ -7,20 +7,10 @@ use App\Models\TestSession;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-/**
- * Aggregate, read-only queries backing the admin "research" analytics views -
- * cohort-wide stats and the pre/post paired scores used for the paired
- * t-test analysis described in the project proposal. No denormalized tables:
- * everything here is computed on demand from test_sessions/session_answers.
- */
+/** Aggregate, read-only queries backing the admin "research" analytics views. */
 class ResearchExportService
 {
-    /**
-     * $includeDemo defaults to false everywhere - synthetic demo accounts
-     * (is_demo_user, see GenerateDemoData) exist for UI testing/screenshots,
-     * not for research analysis, and must never inflate cohort-wide numbers
-     * unless an admin explicitly opts in.
-     */
+    /** $includeDemo defaults to false everywhere - synthetic demo accounts (is_demo_user. */
     public function cohortOverview(bool $includeDemo = false): array
     {
         $students = User::where('role', 'user')->when(! $includeDemo, fn ($q) => $q->where('is_demo_user', false));
@@ -61,11 +51,7 @@ class ResearchExportService
         ];
     }
 
-    /**
-     * One row per student who has both a placement (pre) score and at least
-     * one completed daily session (post) - the minimum needed for a paired
-     * comparison of pre vs post performance.
-     */
+    /** One row per student who has both a placement (pre) score and at least one completed daily session (post). */
     public function pairedScores(bool $includeDemo = false): Collection
     {
         $students = User::where('role', 'user')

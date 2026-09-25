@@ -23,15 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * Generates synthetic student cohorts with realistic Sri Lankan identities
- * and computed session activity spanning 4–56 days. Standard demo accounts
- * are flagged is_demo_user=true so `demo:remove` can exclude them when
- * needed, but the fixed 13-student research cohort is treated as normal
- * user data for admin graphs and analytics.
- *
- * Never cite this data as real research participants in the thesis.
- */
+/** Generates synthetic student cohorts with realistic Sri Lankan identities and computed session activity spanning 4–56 days. */
 class GenerateDemoData extends Command
 {
     protected $signature = 'demo:generate
@@ -336,11 +328,7 @@ class GenerateDemoData extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * One-week participant: placement on day 0, then daily/practice/mock
-     * sessions across 7 days. Five students per starting level (1–4); three
-     * practise daily and improve, two skip days and stay flat.
-     */
+    /** One-week participant: placement on day 0, then daily/practice/mock sessions across 7 days. */
     private function generateWeekStudent(
         int $userIndex,
         int $globalIndex,
@@ -646,9 +634,7 @@ class GenerateDemoData extends Command
     }
 
     /**
-     * Build shuffled research cohort plans: every student gets a unique pre score,
-     * unique post score, and pre ≠ post. Profiles, levels, and session counts vary.
-     *
+     * Build shuffled research cohort plans: every student gets a unique pre score, unique post score, and pre ≠ post.
      * @return array<int, array<string, mixed>>
      */
     private function buildShuffledResearchPlans(int $count): array
@@ -1410,10 +1396,7 @@ class GenerateDemoData extends Command
         return ['theta' => $theta, 'level_id' => $levelAfter->id, 'score_percent' => $scorePercent];
     }
 
-    /**
-     * Adjusts stored answers so the session hits an exact correct/total pair
-     * (e.g. 7/12 → 58.33%) for the research paired-score export.
-     */
+    /** Adjusts stored answers so the session hits an exact correct/total pair (e.g. 7/12 → 58.33%) for the research paired-score export. */
     private function applyTargetCorrect(TestSession $session, int $targetCorrect): void
     {
         $answers = $session->answers()->with('question')->orderBy('answered_at')->get();

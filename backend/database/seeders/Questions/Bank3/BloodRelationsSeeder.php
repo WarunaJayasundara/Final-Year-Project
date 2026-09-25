@@ -6,18 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Blood-relations/kinship reasoning, an archetype missing from the
- * question bank and common in Sri Lankan government-exam-prep material.
- * Subjects are letter labels (P, Q, R, ...), not named people, so the
- * only gender detail needed is an explicit "is male" / "is not male"
- * clause. Each template's answer is fixed by its own logic, verified once
- * and reused across letter-label instances - never asserted per row.
- * Restricted to direct nuclear-family terms already verified in this
- * project's Sinhala corpus (father/mother/brother/sister/grandmother/
- * uncle/aunt/child); see validate_sinhala.py's review log for why
- * paternal/maternal-specific aunt/uncle terms were left out.
- */
+/** Blood-relations/kinship reasoning, an archetype missing from the question bank and common in Sri Lankan government-exam-prep... */
 class BloodRelationsSeeder extends Seeder
 {
     use BuildsQuestions;

@@ -31,10 +31,7 @@ from data_pipeline.feature_mapping import LABEL_ORDER, map_oulad
 
 PROCESSED = Path(__file__).resolve().parent.parent / "data" / "processed"
 
-# Only features with a genuine, directly-measured real-data analogue are
-# calibrated - platform-only features (theta, memory_score, ...) keep their
-# documented hand-picked weight in generate_dataset.py regardless of this
-# report (see _load_calibrated_weights there).
+# Only features with a genuine, directly-measured real-data analogue are calibrated - platform-only features (theta, memory_score.
 CALIBRATABLE_POSITIVE = ["avg_test_score", "improvement_trend", "consistency_score", "weekly_practice_count", "attendance_percent"]
 CALIBRATABLE_INVERTED: list[str] = []
 
@@ -49,25 +46,14 @@ def calibrate() -> dict:
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # multinomial logistic regression: one coefficient vector per class,
-    # ordered high_risk < needs_improvement < almost_ready < ready - we want
-    # the direction/magnitude of each feature's association with *higher*
-    # readiness, so we take the coefficient on the "ready" class as the
-    # feature's overall positive-direction weight (an ordinal outcome, so
-    # the top class's coefficients are the cleanest single summary).
+    # multinomial logistic regression: one coefficient vector per class, ordered high_risk < needs_improvement < almost_ready < ready.
     model = LogisticRegression(max_iter=2000)
     model.fit(X_scaled, y)
 
     ready_idx = LABEL_ORDER.index("ready")
     raw_coefs = model.coef_[ready_idx]
 
-    # Renormalize so the calibrated weights sum to the same total mass as
-    # the hand-picked weights they replace (0.14+0.06+0.08+0.07+0.05=0.40),
-    # preserving the relative importance *pattern* observed in real data
-    # while keeping the composite score's overall scale unchanged - the
-    # weights other than these five (theta, category scores, etc.) still
-    # sum to 0.60, so overwriting these five's relative sizes doesn't
-    # silently make the whole composite dominated by one group.
+    # Renormalize so the calibrated weights sum to the same total mass as the hand-picked weights they replace.
     positive_mass = 0.14 + 0.06 + 0.08 + 0.07 + 0.05
     abs_coefs = np.abs(raw_coefs)
     normalized = abs_coefs / abs_coefs.sum() * positive_mass

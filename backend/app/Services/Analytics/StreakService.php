@@ -6,12 +6,7 @@ use App\Models\GameScore;
 use App\Models\TestSession;
 use Illuminate\Support\Carbon;
 
-/**
- * Consecutive-day activity streak, derived from distinct completed-session and
- * game-play dates (no stored streak column - see the plan's "Streaks are
- * computed, not stored" decision). Shared by the dashboard summary and the AI
- * coach's student-context builder.
- */
+/** Consecutive-day activity streak, derived from distinct completed-session and game-play dates (no stored streak column. */
 class StreakService
 {
     public function calculate(int $userId): int

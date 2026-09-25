@@ -5,15 +5,7 @@ namespace App\Services\Irt;
 use App\Models\SessionAnswer;
 use App\Models\User;
 
-/**
- * DB-backed wrapper around RaschMath::estimateAbility(). Two entry points:
- *  - estimateFromSession(): the running/final estimate for one (typically
- *    adaptively-delivered) session, using only that session's answers so far.
- *  - estimateFromHistory(): the user's overall ability, re-estimated via MLE
- *    over their *entire* placement+daily response history every time a
- *    session completes - this is what current_level_id and the IQ estimate
- *    are ultimately derived from.
- */
+/** DB-backed wrapper around RaschMath::estimateAbility(). */
 class AbilityEstimationService
 {
     public function estimateFromSession(int $sessionId, float $startingTheta = 0.0): array

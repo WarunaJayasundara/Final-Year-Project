@@ -8,11 +8,7 @@ interface SegmentedProgressProps {
   results: (boolean | null | undefined)[];
 }
 
-/**
- * One segment per question that turns green or red as the student answers.
- * Unlike a plain bar it shows how the run is going, and a growing streak of
- * green segments is its own small reward. No text, so it needs no translation.
- */
+/** One segment per question that turns green or red as the student answers. */
 export function SegmentedProgress({ total, current, results }: SegmentedProgressProps) {
   const answered = results.filter((r) => r !== null && r !== undefined).length;
 

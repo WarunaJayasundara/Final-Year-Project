@@ -6,16 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Data interpretation: reading a small dataset and computing a numeric
- * answer, an archetype missing from the question bank. Presented as an
- * inline text dataset (letter-labelled categories) rather than a
- * rendered chart image - a real chart is a natural follow-up, left out
- * here so every answer stays a directly verifiable computation on the
- * numbers shown. Only sum and difference questions are included, since
- * those match the Sinhala vocabulary this project's corpus has verified
- * (see validate_sinhala.py's review log).
- */
+/** Data interpretation: reading a small dataset and computing a numeric answer, an archetype missing from the question bank. */
 class DataInterpretationSeeder extends Seeder
 {
     use BuildsQuestions;

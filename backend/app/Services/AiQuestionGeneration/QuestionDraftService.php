@@ -13,27 +13,14 @@ use App\Services\QuestionBank\DuplicateDetectionService;
 use App\Services\QuestionBank\SinhalaSemanticValidationService;
 use App\Services\QuestionBank\SinhalaTextGuard;
 
-/**
- * Orchestrates AI question generation: calls the bound generator (Gemini or
- * Mock), rejects near-duplicates of existing bank questions via a Jaccard
- * word-overlap check, and persists survivors as *drafts* - never directly
- * as live questions. Only approve() (an explicit admin action) promotes a
- * draft into the real `questions` table. This human-in-the-loop gate exists
- * because generated content feeds a real assessment instrument, where a
- * hallucinated wrong "correct answer" would silently corrupt a student's
- * ability estimate.
- */
+/** Orchestrates AI question generation: calls the bound generator (Gemini or Mock). */
 class QuestionDraftService
 {
     private const SIMILARITY_THRESHOLD = 0.6;
 
     private const MAX_ATTEMPTS_PER_QUESTION = 3;
 
-    // Frame/filler words shared by nearly every question in a given
-    // template family (e.g. "how many times does the letter ... appear
-    // in"). Without stripping these, two questions with entirely
-    // different content (different letters, numbers, sequences) still
-    // share most of their tokens and score as false-positive duplicates.
+    // Frame/filler words shared by nearly every question in a given template family.
     private const STOPWORDS = [
         'how', 'many', 'times', 'does', 'the', 'letter', 'appear', 'in',
         'what', 'is', 'next', 'pattern', 'comes', 'memorize', 'this',
@@ -73,13 +60,7 @@ class QuestionDraftService
                 $candidate = $this->generator->generate($category, $level, $examCategoryLabel, array_slice($existingTexts, 0, 10), $sourceContext);
                 $candidatePool = [...$existingTexts, ...$sessionTexts];
 
-                // Two independent signals: Jaccard (word-overlap, catches
-                // near-identical phrasing/templates) and TF-IDF cosine via
-                // ml-service (weights distinctive vocabulary, catches
-                // paraphrases Jaccard misses). Either flagging is enough to
-                // reject - see DuplicateDetectionService's docblock for why
-                // an unreachable ml-service degrades gracefully rather than
-                // blocking generation.
+                // Two independent signals: Jaccard (word-overlap, catches near-identical phrasing/templates) and TF-IDF cosine via ml-service.
                 $isDuplicate = $this->isDuplicate($candidate['question_text_en'], $candidatePool)
                     || $this->duplicateDetection->isSemanticDuplicate($candidate['question_text_en'], $candidatePool);
 
@@ -241,11 +222,7 @@ class QuestionDraftService
         ]);
     }
 
-    /**
-     * A short, bounded string (never a document's raw extracted text) handed
-     * to the generator as topic/style grounding - see the interface
-     * docblock for why raw text is deliberately excluded.
-     */
+    /** A short, bounded string (never a document's raw extracted text) handed to the generator as topic/style grounding. */
     private function buildSourceContext(?SourceDocument $sourceDocument): ?string
     {
         if (! $sourceDocument) {
@@ -279,29 +256,14 @@ class QuestionDraftService
             : 'ai_mock';
     }
 
-    // Trivially-single-step patterns (bare "how many are left", a lone
-    // percentage-of-a-number with no second operation, etc.) - only
-    // penalized when the target level is 4 or 5, since the same patterns
-    // are legitimate, intentional easy-tier content at Level 1-2 (the
-    // uploaded reference PDFs' own numerical chapters build from
-    // single-step to multi-step across sections - see Bank4's
-    // AdultWordProblemSeeder docblock). Confirmed missing from the bank at
-    // the hard difficulty tier by the adult-content audit.
+    // Trivially-single-step patterns (bare "how many are left", a lone percentage-of-a-number with no second operation, etc.).
     private const TRIVIAL_SINGLE_STEP_PATTERNS = [
         '/how many (are|is) (left|remaining)\?/i',
         '/^what is \d+% of \d+\??$/i',
         '/^\d+% of \d+ is what\??$/i',
     ];
 
-    /**
-     * Documented heuristic composite (NOT an ML confidence score): structural
-     * completeness (all required fields present, exactly 4 distinct options,
-     * both languages populated) plus a length sanity check on the
-     * explanation, plus (Level 4-5 only) a deduction if the question text
-     * matches a trivially-single-step pattern. Scored 0.0-1.0. Purely
-     * diagnostic for the admin review queue - never blocks generation on
-     * its own (duplicate-detection is the actual gate).
-     */
+    /** Documented heuristic composite (NOT an ML confidence score): structural completeness (all required fields present. */
     private function computeQualityScore(array $draft, ?IqLevel $level = null): float
     {
         $score = 0.0;

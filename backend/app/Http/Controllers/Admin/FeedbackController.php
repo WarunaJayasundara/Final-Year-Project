@@ -30,12 +30,7 @@ class FeedbackController extends Controller
         ]);
     }
 
-    /**
-     * Averages per rating dimension + a 1-5 distribution of overall_rating.
-     * "Top terms" is a plain word-frequency count over comment/suggestion
-     * text, not sentiment analysis or an LLM summary - labelled as such in
-     * the admin UI since this project can't validate either of those claims.
-     */
+    /** Averages per rating dimension + a 1-5 distribution of overall_rating. */
     public function stats(Request $request)
     {
         $includeDemo = $request->boolean('include_demo');
@@ -81,10 +76,7 @@ class FeedbackController extends Controller
         return response()->json(['data' => $this->present($feedback->fresh())]);
     }
 
-    /**
-     * Anonymized by construction - user identity is never selected here
-     * (no name/email/user_id column) rather than redacted after the fact.
-     */
+    /** Anonymized by construction - user identity is never selected here. */
     public function exportCsv(Request $request): StreamedResponse
     {
         $includeDemo = $request->boolean('include_demo');

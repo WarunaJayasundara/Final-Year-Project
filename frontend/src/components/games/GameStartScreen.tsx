@@ -11,12 +11,7 @@ interface GameStartScreenProps {
   onStart: () => void;
 }
 
-/**
- * A shared pre-game screen (title, instructions, a per-game accent color/icon,
- * one Start button) so every game gets a professional entry point instead of
- * dropping the student straight into gameplay - previously none of the 8
- * games had any start screen at all.
- */
+/** A shared pre-game screen (title, instructions, a per-game accent color/icon. */
 export function GameStartScreen({ icon: Icon, accent, title, instructions, onStart }: GameStartScreenProps) {
   const { t } = useTranslation('games');
 

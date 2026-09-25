@@ -3,11 +3,7 @@ import { useCurrentUser } from '@/features/auth/useAuth';
 import { FullPageSpinner } from './RequireAuth';
 import { ErrorState } from '@/components/ui/error-state';
 
-/**
- * Wraps routes that need the user to have finished their placement test first
- * (daily practice, dashboard, games). Admin/super_admin accounts never take a
- * placement test, so they pass through untouched.
- */
+/** Wraps routes that need the user to have finished their placement test first (daily practice, dashboard, games). */
 export function RequirePlacement() {
   const { data: user, isLoading, isError, refetch } = useCurrentUser();
 

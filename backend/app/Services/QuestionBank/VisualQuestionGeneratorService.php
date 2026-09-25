@@ -2,19 +2,7 @@
 
 namespace App\Services\QuestionBank;
 
-/**
- * On-demand version of the logic in database/seeders/Questions/Bank2/SpatialImageSeeder.php's
- * rotationQuestions() - same chirality-verified correctness guarantee (the
- * "mirror" distractors can never accidentally equal a valid rotation of the
- * original), but generating one fresh question per call with real
- * randomness instead of the seeder's fixed reproducible seed, for the admin
- * Pattern/Visual Question Generator (brief requirement #11.C). Only
- * shape_rotation is wired up so far - see AdminVisualQuestionController for
- * the documented scope note on the other archetypes (matrix reasoning,
- * paper folding, cube nets, counting) that SvgFigureBuilder already
- * supports for seeding but aren't yet exposed as an on-demand admin
- * generator.
- */
+/** On-demand version of the logic in database/seeders/Questions/Bank2/SpatialImageSeeder.php's rotationQuestions(). */
 class VisualQuestionGeneratorService
 {
     private const POLY_BASES = [
@@ -35,10 +23,7 @@ class VisualQuestionGeneratorService
         $baseName = array_rand(self::POLY_BASES);
         $cells = self::POLY_BASES[$baseName];
 
-        // Same chirality guard as the seeder: verify no rotation of the
-        // mirrored shape coincides with any rotation of the original,
-        // otherwise a "mirror" distractor could accidentally be a valid
-        // rotation and the question would have two correct answers.
+        // Same chirality guard as the seeder: verify no rotation of the mirrored shape coincides with any rotation of the original.
         $originals = [];
         foreach ([0, 90, 180, 270] as $r) {
             $originals[] = $builder->polySignature($builder->transformPoly($cells, false, $r));

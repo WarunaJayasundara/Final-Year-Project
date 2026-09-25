@@ -6,17 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Competitive-exam logical + verbal reasoning bank. Archetypes: shift
- * ciphers, alphabet-position codes, direction-sense walks, categorical
- * syllogisms, number classification (odd one out), letter series, number
- * analogies, blood relations, and ranking/position puzzles. Bilingual
- * frames reuse sentences already verified in the existing seeders; the
- * three new Sinhala words the ranking archetype needs (වම්, දකුණු,
- * පසින්) are reviewed and whitelisted in tools/validate_sinhala.py. Word
- * pools are kept disjoint from the Advanced/Exam seeders, backed by a
- * run-time check against active question text for duplicates.
- */
+/** Competitive-exam logical + verbal reasoning bank. */
 class LogicalVerbalBank2Seeder extends Seeder
 {
     use BuildsQuestions;
@@ -639,12 +629,7 @@ class LogicalVerbalBank2Seeder extends Seeder
             min(3, max(1, (int) ceil($level / 2))), $meta];
     }
 
-    /**
-     * Text answer + text distractors; when the answer/distractors have
-     * distinct Sinhala renderings pass $answerSi and align $wrongsSi with
-     * $wrongsEn, otherwise the English strings are reused for both locales
-     * (appropriate for code words and letter groups).
-     */
+    /** Text answer + text distractors; when the answer/distractors have distinct Sinhala renderings pass $answerSi and align... */
     private function textOptionRow(int $level, string $textEn, string $textSi, string $answerEn, array $wrongsEn, array $wrongsSi, string $explEn, string $explSi, string $seedKey, array $meta, ?string $answerSi = null): ?array
     {
         if (isset($this->seenTexts[$textEn])) {

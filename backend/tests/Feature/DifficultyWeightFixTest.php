@@ -7,18 +7,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Tests\TestCase;
 
-/**
- * Regression test for the adult-content difficulty audit's fix to
- * BuildsQuestions::insertRows() - previously capped difficulty_weight to
- * max(1,min(3,ceil(level/2))), only 3 distinct values across 5 IQ levels,
- * so Level 5 content wasn't reliably flagged harder than Level 3. Confirms
- * the default now tracks level_number directly (1-5).
- *
- * insertRows()/options() are private on the BuildsQuestions trait and
- * "use"-ing it directly on the test class collides with Laravel's own
- * public TestCase::options() (HTTP OPTIONS request helper) - routed
- * through a tiny throwaway harness class instead.
- */
+/** Regression test for the adult-content difficulty audit's fix to BuildsQuestions::insertRows(). */
 class DifficultyWeightFixTest extends TestCase
 {
     private array $createdIds = [];

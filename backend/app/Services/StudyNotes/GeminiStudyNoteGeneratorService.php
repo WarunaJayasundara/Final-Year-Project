@@ -8,14 +8,7 @@ use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Real Gemini-backed teaching-note generator. Not active until
- * AI_QUESTION_GENERATOR_DRIVER=gemini and GEMINI_API_KEY are set (reuses
- * the same driver/key as question generation - both are "Gemini reads
- * source material and writes original content" tasks). Falls back to the
- * mock generator (an honest topic index, not a fabricated summary) if the
- * API call fails or returns a malformed response.
- */
+/** Real Gemini-backed teaching-note generator. */
 class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterface
 {
     private const MAX_EXCERPT_CHARS = 6000;
@@ -77,10 +70,7 @@ class GeminiStudyNoteGeneratorService implements StudyNoteGeneratorServiceInterf
 
     private function buildPrompt(string $documentTitle, string $textExcerpt, array $matchedTopics): string
     {
-        // Bounded excerpt - never the full document - and an explicit
-        // instruction not to reproduce it verbatim, since uploaded source
-        // documents may be copyrighted commercial books or past-paper
-        // compilations (see PdfIngestionService's own docblock).
+        // Bounded excerpt - never the full document - and an explicit instruction not to reproduce it verbatim.
         $boundedExcerpt = mb_substr($textExcerpt, 0, self::MAX_EXCERPT_CHARS);
         $topicHint = $matchedTopics !== [] ? implode(', ', $matchedTopics) : 'general aptitude reasoning';
 

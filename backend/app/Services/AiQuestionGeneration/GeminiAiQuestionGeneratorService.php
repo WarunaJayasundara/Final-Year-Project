@@ -10,21 +10,10 @@ use App\Services\Gemini\SinhalaStyle;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Real Gemini-backed question generator. Not active until
- * AI_QUESTION_GENERATOR_DRIVER=gemini and GEMINI_API_KEY are set - see
- * AppServiceProvider::register() for the driver binding. Falls back to the
- * mock generator if the API call fails or returns a malformed response, so
- * a missing/invalid key or a bad model response never breaks the admin
- * generation flow.
- */
+/** Real Gemini-backed question generator. */
 class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInterface
 {
-    /**
-     * Bloom's Taxonomy verb the question should target, scaled by IQ level -
-     * lower levels test recall/comprehension, higher levels test analysis
-     * and evaluation, matching standard educational assessment design.
-     */
+    /** Bloom's Taxonomy verb the question should target, scaled by IQ level - lower levels test recall/comprehension. */
     private const BLOOM_LEVEL = [
         1 => 'Remember (simple recall)',
         2 => 'Understand (basic comprehension)',
@@ -33,14 +22,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         5 => 'Evaluate (judge between plausible options)',
     ];
 
-    /**
-     * Sane bounds per authored level for the LLM-estimated solving time -
-     * this project doesn't trust an LLM's raw numeric judgment blindly (see
-     * the clamp applied in generate()); ResponseTimeCalibrationService later
-     * replaces this authored baseline with a real learned value once enough
-     * response data exists, matching the brief's own level-1-vs-level-5
-     * example (~30s vs ~120s).
-     */
+    /** Sane bounds per authored level for the LLM-estimated solving time. */
     private const TIME_BOUNDS = [
         1 => [15, 45],
         2 => [20, 60],
@@ -119,11 +101,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         $avoidList = $avoidQuestionTexts
             ? "Do not repeat or closely paraphrase any of these existing questions:\n- ".implode("\n- ", array_slice($avoidQuestionTexts, 0, 15))
             : 'There are no existing questions to avoid duplicating yet.';
-        // $sourceContext is a short admin-curated summary (title + matched
-        // topic keywords), never a document's raw extracted text - the
-        // prompt explicitly tells the model to treat it as topic/style
-        // inspiration only, never as text to reproduce, since some source
-        // documents are copyrighted commercial books/past-paper compilations.
+        // $sourceContext is a short admin-curated summary (title + matched topic keywords), never a document's raw extracted text.
         $sourceHint = $sourceContext
             ? "Reference context (topic/style inspiration ONLY - do not reproduce or closely paraphrase any specific wording from it, it may be copyrighted material you have not seen): {$sourceContext}"
             : 'No specific reference document context was provided for this question.';
@@ -167,13 +145,7 @@ class GeminiAiQuestionGeneratorService implements AiQuestionGeneratorServiceInte
         PROMPT;
     }
 
-    /**
-     * A short slice of the curated EN-SI terminology glossary (brief §15),
-     * relevant to this category only, injected as prompt context - a
-     * RAG-lite pattern (curated glossary + prompt template), the approach
-     * this project's own methodology docs prefer over fine-tuning a custom
-     * Sinhala model without sufficient legally-usable training data.
-     */
+    /** A short slice of the curated EN-SI terminology glossary (brief §15), relevant to this category only, injected as prompt context. */
     private function glossaryHintFor(Category $category): string
     {
         $domainMap = [

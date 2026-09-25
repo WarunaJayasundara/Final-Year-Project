@@ -5,17 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Source-traceability + quality-pipeline metadata for both the live bank
- * (`questions`) and the draft staging table (`ai_generated_questions`), so a
- * draft's provenance survives QuestionDraftService::approve()'s copy into
- * the live table. All nullable/defaulted so every pre-existing row (seeder-
- * authored, no source document) remains valid untouched.
- *
- * `quality_score` is a documented heuristic composite (structural validation
- * pass/fail + duplicate-similarity margin + bilingual completeness), not an
- * ML confidence value - see QuestionDraftService::computeQualityScore().
- */
+/** Source-traceability + quality-pipeline metadata for both the live bank (`questions`) and the draft staging table. */
 return new class extends Migration
 {
     public function up()

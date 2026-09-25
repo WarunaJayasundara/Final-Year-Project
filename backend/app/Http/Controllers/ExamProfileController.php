@@ -24,11 +24,7 @@ class ExamProfileController extends Controller
         return response()->json(['data' => $profile ? $this->present($profile) : null]);
     }
 
-    /**
-     * Past (status='completed') exam profiles for the "Past Exams" list -
-     * each optionally carries an attended/passed/score outcome the student
-     * recorded after the exam date passed.
-     */
+    /** Past (status='completed') exam profiles for the "Past Exams" list. */
     public function history(Request $request)
     {
         $profiles = $request->user()->examProfileHistory()->get();
@@ -36,12 +32,7 @@ class ExamProfileController extends Controller
         return response()->json(['data' => $profiles->map(fn (ExamProfile $p) => $this->present($p))->values()]);
     }
 
-    /**
-     * Records what happened at a past-due exam and archives the profile
-     * (status -> 'completed'), freeing the student to start a new one via
-     * store(). A bare attended=false "skip" is valid - forcing an outcome
-     * would just train students to enter junk data.
-     */
+    /** Records what happened at a past-due exam and archives the profile (status -> 'completed'). */
     public function outcome(Request $request)
     {
         $profile = $request->user()->examProfile()->first();
@@ -74,10 +65,7 @@ class ExamProfileController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            // exam_category (the old fixed dropdown) is no longer collected -
-            // the setup flow now takes a freeform exam name + date instead
-            // (ExamProfileDialog.tsx). The column stays for
-            // difficultyWeight()'s lookup, always stored as 'other' (weight 1.0).
+            // exam_category (the old fixed dropdown) is no longer collected - the setup flow now takes a freeform exam name + date instead.
             'exam_name' => ['required', 'string', 'max:150'],
             'exam_date' => ['required', 'date', 'after_or_equal:today'],
             'daily_study_hours_target' => ['required', 'numeric', 'min:0.5', 'max:16'],
@@ -99,10 +87,7 @@ class ExamProfileController extends Controller
 
         $existing = $request->user()->examProfile()->first();
 
-        // A not-yet-due profile is edited in place. Once past due, a new
-        // submission means "preparing for something else" - archive the old
-        // row and start fresh so predictions/study plan never target a
-        // stale exam.
+        // A not-yet-due profile is edited in place.
         if ($existing && $existing->isPastDue()) {
             $existing->update(['status' => 'completed']);
             $existing = null;
@@ -170,8 +155,5 @@ class ExamProfileController extends Controller
         ];
     }
 
-    /**
-     * Percentage of the prep window (profile creation -> exam date) elapsed,
-     * for the dashboard's countdown progress circle. Null with no exam_date.
-     */
+    /** Percentage of the prep window (profile creation -> exam date) elapsed, for the dashboard's countdown progress circle. */
 }

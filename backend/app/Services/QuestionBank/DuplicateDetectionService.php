@@ -6,16 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Calls ml-service's /duplicate-check endpoint (TF-IDF + cosine similarity)
- * as a second, semantic-similarity signal alongside QuestionDraftService's
- * existing Jaccard word-overlap check. Unlike ReadinessPredictionService's
- * predictFor() (a hard failure on an unreachable ML service, since a missing
- * prediction is a real problem worth surfacing), an unreachable ml-service
- * here degrades to "not flagged by this signal" - Jaccard remains a fully
- * functional standalone duplicate check, so this second signal is additive
- * quality, not a hard dependency for the generation pipeline to work.
- */
+/** Calls ml-service's /duplicate-check endpoint (TF-IDF + cosine similarity) as a second. */
 class DuplicateDetectionService
 {
     private const DEFAULT_THRESHOLD = 0.75;

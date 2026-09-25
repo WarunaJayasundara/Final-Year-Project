@@ -9,12 +9,7 @@ use App\Services\Study\StudyPlanService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises StudyPlanService::generate()'s readiness_gap block (brief §10/§11:
- * intelligent countdown + "when the exam is near and the student is not
- * ready" warning), against the real dev database (no RefreshDatabase - see
- * AdaptivePlacementTest), with explicit tearDown.
- */
+/** Exercises StudyPlanService::generate()'s readiness_gap block (brief §10/§11. */
 class StudyPlanReadinessGapTest extends TestCase
 {
     private ?User $testUser = null;

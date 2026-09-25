@@ -72,11 +72,7 @@ class AnalyticsController extends Controller
         ]]);
     }
 
-    /**
-     * Bundles the three offline ML reports (evaluate.py, explain.py,
-     * model_registry.py) for the admin ML Research page - each nullable
-     * since a report only exists once its script has been run.
-     */
+    /** Bundles the three offline ML reports (evaluate.py, explain.py, model_registry.py) for the admin ML Research page. */
     public function mlResearchReports()
     {
         return response()->json(['data' => [

@@ -6,16 +6,7 @@ use App\Models\Question;
 use Database\Seeders\Questions\BuildsQuestions;
 use Illuminate\Database\Seeder;
 
-/**
- * Direction-sense reasoning (compass movement + shortest-distance
- * calculation), an archetype missing from the question bank and common
- * in real exam-prep guides. Answers are computed via real coordinate
- * geometry: Pythagorean distance for the distance archetype, and exact
- * axis cancellation for the direction archetype so the result is always
- * a pure cardinal direction (no intercardinal Sinhala vocabulary is
- * verified for this project). Subject is a letter label (P) to avoid
- * needing a Sinhala "person" noun.
- */
+/** Direction-sense reasoning (compass movement + shortest-distance calculation). */
 class DirectionSenseSeeder extends Seeder
 {
     use BuildsQuestions;

@@ -5,13 +5,7 @@ export interface AttentionRound {
   targetRotationDeg: number;
 }
 
-/**
- * Grid size (and therefore distractor count) scales with round number - a
- * standard visual-search difficulty manipulation. The target arrow always
- * differs from the distractors by a clearly distinguishable 90-270 degree
- * rotation, never a near-identical angle that would make the task
- * effectively unsolvable rather than merely attention-demanding.
- */
+/** Grid size (and therefore distractor count) scales with round number - a standard visual-search difficulty manipulation. */
 export function generateRound(round: number): AttentionRound {
   const gridSize = round <= 2 ? 4 : round <= 5 ? 5 : 6;
   const cellCount = gridSize * gridSize;

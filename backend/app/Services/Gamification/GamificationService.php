@@ -8,17 +8,7 @@ use App\Models\User;
 use App\Models\XpLedgerEntry;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Core XP/coin economy: a transparent, documented rule set (not a hidden or
- * randomized reward schedule) so students can understand exactly why they
- * earned what they earned - important for a platform whose main claim is
- * measuring cognitive ability honestly, not manipulating engagement.
- *
- * Level curve: level n requires a cumulative xpForLevel(n) = 50*(n-1)*n XP
- * (a standard "triangular" game-leveling curve - level 2 needs 100 XP,
- * level 3 needs 300, level 4 needs 600, etc., so each level takes
- * proportionally more effort than the last).
- */
+/** Core XP/coin economy: a transparent, documented rule set. */
 class GamificationService
 {
     private const XP_BASE = 50;
@@ -36,12 +26,7 @@ class GamificationService
         10 => 'Legend',
     ];
 
-    /**
-     * Rough per-game score ceilings used to normalize a raw game score to a
-     * 0-100 scale for XP/coin sizing - kept in sync with (but independent
-     * of) FeatureExtractionService::GAME_SCORE_SCALE, which uses the same
-     * values for an unrelated purpose (ML feature normalization).
-     */
+    /** Rough per-game score ceilings used to normalize a raw game score to a 0-100 scale for XP/coin sizing - kept in sync with. */
     private const GAME_SCORE_SCALE = [
         'memory_match' => 1000,
         'sequence_puzzle' => 3000,
@@ -109,11 +94,7 @@ class GamificationService
         ];
     }
 
-    /**
-     * Session completion reward: a flat participation bonus plus a
-     * performance-scaled component, with a larger one-time bonus for the
-     * placement test (the platform's biggest early milestone).
-     */
+    /** Session completion reward: a flat participation bonus plus a performance-scaled component. */
     public function sessionRewards(TestSession $session): array
     {
         $scorePercent = (float) $session->score_percent;

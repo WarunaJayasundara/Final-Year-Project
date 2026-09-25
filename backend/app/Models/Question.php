@@ -76,10 +76,7 @@ class Question extends Model
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    /**
-     * Learned time (once calibrated) > authored baseline > generic default -
-     * same fallback order used when scoring time_performance_ratio.
-     */
+    /** Learned time (once calibrated) > authored baseline > generic default. */
     public function expectedTimeSeconds(): float
     {
         return $this->learned_expected_time_seconds
@@ -107,12 +104,7 @@ class Question extends Model
         return $this->belongsTo(SourceDocument::class);
     }
 
-    /**
-     * Client-safe question data - never includes correct_option_key or the
-     * explanation unless $includeExplanation is true, which only the
-     * completed-session report endpoint should pass. Live question payloads
-     * must keep the default false or a student could see the answer early.
-     */
+    /** Client-safe question data - never includes correct_option_key or the explanation unless $includeExplanation is true. */
     public function toClientArray(string $locale = 'en', bool $includeExplanation = false): array
     {
         $options = collect($this->options)->map(function (array $option) use ($locale) {

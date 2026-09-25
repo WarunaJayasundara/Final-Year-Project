@@ -2,33 +2,7 @@
 
 namespace App\Services\QuestionBank;
 
-/**
- * Deterministic SVG renderer for image-based reasoning questions (matrix
- * reasoning, figure series, rotation, mirror images, paper folding, cube
- * nets, grid counting). Produces one self-contained "exam paper" style
- * composite image: the question figure on top and four labelled answer
- * tiles (A-D) below, so the existing mcq option UI (plain A-D buttons)
- * works unchanged - the visual answer candidates live inside the image.
- *
- * Panel spec formats:
- *   null                                             -> "?" placeholder
- *   ['shape' => name, 'rot' => deg, 'fill' => bool,
- *    'count' => 1..4, 'size' => float]               -> geometric shape(s)
- *   ['poly' => [[r,c],...], 'mirror' => bool,
- *    'rot' => 0|90|180|270]                          -> 4x4 polyomino
- *   ['text' => str, 'mode' => plain|mirrorH|mirrorV|rot180]
- *   ['grid' => n]                                    -> n x n counting grid
- *   ['sheet' => 'full'|'half-v'|'half-h'|'quarter',
- *    'holes' => [[fx,fy],...], 'foldLines' => ['v','h']]
- *   ['net' => [[gx,gy,shapeSpec],...]]               -> cube net (cross)
- *   ['chart' => bar|pie|line, 'series' => [n,...]]    -> data-interpretation chart
- *   ['bool' => and|or|xor, 'cellsA' => [[r,c],...],
- *    'cellsB' => [[r,c],...]]                         -> 4x4 boolean shape overlay
- *
- * All rendering is pure geometry - correctness of an answer tile is
- * guaranteed by construction in the seeder (e.g. the "mirror image" option
- * IS the mirror transform of the target), never by eyeballing.
- */
+/** Deterministic SVG renderer for image-based reasoning questions (matrix reasoning, figure series, rotation, mirror images. */
 class SvgFigureBuilder
 {
     private const STROKE = '#334155';
@@ -102,14 +76,7 @@ class SvgFigureBuilder
         return implode("\n", $svg);
     }
 
-    /**
-     * Every panel's content (shapes, polyominoes, text, ...) is clipped to
-     * its own bounding rect - a defensive safety net against ANY panel type
-     * visually bleeding into a neighbouring tile, on top of renderText()'s
-     * own font-size fix below for the specific bug this caught (a 5-glyph
-     * mirror-text string at a fixed font-size overflowing its 100px option
-     * tile and overlapping the adjacent tiles).
-     */
+    /** Every panel's content (shapes, polyominoes, text, ...) is clipped to its own bounding rect. */
     private function renderPanel(?array $spec, float $x, float $y, float $size): string
     {
         $clipId = 'clip-'.str_replace(['.', '-'], '', $x.'-'.$y.'-'.$size);
@@ -206,13 +173,7 @@ class SvgFigureBuilder
         return '<polygon points="'.implode(' ', $coords).'" fill="'.$fill.'" stroke="'.self::STROKE.'" stroke-width="2"/>';
     }
 
-    /**
-     * Applies mirror (horizontal flip) first, then k*90-degree rotations, on
-     * a 4x4 cell grid - the same transform order the Mental Rotation game
-     * uses, so seeded answers are provably true rotations vs. mirrored
-     * distractors. Cells are normalized to the top-left afterwards so tiles
-     * are compared by shape, not by position in the grid.
-     */
+    /** Applies mirror (horizontal flip) first, then k*90-degree rotations, on a 4x4 cell grid. */
     public function transformPoly(array $cells, bool $mirror, int $rotDeg): array
     {
         $n = 4;
@@ -261,15 +222,7 @@ class SvgFigureBuilder
         return $out;
     }
 
-    /**
-     * Font-size scales down with string length so longer glyph strings
-     * (mirror-image questions use 3-5 char strings) reliably fit inside the
-     * fixed-width panel instead of overflowing into the next tile - a fixed
-     * font-size only ever worked for short strings. renderPanel()'s
-     * clip-path is a second, independent safety net for any residual
-     * overflow (e.g. unusually wide glyphs), not a substitute for sizing
-     * text to actually fit and stay readable.
-     */
+    /** Font-size scales down with string length so longer glyph strings. */
     private function renderText(array $spec, float $x, float $y, float $size): string
     {
         $cx = $x + $size / 2;
@@ -319,11 +272,7 @@ class SvgFigureBuilder
         return $out;
     }
 
-    /**
-     * Paper-folding panel. Hole coordinates are fractions of the FULL
-     * unfolded sheet; 'sheet' selects how much of the sheet is visible
-     * (folded states show the reduced sheet with dashed edges on the fold).
-     */
+    /** Paper-folding panel. */
     private function renderSheet(array $spec, float $x, float $y, float $size): string
     {
         $pad = $size * 0.14;
@@ -498,12 +447,7 @@ class SvgFigureBuilder
     }
 
     /**
-     * AND/OR/XOR of two 4x4 cell sets. Public so seeders compute the
-     * resulting cell set once and reuse it both to render the correct
-     * answer tile AND to verify no distractor tile accidentally reproduces
-     * the same cell set (uniqueness check), the same "compute once, reuse
-     * for both rendering and verification" pattern as transformPoly().
-     *
+     * AND/OR/XOR of two 4x4 cell sets.
      * @param  array<int,array{0:int,1:int}>  $cellsA
      * @param  array<int,array{0:int,1:int}>  $cellsB
      * @return array<int,array{0:int,1:int}>

@@ -5,11 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Services\QuestionBank\SinhalaTextGuard;
 use Illuminate\Validation\Validator;
 
-/**
- * Blocks saving a question whose Sinhala is corrupted (stray scripts, orphaned
- * vowel signs, no Sinhala letters at all). Only clear corruption is rejected
- * here; softer concerns are surfaced as warnings in the admin form.
- */
+/** Blocks saving a question whose Sinhala is corrupted (stray scripts, orphaned vowel signs, no Sinhala letters at all). */
 trait RejectsCorruptedSinhala
 {
     public function withValidator(Validator $validator): void

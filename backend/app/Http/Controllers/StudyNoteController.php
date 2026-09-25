@@ -9,13 +9,7 @@ use App\Services\Analytics\StudyNoteRecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/**
- * Student-facing "self-learning" reading list: only ever returns published
- * notes (never drafts/rejected) - the admin review gate in
- * Admin\StudyNoteController is what makes a note eligible to appear here.
- * Also exposes the spaced-repetition queue, retrieval-practice questions,
- * and the weak-area-triggered lesson recommendation (brief §9/§10).
- */
+/** Student-facing "self-learning" reading list: only ever returns published notes (never drafts/rejected). */
 class StudyNoteController extends Controller
 {
     public function __construct(
@@ -65,14 +59,7 @@ class StudyNoteController extends Controller
         return response()->json(['data' => $review]);
     }
 
-    /**
-     * 2-3 real practice questions from the note's linked subcategory -
-     * "test yourself" retrieval practice. Unlike toClientArray() (used by
-     * real assessment sessions, which must never leak the answer before
-     * submission), this DOES include the correct option and explanation
-     * directly: it's an unscored self-check tool with no theta/session
-     * behind it, not part of the proctored assessment instrument.
-     */
+    /** 2-3 real practice questions from the note's linked subcategory - "test yourself" retrieval practice. */
     public function practiceQuestions(Request $request, StudyNote $studyNote)
     {
         abort_unless($studyNote->status === 'published', 404);

@@ -11,12 +11,7 @@ use App\Services\Irt\ResponseTimeCalibrationService;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Exercises response_time_ms capture (TestSessionController::submitAnswer)
- * and the resulting uncalibrated -> provisional -> calibrated lifecycle
- * (ResponseTimeCalibrationService), against the real dev database (no
- * RefreshDatabase - see AdaptivePlacementTest), with explicit tearDown.
- */
+/** Exercises response_time_ms capture (TestSessionController::submitAnswer) and the resulting uncalibrated -> provisional ->... */
 class ResponseTimeCalibrationTest extends TestCase
 {
     private ?User $testUser = null;

@@ -20,11 +20,7 @@ OUT = Path(__file__).resolve().parent.parent / "data" / "processed"
 
 VLE_CHUNKSIZE = 500_000
 
-# final_result -> a readiness label. Distinction/Pass students completed the
-# module successfully (near/at "ready"); Fail students engaged but did not
-# meet the bar ("needs_improvement"); Withdrawn students disengaged before
-# completion, the closest OULAD analogue to MindRise's "high_risk" (low
-# engagement + poor predicted outcome) rather than "poor performance".
+# final_result -> a readiness label.
 FINAL_RESULT_TO_LABEL = {
     "Distinction": "ready",
     "Pass": "almost_ready",
@@ -148,11 +144,7 @@ def _aggregate_assessments() -> pd.DataFrame:
 
         weeks = dates / 7.0
         months = dates / 30.0
-        # Clipped to the same bounds structural_model/advanced_features.py
-        # documents for the synthetic-calibrated rows: a handful of students
-        # with only 2-3 widely-spaced assessments produce a numerically
-        # unstable OLS slope (a near-vertical or near-horizontal line
-        # through very few points) that isn't a genuine trend signal.
+        # Clipped to the same bounds structural_model/advanced_features.py documents for the synthetic-calibrated rows.
         weekly_trend = np.clip(_ols_slope(weeks, scores), -6, 6)
         monthly_trend = np.clip(_ols_slope(months, scores), -10, 10)
         rolling_avg_score = scores[-5:].mean()
@@ -198,10 +190,7 @@ def build() -> pd.DataFrame:
     info = info.merge(_aggregate_assessments(), on=["code_module", "code_presentation", "id_student"], how="left")
     info = info.merge(_aggregate_vle(), on=["code_module", "code_presentation", "id_student"], how="left")
 
-    # Withdrew before the module ended, or never engaged at all -> the
-    # engagement/assessment aggregates are structurally missing (0), not
-    # "average" - fill with 0 rather than a mean so the model can learn the
-    # (very real) pattern that no-engagement predicts poor outcome.
+    # Withdrew before the module ended, or never engaged at all -> the engagement/assessment aggregates are structurally missing (0).
     for col in ["n_assessments", "avg_assessment_score", "assessment_score_std", "assessment_score_trend",
                 "weekly_trend", "monthly_trend", "rolling_avg_score", "knowledge_gain_rate",
                 "consistency_index", "time_management_score", "question_completion_rate",
@@ -221,10 +210,7 @@ def build() -> pd.DataFrame:
         (info["vle_distinct_activities"] / info["total_sites"]).clip(upper=1.0) * 100
     ).round(2)
 
-    # engagement_score and practice_intensity are cohort-relative by
-    # construction (see advanced_features.py's math spec) - computed here,
-    # after aggregation, against this cohort's own distribution rather than
-    # an arbitrary fixed constant.
+    # engagement_score and practice_intensity are cohort-relative by construction (see advanced_features.py's math spec).
     def z(s):
         return (s - s.mean()) / (s.std() + 1e-9)
 
@@ -236,19 +222,10 @@ def build() -> pd.DataFrame:
         (info["vle_weekly_active_rate"] / (median_weekly_rate + 1e-9)) * 100
     ).clip(upper=300).round(2)
 
-    # difficulty_progression has no OULAD analogue (no item-difficulty
-    # concept) - reuse the already-computed real assessment_score_trend as
-    # the closest available real proxy ("is this student's measured
-    # performance moving up over time"), documented explicitly rather than
-    # silently reusing the column under a different name.
+    # difficulty_progression has no OULAD analogue (no item-difficulty concept).
     info["difficulty_progression"] = (info["assessment_score_trend"] / 10).clip(-1, 1).round(3)
 
-    # learning_velocity: OULAD provides only one pseudo-theta per row (no
-    # within-module ability *history*), so real theta-change-per-week can't
-    # be measured here - approximated from the real score trend expressed
-    # per week of module length, on the same theta-equivalent scale
-    # (score-points/15, mirroring the pseudo-theta derivation in
-    # feature_mapping.py) rather than left as a pure synthetic guess.
+    # learning_velocity: OULAD provides only one pseudo-theta per row (no within-module ability *history*).
     info["learning_velocity"] = ((info["assessment_score_trend"] / 15) / info["module_weeks"]).round(4)
 
     info["imd_midpoint"] = info["imd_band"].map(IMD_MIDPOINT)

@@ -17,11 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Regression tests for the "sometimes it errors" class of bugs: a briefly unreachable ML service, a malformed
- * ML response, and the game-score "new best" rule. Hits the real dev database like every other feature test
- * (no RefreshDatabase here) and removes what it created.
- */
+/** Regression tests for the "sometimes it errors" class of bugs: a briefly unreachable ML service, a malformed ML response. */
 class ResilienceTest extends TestCase
 {
     private ?User $user = null;
