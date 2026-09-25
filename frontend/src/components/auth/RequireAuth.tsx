@@ -1,12 +1,19 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useCurrentUser } from '@/features/auth/useAuth';
+import { ErrorState } from '@/components/ui/error-state';
 
 export function RequireAuth() {
-  const { data: user, isLoading } = useCurrentUser();
+  const { data: user, isLoading, isError, refetch } = useCurrentUser();
   const location = useLocation();
 
   if (isLoading) {
     return <FullPageSpinner />;
+  }
+
+  // The server could not be reached: that says nothing about whether the student is signed in, so do not
+  // send them to the login page (it would look like they were logged out at random).
+  if (isError) {
+    return <ErrorState className="my-16" onRetry={() => refetch()} />;
   }
 
   if (!user) {

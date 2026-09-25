@@ -63,7 +63,7 @@ export function SequencePuzzle() {
 
   if (finished && result) {
     return (
-      <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
+      <GameResultCard code="sequence_puzzle" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
     );
   }
 

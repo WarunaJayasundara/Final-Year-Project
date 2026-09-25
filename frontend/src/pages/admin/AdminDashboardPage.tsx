@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -13,10 +14,14 @@ import { useCohortOverview, useDownloadPairedScoresCsv } from '@/features/admin/
 export function AdminDashboardPage() {
   const { t } = useTranslation('admin');
   const includeDemo = false;
-  const { data: overview, isLoading } = useCohortOverview(includeDemo);
+  const { data: overview, isLoading, isError, refetch } = useCohortOverview(includeDemo);
   const downloadCsv = useDownloadPairedScoresCsv({
     onError: () => toast.error(t('dashboard.exportCsvFailed')),
   });
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !overview) {
     return (

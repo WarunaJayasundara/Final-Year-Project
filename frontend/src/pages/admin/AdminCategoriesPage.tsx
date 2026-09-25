@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ const EMPTY_FORM = { code: '', name_en: '', name_si: '', description_en: '', des
 
 export function AdminCategoriesPage() {
   const { t } = useTranslation('admin');
-  const { data: categories, isLoading } = useAdminCategories();
+  const { data: categories, isLoading, isError, refetch } = useAdminCategories();
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
 
@@ -62,6 +63,10 @@ export function AdminCategoriesPage() {
       setError(t('categories.saveError'));
     }
   };
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading) {
     return <FullPageSpinner />;

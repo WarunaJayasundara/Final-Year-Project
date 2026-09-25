@@ -1,6 +1,7 @@
 {
   "hub": {
-    "subtitle": "Quick brain-training games that feed your dashboard streak."
+    "subtitle": "Quick brain-training games that feed your dashboard streak.",
+    "notPlayedYet": "Not played yet"
   },
   "start": {
     "button": "Start"

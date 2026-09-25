@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   analyzeSourceDocument,
   approveAiQuestion,
@@ -60,7 +60,14 @@ export function useUpdateCategory() {
 }
 
 export function useAdminQuestions(filters: QuestionFilters) {
-  return useQuery({ queryKey: ['admin', 'questions', filters], queryFn: () => fetchAdminQuestions(filters) });
+  // Paging/filtering this 6,000+ row table changes the query key on every click - keep showing the
+  // previous page's rows (isLoading stays false, only isFetching flips) instead of flashing to a
+  // full-page spinner every time, so it reads as an update rather than a fresh page load.
+  return useQuery({
+    queryKey: ['admin', 'questions', filters],
+    queryFn: () => fetchAdminQuestions(filters),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useAdminQuestion(id: number | undefined) {
@@ -108,7 +115,12 @@ export function useUploadQuestionImage() {
 }
 
 export function useAdminUsers(search?: string) {
-  return useQuery({ queryKey: ['admin', 'users', search], queryFn: () => fetchAdminUsers(search) });
+  // Same reasoning as useAdminQuestions: keep the current results on screen while a new search fetches.
+  return useQuery({
+    queryKey: ['admin', 'users', search],
+    queryFn: () => fetchAdminUsers(search),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useCreateAdminUser() {

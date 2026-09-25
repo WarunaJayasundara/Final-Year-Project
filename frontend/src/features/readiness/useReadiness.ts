@@ -30,6 +30,7 @@ export function useTodayCheckin() {
 export function useSubmitCheckin(options?: { onSuccess?: () => void }) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: (input: CheckinInput) => submitCheckin(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['checkins', 'today'] });

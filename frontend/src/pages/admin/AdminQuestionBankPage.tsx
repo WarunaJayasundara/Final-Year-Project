@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Image, LayoutGrid, ListChecks } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,11 @@ import { useQuestionBankStats } from '@/features/admin/analytics';
 
 export function AdminQuestionBankPage() {
   const { t } = useTranslation('admin');
-  const { data, isLoading } = useQuestionBankStats();
+  const { data, isLoading, isError, refetch } = useQuestionBankStats();
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !data) {
     return <FullPageSpinner />;

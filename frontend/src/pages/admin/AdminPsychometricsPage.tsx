@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Activity, Gauge, RefreshCw, Ruler, Target, Users } from 'lucide-react';
@@ -10,12 +11,16 @@ import { usePsychometrics, useRecalibrate } from '@/features/admin/analytics';
 
 export function AdminPsychometricsPage() {
   const { t, i18n } = useTranslation('admin');
-  const { data, isLoading } = usePsychometrics();
+  const { data, isLoading, isError, refetch } = usePsychometrics();
   const recalibrate = useRecalibrate({
     onSuccess: (result) => {
       toast.success(t('psychometrics.recalibrateSuccess', { count: result.calibrated_items }));
     },
   });
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !data) {
     return <CardGridSkeleton count={4} />;

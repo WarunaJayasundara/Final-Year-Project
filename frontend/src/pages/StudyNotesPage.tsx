@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
@@ -88,7 +89,7 @@ function styleFor(subcategory: string | null, categoryCode?: string): TopicStyle
 export function StudyNotesPage() {
   const { t, i18n } = useTranslation('dashboard');
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
-  const { data: notes, isLoading } = useStudyNotes();
+  const { data: notes, isLoading, isError, refetch } = useStudyNotes();
   const { data: dueToday } = useDueToday();
   const { data: recommendation } = useStudyNoteRecommendation();
   const [activeNote, setActiveNote] = useState<StudyNote | null>(null);
@@ -141,7 +142,9 @@ export function StudyNotesPage() {
         </Card>
       )}
 
-      {isLoading ? (
+      {isError ? (
+        <ErrorState onRetry={() => refetch()} />
+      ) : isLoading ? (
         <CardGridSkeleton count={6} />
       ) : !notes?.data.length ? (
         <Card className="border-dashed">
@@ -180,8 +183,8 @@ function StudyNoteTile({ note, locale, onOpen }: { note: StudyNote; locale: 'en'
   const preview = content.replace(/\s+/g, ' ').slice(0, 110);
 
   return (
-    <button type="button" onClick={onOpen} className="h-full w-full text-left">
-      <Card className="h-full transition-colors hover:border-primary/40">
+    <button type="button" onClick={onOpen} className="h-full w-full cursor-pointer text-left">
+      <Card className="h-full overflow-hidden border-t-[3px]" style={{ borderTopColor: accent }}>
         <CardContent className="flex h-full flex-col gap-3 p-5">
           <span
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
@@ -189,11 +192,11 @@ function StudyNoteTile({ note, locale, onOpen }: { note: StudyNote; locale: 'en'
           >
             <Icon className="h-5 w-5" />
           </span>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold leading-snug">{locale === 'si' ? note.title_si : note.title_en}</p>
+          <div className="flex min-h-[92px] flex-col gap-1">
+            <p className="line-clamp-2 font-semibold leading-snug">{locale === 'si' ? note.title_si : note.title_en}</p>
             <p className="line-clamp-3 text-sm text-muted-foreground">{preview}...</p>
           </div>
-          <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
+          <div className="mt-auto flex min-h-[3rem] flex-wrap items-start gap-1.5 pt-1">
             {note.category && (
               <Badge variant="outline" className="text-xs">
                 {locale === 'si' ? note.category.name_si : note.category.name_en}

@@ -34,6 +34,10 @@ class GameController extends Controller
             return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
         }
 
+        $previousBest = GameScore::where('user_id', $request->user()->id)
+            ->where('game_id', $game->id)
+            ->max('score');
+
         $gameScore = GameScore::create([
             'user_id' => $request->user()->id,
             'game_id' => $game->id,
@@ -55,7 +59,8 @@ class GameController extends Controller
         return response()->json(['data' => [
             'game_score' => $gameScore,
             'best_score' => $bestScore,
-            'is_new_best' => $gameScore->score >= $bestScore,
+            // Strictly better than every earlier score (the first ever score counts): matching your best is not a new best.
+            'is_new_best' => $previousBest === null || $gameScore->score > $previousBest,
             'rewards' => [
                 'xp' => $xp,
                 'coins' => $coins,

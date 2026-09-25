@@ -95,7 +95,7 @@ export function MemoryMatch() {
   };
 
   if (finished && result) {
-    return <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
+    return <GameResultCard code="memory_match" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
   }
 
   return (

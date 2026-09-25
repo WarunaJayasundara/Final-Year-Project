@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ import type { SessionData } from '@/features/sessions/types';
 export function MockExamSetupPage() {
   const { t, i18n } = useTranslation(['common', 'sessions']);
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading, isError, refetch } = useCategories();
   const [session, setSession] = useState<SessionData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -40,6 +41,10 @@ export function MockExamSetupPage() {
 
   if (session) {
     return <MockExamRunner session={session} />;
+  }
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
   }
 
   if (isLoading) {

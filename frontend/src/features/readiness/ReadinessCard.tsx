@@ -29,6 +29,14 @@ const LABEL_STYLES: Record<ReadinessLabel, string> = {
   high_risk: 'border-destructive/30 bg-destructive/15 text-destructive',
 };
 
+/** Same urgency ramp as LABEL_STYLES, as a plain CSS color for the card's top accent stripe. */
+const LABEL_COLOR: Record<ReadinessLabel, string> = {
+  ready: 'var(--success)',
+  almost_ready: 'var(--primary)',
+  needs_improvement: 'var(--warning)',
+  high_risk: 'var(--destructive)',
+};
+
 export function ReadinessCard() {
   const { t } = useTranslation('dashboard');
   const { data: prediction, isLoading } = useLatestReadiness();
@@ -38,7 +46,10 @@ export function ReadinessCard() {
   });
 
   return (
-    <Card className="border-primary/30">
+    <Card
+      className="overflow-hidden border-t-[3px]"
+      style={{ borderTopColor: prediction ? LABEL_COLOR[prediction.readiness_label] : 'var(--primary)' }}
+    >
       <CardHeader className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="flex items-center gap-2 text-base">
           <Gauge className="h-4 w-4" />
@@ -125,16 +136,18 @@ export function ReadinessCard() {
 
             <div className="flex flex-col gap-2">
               <p className="text-xs font-medium text-muted-foreground">{t('readiness.reasonsTitle')}</p>
-              {prediction.reasons.map((reason) => (
-                <div key={reason.feature} className="flex items-start gap-2 text-sm">
-                  {reason.direction === 'positive' ? (
-                    <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                  ) : (
-                    <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                  )}
-                  <span>{reasonText(reason, t)}</span>
-                </div>
-              ))}
+              <div className="grid gap-x-6 gap-y-2 sm:grid-flow-col sm:grid-rows-3 sm:auto-cols-fr">
+                {prediction.reasons.map((reason) => (
+                  <div key={reason.feature} className="flex items-start gap-2 text-sm">
+                    {reason.direction === 'positive' ? (
+                      <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                    ) : (
+                      <TrendingDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                    )}
+                    <span>{reasonText(reason, t)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

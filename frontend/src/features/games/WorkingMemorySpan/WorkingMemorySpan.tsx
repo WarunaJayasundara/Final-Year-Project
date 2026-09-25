@@ -183,7 +183,7 @@ export function WorkingMemorySpan() {
   };
 
   if (phase === 'finished' && result) {
-    return <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
+    return <GameResultCard code="working_memory_span" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
   }
 
   const taskLabel = t(`workingMemorySpan.task.${trial.type}`);

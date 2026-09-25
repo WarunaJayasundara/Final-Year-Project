@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { apiErrorMessage } from '@/lib/apiError';
 import {
   CalendarRange,
   Database,
@@ -45,7 +47,13 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout.mutateAsync();
+    try {
+      await logout.mutateAsync();
+    } catch (error) {
+      // Still signed in on the server: say so instead of silently doing nothing.
+      toast.error(apiErrorMessage(error, t));
+      return;
+    }
     navigate('/');
   };
 

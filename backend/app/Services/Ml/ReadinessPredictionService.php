@@ -5,8 +5,11 @@ namespace App\Services\Ml;
 use App\Models\ExamReadinessPrediction;
 use App\Models\User;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Facades\Log;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Calls the local FastAPI exam-readiness inference microservice
@@ -27,6 +30,38 @@ class ReadinessPredictionService
     public function __construct(private FeatureExtractionService $features, ?Client $client = null)
     {
         $this->client = $client ?? new Client();
+    }
+
+    /**
+     * The ML service is a separate process, briefly unreachable while it restarts or loads its model. One quick
+     * retry absorbs that; a client error (4xx) is not retried because repeating it cannot help.
+     */
+    private function postWithRetry(string $url, array $payload): ResponseInterface
+    {
+        $lastError = null;
+
+        foreach ([0, 400_000] as $delayMicroseconds) {
+            if ($delayMicroseconds > 0) {
+                usleep($delayMicroseconds);
+            }
+
+            try {
+                return $this->client->post($url, [
+                    'json' => $payload,
+                    'timeout' => 10,
+                    'connect_timeout' => 3,
+                ]);
+            } catch (ConnectException|ServerException $e) {
+                $lastError = $e;
+            } catch (GuzzleException $e) {
+                $lastError = $e;
+                break;
+            }
+        }
+
+        Log::error('Exam readiness ML service call failed.', ['error' => $lastError?->getMessage()]);
+
+        throw new \RuntimeException('Exam readiness prediction service is unavailable.', previous: $lastError);
     }
 
     public function predictFor(User $user): ExamReadinessPrediction
@@ -60,18 +95,16 @@ class ReadinessPredictionService
 
         $url = rtrim(config('services.ml_service.url'), '/').'/predict';
 
-        try {
-            $response = $this->client->post($url, [
-                'json' => $payload,
-                'timeout' => 10,
-            ]);
-        } catch (GuzzleException $e) {
-            Log::error('Exam readiness ML service call failed.', ['error' => $e->getMessage()]);
-
-            throw new \RuntimeException('Exam readiness prediction service is unavailable.', previous: $e);
-        }
+        $response = $this->postWithRetry($url, $payload);
 
         $body = json_decode((string) $response->getBody(), true);
+        foreach (['readiness_percent', 'readiness_label', 'reasons', 'model_version'] as $required) {
+            if (! is_array($body) || ! array_key_exists($required, $body)) {
+                Log::error('Exam readiness ML service returned an unexpected response.', ['missing' => $required]);
+
+                throw new \RuntimeException('Exam readiness prediction service returned an unexpected response.');
+            }
+        }
 
         return ExamReadinessPrediction::create([
             'user_id' => $user->id,

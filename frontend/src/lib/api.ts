@@ -1,7 +1,14 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
+
+/**
+ * Longest a single request may take. Without a limit a stalled connection leaves the page on a
+ * spinner forever; the slowest legitimate calls (AI generation with retries) finish well inside this.
+ */
+const REQUEST_TIMEOUT_MS = 60_000;
 
 export const api = axios.create({
   baseURL: '/api',
+  timeout: REQUEST_TIMEOUT_MS,
   withCredentials: true,
   xsrfCookieName: 'XSRF-TOKEN',
   xsrfHeaderName: 'X-XSRF-TOKEN',
@@ -20,8 +27,14 @@ let csrfReady: Promise<void> | null = null;
 function ensureCsrfCookie(): Promise<void> {
   if (!csrfReady) {
     csrfReady = axios
-      .get('/sanctum/csrf-cookie', { baseURL: '/', withCredentials: true })
-      .then(() => undefined);
+      .get('/sanctum/csrf-cookie', { baseURL: '/', withCredentials: true, timeout: REQUEST_TIMEOUT_MS })
+      .then(() => undefined)
+      .catch((error) => {
+        // A failed fetch must not be cached: otherwise one blip at the wrong moment would make every
+        // later login, answer and score submission fail until the page is reloaded.
+        csrfReady = null;
+        throw error;
+      });
   }
   return csrfReady;
 }
@@ -32,4 +45,17 @@ api.interceptors.request.use(async (config) => {
     await ensureCsrfCookie();
   }
   return config;
+});
+
+type RetriableConfig = InternalAxiosRequestConfig & { _csrfRetried?: boolean };
+
+api.interceptors.response.use(undefined, async (error) => {
+  const config = error?.config as RetriableConfig | undefined;
+  if (error?.response?.status === 419 && config && !config._csrfRetried) {
+    config._csrfRetried = true;
+    csrfReady = null;
+    await ensureCsrfCookie();
+    return api.request(config);
+  }
+  throw error;
 });

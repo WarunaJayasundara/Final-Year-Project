@@ -16,6 +16,7 @@ type SubmitGameScoreResult = Awaited<ReturnType<typeof submitGameScore>>;
 export function useSubmitGameScore(code: string, options?: { onSuccess?: (result: SubmitGameScoreResult) => void }) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: ({
       score,
       durationSeconds,

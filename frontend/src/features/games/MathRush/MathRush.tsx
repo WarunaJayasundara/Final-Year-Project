@@ -80,7 +80,7 @@ export function MathRush() {
   };
 
   if (finished && result) {
-    return <GameResultCard score={score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
+    return <GameResultCard code="math_rush" score={score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
   }
 
   return (

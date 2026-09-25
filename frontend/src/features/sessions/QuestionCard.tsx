@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Timer, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,10 @@ const OPTION_KEYS_ORDER = ['A', 'B', 'C', 'D', 'E', 'F'];
  * (quiet by default, only when the question sets an expected_time_seconds),
  * keyboard support (1-6/A-F to pick an option, Enter/Space to advance once
  * revealed), and token-driven success/destructive colors instead of hardcoded
- * emerald classes.
+ * emerald classes. Once an answer is revealed it auto-advances on its own
+ * (longer pause on a wrong answer so the correct option has time to
+ * register) - the Next/Finish button and Enter/Space still work, as a way
+ * to skip the wait rather than something the student has to press.
  */
 export function QuestionCard({
   question,
@@ -52,6 +55,24 @@ export function QuestionCard({
     () => (question.image_path ? `/storage/${question.image_path}` : null),
     [question.image_path],
   );
+
+  // Kept fresh without re-arming the auto-advance timer below - onAdvance/advanceDisabled are
+  // new references on every parent render (MockExamRunner's countdown re-renders it every 500ms),
+  // so depending on them directly would keep resetting the timer and it would never fire.
+  const onAdvanceRef = useRef(onAdvance);
+  onAdvanceRef.current = onAdvance;
+  const advanceDisabledRef = useRef(advanceDisabled);
+  advanceDisabledRef.current = advanceDisabled;
+
+  useEffect(() => {
+    if (!revealed) return;
+    // A wrong answer lingers a little longer so the highlighted correct option has time to register.
+    const delay = revealed.isCorrect ? 1000 : 1800;
+    const id = window.setTimeout(() => {
+      if (!advanceDisabledRef.current) onAdvanceRef.current();
+    }, delay);
+    return () => window.clearTimeout(id);
+  }, [revealed]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

@@ -1729,3 +1729,29 @@ a native reader still has to approve `frontend/src/locales/REVIEW_LOG.md` (every
 - **Second question audit** (`frontend/src/locales/QUESTION_AUDIT.md`, Result 3): 300 text questions from the 29 families the first audit skipped, 300/300 equivalent. The pipeline was validated first: 12/12 planted defects (changed number, swapped
   options, dropped sentence) were caught. About 600 of 6,759 questions have now been sampled; image-question captions and the rest are unaudited. Gemini flash was returning 503 this session; flash-lite did both steps.
 - Final state: 137 backend tests, Pint clean (265 files), typecheck, oxlint, `check:locales`, `check:games`, `sinhala:audit` (6,759 active, no issues) and production build all pass. Nothing is committed.
+
+### 7.25 Intermittent-Failure Hardening ("sometimes it errors") (new session)
+
+Root causes found by reading the real `laravel.log` (43 "ML service connection refused", repeated Google OAuth token 400s) and by tracing every failure path in the UI. All fixes were verified in the browser by
+injecting failures (fixtures that throw a 500), not just by reading code.
+
+- **Stuck test-taking (most serious).** `SessionRunner`, `AdaptivePlacementRunner` and `MockExamRunner` marked the chosen option BEFORE the network call and never caught a failed `mutateAsync`: one failed submit left the
+  student on the question forever (no reveal, Next disabled, unhandled rejection). Now: try/catch, the choice is unmarked so they can tap again (the server accepts a repeated answer and `complete` is idempotent), a translated
+  toast, and double-submit blocking. The mock exam also rendered `null` when time expired and the finish call failed (blank page); it now shows a retry screen, and its countdown uses a wall-clock deadline (a locked phone no
+  longer pauses the exam).
+- **API client** (`lib/api.ts`): no request timeout (a stalled call meant an endless spinner) - now 60 s; the CSRF-cookie promise was cached even when it FAILED, so one blip made every later POST fail until reload - now reset on
+  failure; a 419 (expired CSRF) refetches the token and repeats the request once.
+- **Auth guards** treated a failed `/auth/me` as "not signed in" and redirected to login (random logouts when the server blipped); they now show a retry screen. **No page handled a failed query** (skeleton or spinner forever):
+  `ErrorState` (restored, with the previously reviewed strings recovered verbatim from git: `actions.retry`, `errorState.*`) is used by 20 pages. **No error boundary existed** (any render exception = white screen):
+  `RouteErrorBoundary` is mounted in both layouts (nav stays, navigating clears it, a failed lazy chunk reloads the page).
+- **Query client**: no retries for 4xx (except 408/429), 2 for 5xx/network. Mutations tagged `meta: { toastOnError: true }` (game score, mission claim, check-in, exam profile/outcome, study-note review) toast a translated message
+  when they fail with no handler of their own; forms/runners with their own error UI are deliberately NOT tagged (no double messages). Logout failures now toast instead of doing nothing.
+- **Backend**: ML readiness call retries once on a connect/5xx failure, never retries 4xx, and validates the response shape (malformed body was a 500, now a clean 503); `env('FRONTEND_URL')` inside the OAuth controller (null after
+  `config:cache`, i.e. when hosted) now uses `config('app.frontend_url')`; game "new best" used `>=` against a max that already included the new score (a tie showed "New best!"), now strictly better. New `tests/Feature/ResilienceTest.php`
+  (5 tests; 142 total).
+- **Testing traps found**: (1) a HIDDEN browser pane pauses TanStack retries (`document.visibilityState === 'hidden'`), so failure states never appear; override `visibilityState`/`hidden` and dispatch `visibilitychange` first. (2) Every
+  POST first calls the REAL `/sanctum/csrf-cookie`, so fixture-based tests need the backend running. (3) Background dev servers started from the agent shell die when the turn ends: re-check all four ports every session.
+- **Windows line endings**: the working copy is CRLF while the index is LF (`core.autocrlf=true`). `vendor/bin/pint` (fix) rewrites files to LF and makes git list ~80 untouched backend files as modified; if that happens restore the files with no
+  real diff (`git diff --ignore-cr-at-eol`) with `git checkout -- <file>`, and only run Pint on files you edited. `pint --test` failing with `line_ending` on a fresh checkout is this quirk, not a code problem.
+- Not covered: Google OAuth callback 400s (an `invalid_grant` from Google when the callback URL is reloaded or the code is reused - the app already redirects to `/login?error=google_auth_failed`; check the OAuth redirect URI in the Google console),
+  and a real signed-in walkthrough. Nothing is committed since `7bc5833`.

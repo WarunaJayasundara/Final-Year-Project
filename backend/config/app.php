@@ -56,6 +56,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /*
+    | The single-page app's origin. Read through config() (never env()) so it still works after config:cache.
+    */
+    'frontend_url' => rtrim(env('FRONTEND_URL', 'http://localhost:5173'), '/'),
+
     'asset_url' => env('ASSET_URL'),
 
     /*

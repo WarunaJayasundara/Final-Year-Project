@@ -11,6 +11,30 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Every lazy page chunk (App.tsx's lazyPage()) pulls in a handful of shared libraries
+        // (React, motion, Radix, icons...), so Rollup's default heuristics merged them all into
+        // one large "index" entry chunk loaded on every single page. Splitting each library into
+        // its own vendor chunk means: the app-code chunk stays small, these vendor chunks are
+        // cached by the browser across deploys where the library itself didn't change, and a page
+        // that doesn't need e.g. charts never has to wait on that chunk at all.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (/react-router|\/react\/|\/react-dom\//.test(id)) return 'vendor-react';
+          if (id.includes('framer-motion')) return 'vendor-motion';
+          if (id.includes('radix-ui')) return 'vendor-radix';
+          if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+          if (id.includes('i18next')) return 'vendor-i18n';
+          if (id.includes('@tanstack')) return 'vendor-query';
+          if (id.includes('lucide-react')) return 'vendor-icons';
+          if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) return 'vendor-forms';
+          return 'vendor';
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     // Bind to 0.0.0.0 (not just localhost) so other devices on the same

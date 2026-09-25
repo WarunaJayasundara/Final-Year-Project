@@ -8,6 +8,7 @@ use App\Models\SessionAnswer;
 use App\Models\TestSession;
 use App\Models\User;
 use App\Models\UserProgressSnapshot;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 /**
@@ -97,6 +98,7 @@ class StudyPlanService
 
         $phase = self::determinePhase($daysRemaining);
         $intensity = self::PHASE_INTENSITY[$phase] * $difficultyWeight;
+        $todayFocus = self::PHASE_WEEKLY_PATTERN[$phase][self::todayIndex()];
 
         return [
             'phase' => $phase,
@@ -111,7 +113,7 @@ class StudyPlanService
             'strongest_category' => $strongestCategory,
             'recommended_daily_questions' => (int) round(self::BASE_DAILY_QUESTIONS * $intensity),
             'recommended_weekly_mock_tests' => (int) round(self::PHASE_WEEKLY_MOCK_TESTS[$phase] * $difficultyWeight),
-            'daily_plan' => $this->buildDailyPlan($phase, $dailyHours, $weakCategories, $strongestCategory),
+            'daily_plan' => $this->buildDailyPlan($phase, $todayFocus, $dailyHours, $weakCategories, $strongestCategory),
             'weekly_schedule' => $this->buildWeeklySchedule($phase, $weakCategories),
             'phase_timeline' => $this->buildPhaseTimeline($daysRemaining),
             'readiness_gap' => $this->readinessGap($user, $examProfile, $daysRemaining, $dailyHours, $weakCategories),
@@ -267,7 +269,15 @@ class StudyPlanService
         return 'final_revision';
     }
 
-    private function buildDailyPlan(string $phase, float $dailyHours, Collection $weakCategories, ?array $strongestCategory): array
+    /**
+     * "Today's Plan" (and the dashboard's "First focus"/"Today's goal") used to always blend every
+     * activity regardless of what day it actually was, while buildWeeklySchedule() below rotates a
+     * real weak_1/weak_2/mixed/mock/rest pattern across the week - so a student could open the
+     * dashboard on a day the weekly schedule itself marked "Rest" and still be told to do 20 practice
+     * questions. $todayFocus is PHASE_WEEKLY_PATTERN[$phase] for the current day, i.e. exactly what
+     * buildWeeklySchedule() shows for today, so the two can never disagree.
+     */
+    private function buildDailyPlan(string $phase, string $todayFocus, float $dailyHours, Collection $weakCategories, ?array $strongestCategory): array
     {
         if ($phase === 'exam_day') {
             return [
@@ -278,9 +288,42 @@ class StudyPlanService
 
         $weak1 = $weakCategories->get(0);
         $weak2 = $weakCategories->get(1);
-        $allocation = self::PHASE_DAILY_ALLOCATION[$phase];
         $totalMinutes = $dailyHours * 60;
 
+        if ($todayFocus === 'rest') {
+            return [['activity' => 'rest', 'category' => null, 'minutes' => null]];
+        }
+
+        if ($todayFocus === 'rest_light') {
+            return [
+                ['activity' => 'confidence_review', 'category' => null, 'minutes' => (int) round($totalMinutes * 0.3)],
+                ['activity' => 'rest', 'category' => null, 'minutes' => null],
+            ];
+        }
+
+        if ($todayFocus === 'mock') {
+            return [
+                ['activity' => 'timed_mock_practice', 'category' => null, 'minutes' => (int) round($totalMinutes * 0.8)],
+                ['activity' => 'cognitive_game_warmup', 'category' => null, 'minutes' => (int) round($totalMinutes * 0.2)],
+            ];
+        }
+
+        if ($todayFocus === 'weak_1' && $weak1) {
+            return [
+                ['activity' => 'weak_category_practice', 'category' => $weak1, 'minutes' => (int) round($totalMinutes * 0.8)],
+                ['activity' => 'cognitive_game_warmup', 'category' => null, 'minutes' => (int) round($totalMinutes * 0.2)],
+            ];
+        }
+
+        if ($todayFocus === 'weak_2' && $weak2) {
+            return [
+                ['activity' => 'weak_category_practice', 'category' => $weak2, 'minutes' => (int) round($totalMinutes * 0.8)],
+                ['activity' => 'cognitive_game_warmup', 'category' => null, 'minutes' => (int) round($totalMinutes * 0.2)],
+            ];
+        }
+
+        // 'mixed', or a weak_1/weak_2 day whose category is unexpectedly missing: the phase's full blend.
+        $allocation = self::PHASE_DAILY_ALLOCATION[$phase];
         $blocks = [];
         if ($allocation['weak_1'] > 0 && $weak1) {
             $blocks[] = ['activity' => 'weak_category_practice', 'category' => $weak1, 'minutes' => (int) round($totalMinutes * $allocation['weak_1'])];
@@ -299,6 +342,12 @@ class StudyPlanService
         }
 
         return $blocks;
+    }
+
+    /** 0=Monday ... 6=Sunday, matching PHASE_WEEKLY_PATTERN's order and buildWeeklySchedule()'s $dayNames. */
+    private static function todayIndex(): int
+    {
+        return Carbon::now()->dayOfWeekIso - 1;
     }
 
     private function buildWeeklySchedule(string $phase, Collection $weakCategories): array

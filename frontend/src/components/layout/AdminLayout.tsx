@@ -1,7 +1,10 @@
 import { Suspense } from 'react';
+import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { apiErrorMessage } from '@/lib/apiError';
 import {
   Database,
   FilePlus2,
@@ -59,7 +62,13 @@ export function AdminLayout() {
   const location = useLocation();
 
   const handleLogout = async () => {
-    await logout.mutateAsync();
+    try {
+      await logout.mutateAsync();
+    } catch (error) {
+      // Still signed in on the server: say so instead of silently doing nothing.
+      toast.error(apiErrorMessage(error, t));
+      return;
+    }
     navigate('/');
   };
 
@@ -164,11 +173,13 @@ export function AdminLayout() {
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <Suspense fallback={<RouteFallback />}>
-            <div key={location.pathname} className="page-enter">
-              <Outlet />
-            </div>
-          </Suspense>
+          <RouteErrorBoundary>
+            <Suspense fallback={<RouteFallback />}>
+              <div key={location.pathname} className="page-enter">
+                <Outlet />
+              </div>
+            </Suspense>
+          </RouteErrorBoundary>
         </main>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { Layers, ShieldCheck, Target, Trophy, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -17,8 +18,19 @@ function get(obj: unknown, path: string[]): unknown {
 
 export function AdminMlResearchPage() {
   const { t } = useTranslation('admin');
-  const { data: overview, isLoading: overviewLoading } = useMlOverview(false);
-  const { data: reports, isLoading: reportsLoading } = useMlResearchReports();
+  const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useMlOverview(false);
+  const { data: reports, isLoading: reportsLoading, isError: reportsError, refetch: refetchReports } = useMlResearchReports();
+
+  if (overviewError || reportsError) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          void refetchOverview();
+          void refetchReports();
+        }}
+      />
+    );
+  }
 
   if (overviewLoading || reportsLoading) {
     return <CardGridSkeleton count={4} />;

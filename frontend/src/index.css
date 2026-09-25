@@ -41,6 +41,11 @@ body {
   --color-success-foreground: var(--success-foreground);
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-ink: var(--brand-gold-ink);
+  --color-streak: var(--streak);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-game-accent-6: var(--game-accent-6);
+  --color-game-accent-7: var(--game-accent-7);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -86,7 +91,7 @@ body {
   --muted-foreground: oklch(0.48 0.02 255);
   --accent: oklch(0.94 0.03 262);
   --accent-foreground: oklch(0.34 0.13 262);
-  --destructive: oklch(0.55 0.2 25);
+  --destructive: oklch(0.5 0.2 25);
   --success: oklch(0.45 0.12 160);
   --success-foreground: oklch(0.99 0 0);
   --warning: oklch(0.72 0.18 55);
@@ -94,6 +99,19 @@ body {
   --brand-gold: oklch(0.7 0.19 52);
   /* Saffron as TEXT: the fill color above is too light to read on white. */
   --brand-gold-ink: oklch(0.54 0.19 46);
+  /* Streak fire: its own warm orange, distinct from the brand-gold used for coins/trophies/achievements,
+     so "currency" and "streak" read as two different reward concepts instead of one repeated gold. */
+  --streak: oklch(0.54 0.19 40);
+  /* Real silver/bronze for the leaderboard's 2nd/3rd medals (previously 2nd reused muted-foreground -
+     indistinguishable from disabled UI text - and 3rd reused the ruby category color). */
+  --medal-silver: oklch(0.5 0.014 255);
+  /* A true copper/bronze hue (not just a darker gold) so gold and bronze stay visually distinct
+     side by side, especially in dark mode where they previously converged to the same orange. */
+  --medal-bronze: oklch(0.48 0.1 38);
+  /* Two extra hues (lime, rose) so the 8 games each get a genuinely distinct accent instead of the
+     5-color category palette wrapping around and repeating on games 6-8. */
+  --game-accent-6: oklch(0.6 0.16 120);
+  --game-accent-7: oklch(0.6 0.18 350);
   --border: oklch(0.905 0.006 250);
   /* Field outlines: about 3:1 on white/paper (WCAG 1.4.11). The hairline --border stays for cards and dividers. */
   --input: oklch(0.63 0.015 255);
@@ -139,6 +157,11 @@ body {
   --warning-foreground: oklch(0.86 0.12 62);
   --brand-gold: oklch(0.78 0.16 55);
   --brand-gold-ink: oklch(0.78 0.16 55);
+  --streak: oklch(0.72 0.17 40);
+  --medal-silver: oklch(0.82 0.012 255);
+  --medal-bronze: oklch(0.62 0.1 38);
+  --game-accent-6: oklch(0.76 0.15 120);
+  --game-accent-7: oklch(0.76 0.16 350);
   --border: oklch(1 0 0 / 10%);
   /* Field outlines must stay visible on cards: about 3:1 against the surface (WCAG 1.4.11). */
   --input: oklch(1 0 0 / 36%);
@@ -486,11 +509,17 @@ html:lang(si) .uppercase {
   [data-slot='card']:hover::before {
     opacity: 1;
   }
-  a:hover > [data-slot='card'] {
+  /* Any clickable card lifts on hover, not just ones wrapped in a Link - a button or an onClick
+     div (category pickers, study-note tiles) is just as interactive and deserves the same feedback. */
+  a:hover > [data-slot='card'],
+  [data-slot='card'].cursor-pointer:hover,
+  button:hover > [data-slot='card'] {
     transform: translateY(-3px);
     border-color: color-mix(in oklch, var(--primary) 35%, var(--border));
   }
-  a > [data-slot='card'] {
+  a > [data-slot='card'],
+  [data-slot='card'].cursor-pointer,
+  button > [data-slot='card'] {
     transition:
       transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
       border-color 0.25s ease,
@@ -607,6 +636,25 @@ html:lang(si) .uppercase {
   }
 }
 
+/* Skeleton loading: a soft light sweeps across, same language as the progress-bar sheen. */
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  translate: -100% 0;
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--foreground) 8%, transparent), transparent);
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  0% {
+    translate: -100% 0;
+  }
+  60%,
+  100% {
+    translate: 100% 0;
+  }
+}
+
 /* Streak flame flicker. */
 .flame-flicker {
   transform-origin: 50% 90%;
@@ -652,6 +700,7 @@ html:lang(si) .uppercase {
   .bar-grow,
   .float-y,
   .float-y-alt,
+  .skeleton-shimmer::after,
   [data-slot='progress-indicator']::after {
     animation: none;
   }

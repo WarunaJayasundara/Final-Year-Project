@@ -20,6 +20,7 @@ export function useLeaderboard() {
 export function useClaimMission(options?: { onSuccess?: (result: { mission: unknown; summary: unknown }) => void }) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: (code: string) => claimMission(code),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['gamification'] });

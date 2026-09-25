@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Sparkles, XCircle } from 'lucide-react';
@@ -12,9 +13,13 @@ export function SessionReportPage() {
   const { t } = useTranslation('sessions');
   const { id } = useParams();
   const sessionId = Number(id);
-  const { data: report, isLoading } = useReport(sessionId);
+  const { data: report, isLoading, isError, refetch } = useReport(sessionId);
   const explainAnswer = useExplainAnswer(sessionId);
   const [loadingAnswerId, setLoadingAnswerId] = useState<number | null>(null);
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !report) {
     return <FullPageSpinner />;

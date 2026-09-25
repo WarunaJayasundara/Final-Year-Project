@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FilePlus2, Plus, Shapes, Trash2 } from 'lucide-react';
@@ -23,7 +24,13 @@ export function AdminQuestionsListPage() {
 
   const { data: categories } = useAdminCategories();
   const { data: levels } = useAdminLevels();
-  const { data: questions, isLoading } = useAdminQuestions({ category_id: categoryId, level_id: levelId, page });
+  const {
+    data: questions,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useAdminQuestions({ category_id: categoryId, level_id: levelId, page });
   const deleteQuestion = useDeleteQuestion();
 
   return (
@@ -94,11 +101,13 @@ export function AdminQuestionsListPage() {
         </Select>
       </div>
 
-      {isLoading || !questions ? (
+      {isError ? (
+        <ErrorState onRetry={() => refetch()} />
+      ) : isLoading || !questions ? (
         <FullPageSpinner />
       ) : (
         <>
-          <div className="rounded-lg border border-border">
+          <div className={`rounded-lg border border-border transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -158,13 +167,18 @@ export function AdminQuestionsListPage() {
               })}
             </span>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page <= 1 || isFetching}
+                onClick={() => setPage((p) => p - 1)}
+              >
                 {t('questions.previous')}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                disabled={page >= questions.last_page}
+                disabled={page >= questions.last_page || isFetching}
                 onClick={() => setPage((p) => p + 1)}
               >
                 {t('questions.next')}

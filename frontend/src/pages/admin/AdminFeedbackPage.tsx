@@ -31,7 +31,11 @@ export function AdminFeedbackPage() {
   const [page, setPage] = useState(1);
 
   const { data: stats, isLoading: statsLoading } = useFeedbackStats(false);
-  const { data: feedback, isLoading: feedbackLoading } = useAdminFeedback({
+  const {
+    data: feedback,
+    isLoading: feedbackLoading,
+    isFetching: feedbackFetching,
+  } = useAdminFeedback({
     page,
     status: status === 'all' ? undefined : status,
     include_demo: false,
@@ -142,7 +146,7 @@ export function AdminFeedbackPage() {
             </SelectContent>
           </Select>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+        <CardContent className={`flex flex-col gap-3 transition-opacity ${feedbackFetching && !feedbackLoading ? 'opacity-60' : ''}`}>
           {feedbackLoading || !feedback ? (
             <p className="text-sm text-muted-foreground">{t('feedback.loading')}</p>
           ) : feedback.data.length === 0 ? (
@@ -178,10 +182,20 @@ export function AdminFeedbackPage() {
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{t('feedback.pagination', { current: feedback.current_page, last: feedback.last_page })}</span>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page <= 1 || feedbackFetching}
+                  onClick={() => setPage((p) => p - 1)}
+                >
                   {t('feedback.previous')}
                 </Button>
-                <Button size="sm" variant="outline" disabled={page >= feedback.last_page} onClick={() => setPage((p) => p + 1)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page >= feedback.last_page || feedbackFetching}
+                  onClick={() => setPage((p) => p + 1)}
+                >
                   {t('feedback.next')}
                 </Button>
               </div>

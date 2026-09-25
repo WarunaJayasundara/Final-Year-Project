@@ -31,7 +31,8 @@
   },
   "actions": {
     "next": "Next",
-    "finish": "Finish"
+    "finish": "Finish",
+    "retry": "Try again"
   },
   "language": {
     "en": "English",
@@ -140,5 +141,9 @@
         "description": "Use HelaIQ in whichever language you study best in."
       }
     }
+  },
+  "errorState": {
+    "defaultTitle": "We couldn't load this",
+    "defaultDescription": "Check your connection and try again."
   }
 }

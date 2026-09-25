@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ImagePlus } from 'lucide-react';
@@ -14,10 +15,14 @@ export function AdminQuestionEditPage() {
   const { id } = useParams();
   const questionId = Number(id);
   const navigate = useNavigate();
-  const { data: question, isLoading } = useAdminQuestion(questionId);
+  const { data: question, isLoading, isError, refetch } = useAdminQuestion(questionId);
   const updateQuestion = useUpdateQuestion();
   const uploadImage = useUploadQuestionImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !question) {
     return <FullPageSpinner />;

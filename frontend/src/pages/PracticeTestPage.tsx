@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Calculator, CalendarCheck, ClipboardList, Eye, Puzzle, Shapes, Target, TrendingDown } from 'lucide-react';
@@ -24,7 +25,7 @@ const ICONS: Record<string, typeof Target> = {
 
 export function PracticeTestPage() {
   const { t, i18n } = useTranslation(['common', 'sessions']);
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading, isError, refetch } = useCategories();
   const { data: plan } = useStudyPlan();
   const [session, setSession] = useState<SessionData | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -133,7 +134,9 @@ export function PracticeTestPage() {
         <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {t('practice.byCategory', { ns: 'sessions' })}
         </p>
-        {isLoading ? (
+        {isError ? (
+          <ErrorState onRetry={() => refetch()} />
+        ) : isLoading ? (
           <CardGridSkeleton count={5} columns={{ base: 1, sm: 2, lg: 2 }} />
         ) : (
           <BalancedGrid
@@ -145,22 +148,24 @@ export function PracticeTestPage() {
               const name = locale === 'si' ? category.name_si : category.name_en;
               const description = locale === 'si' ? category.description_si : category.description_en;
 
+              const accent = categoryColor(category.code);
               return (
                 <Card
                   key={category.id}
-                  className="h-full cursor-pointer transition-shadow hover:shadow-md"
+                  className="h-full cursor-pointer overflow-hidden border-t-[3px]"
+                  style={{ borderTopColor: accent }}
                   onClick={() => handleStart(category.id)}
                 >
-                  <CardContent className="flex flex-row items-start gap-4 p-4 sm:flex-col sm:gap-3 sm:p-6">
+                  <CardContent className="flex h-full flex-row items-start gap-4 p-4 sm:flex-col sm:gap-3 sm:p-6">
                     <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: `color-mix(in oklch, ${categoryColor(category.code)}, transparent 85%)`, color: categoryColor(category.code) }}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      style={{ backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent }}
                     >
                       <Icon className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
                       <p className="font-semibold">{name}</p>
-                      <p className="text-sm text-muted-foreground">{description}</p>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
                     </div>
                   </CardContent>
                 </Card>

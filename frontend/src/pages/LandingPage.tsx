@@ -99,7 +99,7 @@ export function LandingPage() {
                 <div className="rounded-lg border border-border bg-muted/50 p-3">
                   <p className="text-xs text-muted-foreground">{t('landing.preview.streakLabel')}</p>
                   <p className="mt-1 flex items-center gap-1 text-lg font-semibold">
-                    <Flame className="flame-flicker h-4 w-4 text-[color:var(--brand-gold-ink)]" /> 12
+                    <Flame className="flame-flicker h-4 w-4 text-streak" /> 12
                   </p>
                 </div>
               </div>

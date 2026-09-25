@@ -19,12 +19,12 @@ export function PageHeader({ title, subtitle, pattern = 'steps', actions }: Page
   return (
     <header className="relative isolate overflow-hidden rounded-xl border border-border bg-card px-5 py-5 sm:px-6 sm:py-6">
       <PatternBackdrop variant={pattern} className="inset-y-0 right-0 w-3/4 sm:w-1/2" />
-      <div className="relative flex flex-wrap items-center justify-between gap-4">
+      <div className="relative flex max-w-3xl flex-wrap items-center gap-x-8 gap-y-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
           {subtitle && <p className="mt-1 text-muted-foreground">{subtitle}</p>}
         </div>
-        {actions && <div className="flex flex-col items-start gap-1 sm:items-end">{actions}</div>}
+        {actions && <div className="flex flex-col items-start gap-1 sm:ml-auto sm:items-end">{actions}</div>}
       </div>
     </header>
   );

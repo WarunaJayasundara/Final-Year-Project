@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { apiErrorMessage } from '@/lib/apiError';
 import { Progress } from '@/components/ui/progress';
 import { useCompleteSession, useSubmitAnswer } from './useSessions';
 import { useQuestionTimer } from './useQuestionTimer';
@@ -32,25 +34,36 @@ export function AdaptivePlacementRunner({ session }: { session: AdaptiveSessionD
   const progressPercent = Math.min(100, Math.round((itemsAnswered / session.max_items) * 100));
 
   const handleSelect = async (key: string) => {
-    if (revealed) return;
+    if (revealed || submitAnswer.isPending) return;
     setSelected(key);
-    const result = await submitAnswer.mutateAsync({
-      questionId: question.id,
-      selectedOptionKey: key,
-      responseTimeMs: elapsedMs(),
-    });
-    // Reveal correctness for the question just answered, but hold the next
-    // question in reserve - handleNext() advances to it once the student has
-    // seen the reveal and clicked through, matching SessionRunner's pacing.
-    setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
-    setItemsAnswered(result.items_answered ?? itemsAnswered + 1);
-    setReadyToComplete(!!result.ready_to_complete);
-    setPendingNextQuestion(result.next_question ?? null);
+    try {
+      const result = await submitAnswer.mutateAsync({
+        questionId: question.id,
+        selectedOptionKey: key,
+        responseTimeMs: elapsedMs(),
+      });
+      // Reveal correctness for the question just answered, but hold the next
+      // question in reserve - handleNext() advances to it once the student has
+      // seen the reveal and clicked through, matching SessionRunner's pacing.
+      setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
+      setItemsAnswered(result.items_answered ?? itemsAnswered + 1);
+      setReadyToComplete(!!result.ready_to_complete);
+      setPendingNextQuestion(result.next_question ?? null);
+    } catch (error) {
+      // Not saved: unmark the choice so the student can answer again instead of being stuck.
+      setSelected(null);
+      toast.error(apiErrorMessage(error, t));
+    }
   };
 
   const handleNext = async () => {
     if (readyToComplete) {
-      await completeSession.mutateAsync();
+      try {
+        await completeSession.mutateAsync();
+      } catch (error) {
+        toast.error(apiErrorMessage(error, t)); // "Finish" stays available, so it can be pressed again
+        return;
+      }
       navigate(`/session/${session.id}/report`);
       return;
     }

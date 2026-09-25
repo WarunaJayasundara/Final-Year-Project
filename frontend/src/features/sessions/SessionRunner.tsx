@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { apiErrorMessage } from '@/lib/apiError';
 import { useCompleteSession, useSubmitAnswer } from './useSessions';
 import { useQuestionTimer } from './useQuestionTimer';
 import { QuestionCard, type RevealState } from './QuestionCard';
@@ -27,20 +29,32 @@ export function SessionRunner({ session }: { session: SessionData }) {
   }
 
   const handleSelect = async (key: string) => {
-    if (revealed) return;
+    if (revealed || submitAnswer.isPending) return;
     setSelected(key);
-    const result = await submitAnswer.mutateAsync({
-      questionId: question.id,
-      selectedOptionKey: key,
-      responseTimeMs: elapsedMs(),
-    });
-    setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
-    setResults((prev) => prev.map((r, i) => (i === index ? result.is_correct : r)));
+    try {
+      const result = await submitAnswer.mutateAsync({
+        questionId: question.id,
+        selectedOptionKey: key,
+        responseTimeMs: elapsedMs(),
+      });
+      setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
+      setResults((prev) => prev.map((r, i) => (i === index ? result.is_correct : r)));
+    } catch (error) {
+      // The answer never reached the server: unmark it so the student can simply choose again
+      // (the server accepts a repeated answer), instead of being stuck on this question.
+      setSelected(null);
+      toast.error(apiErrorMessage(error, t));
+    }
   };
 
   const handleNext = async () => {
     if (isLast) {
-      await completeSession.mutateAsync();
+      try {
+        await completeSession.mutateAsync();
+      } catch (error) {
+        toast.error(apiErrorMessage(error, t)); // "Finish" stays available, so it can be pressed again
+        return;
+      }
       navigate(`/session/${session.id}/report`);
       return;
     }

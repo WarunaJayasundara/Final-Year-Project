@@ -161,7 +161,7 @@ export function VisualSpatialMemory() {
   };
 
   if (phase === 'finished' && result) {
-    return <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
+    return <GameResultCard code="visual_spatial_memory" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
   }
 
   return (

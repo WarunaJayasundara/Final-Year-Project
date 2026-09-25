@@ -3,24 +3,31 @@ import { useTranslation } from 'react-i18next';
 import { Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { gameAccent } from './gameStyles';
 
 export function GameResultCard({
+  code,
   score,
   bestScore,
   isNewBest,
   onPlayAgain,
 }: {
+  code: string;
   score: number;
   bestScore?: number;
   isNewBest?: boolean;
   onPlayAgain: () => void;
 }) {
   const { t } = useTranslation('games');
+  const accent = gameAccent(code);
 
   return (
     <Card className="mx-auto max-w-md">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <span
+          className="flex h-14 w-14 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent }}
+        >
           <Trophy className="h-7 w-7" />
         </span>
         <div>

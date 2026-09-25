@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import {
   CalendarCheck,
@@ -35,10 +36,34 @@ const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   'calendar-check': CalendarCheck,
 };
 
+/**
+ * Every earned badge used to render in the exact same brand-gold tint regardless of what it was
+ * for, so 14 different achievements looked like one repeated color. Each icon now gets its own
+ * accent from the app's existing palette (no new hues beyond --streak, matching the flame badges
+ * to the same color used for streaks everywhere else) instead of leaving the whole page monotone.
+ */
+const BADGE_ACCENT: Record<string, string> = {
+  footprints: 'var(--chart-1)',
+  flame: 'var(--streak)',
+  star: 'var(--chart-5)',
+  target: 'var(--chart-4)',
+  trophy: 'var(--brand-gold)',
+  'trending-up': 'var(--chart-2)',
+  crown: 'var(--chart-3)',
+  'gamepad-2': 'var(--chart-1)',
+  zap: 'var(--warning)',
+  'check-circle': 'var(--success)',
+  'calendar-check': 'var(--chart-2)',
+};
+
 export function BadgesPage() {
   const { t, i18n } = useTranslation('gamification');
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
-  const { data: badges, isLoading } = useBadges();
+  const { data: badges, isLoading, isError, refetch } = useBadges();
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !badges) {
     return <FullPageSpinner />;
@@ -71,15 +96,18 @@ export function BadgesPage() {
         {ordered.map((badge) => {
           const Icon = ICONS[badge.icon] ?? Trophy;
           const earned = badge.earned_at !== null;
+          const accent = BADGE_ACCENT[badge.icon] ?? 'var(--brand-gold)';
 
           return (
             <FadeInItem key={badge.code}>
-              <Card className={`h-full ${earned ? 'border-[color:var(--brand-gold)]/50' : 'border-dashed'}`}>
+              <Card
+                className={`h-full ${earned ? '' : 'border-dashed'}`}
+                style={earned ? { borderColor: `color-mix(in oklch, ${accent}, transparent 50%)` } : undefined}
+              >
                 <CardContent className="flex h-full flex-col items-center gap-2 p-4 text-center">
                   <span
-                    className={`flex h-14 w-14 items-center justify-center rounded-full ${
-                      earned ? 'bg-[color:var(--brand-gold)]/15 text-[color:var(--brand-gold-ink)]' : 'bg-muted text-muted-foreground'
-                    }`}
+                    className={`flex h-14 w-14 items-center justify-center rounded-full ${earned ? '' : 'bg-muted text-muted-foreground'}`}
+                    style={earned ? { backgroundColor: `color-mix(in oklch, ${accent}, transparent 85%)`, color: accent } : undefined}
                   >
                     {earned ? <Icon className="h-7 w-7" /> : <Lock className="h-5 w-5" />}
                   </span>

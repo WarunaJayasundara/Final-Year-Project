@@ -22,6 +22,7 @@ export function useExamHistory() {
 export function useSubmitExamOutcome(options?: { onSuccess?: () => void }) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: (input: ExamOutcomeInput) => submitExamOutcome(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exam-profile'] });
@@ -34,6 +35,7 @@ export function useSubmitExamOutcome(options?: { onSuccess?: () => void }) {
 export function useSaveExamProfile(options?: { onSuccess?: (profile: ExamProfile) => void }) {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: (input: ExamProfileInput) => saveExamProfile(input),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['exam-profile'] });

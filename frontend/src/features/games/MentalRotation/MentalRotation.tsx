@@ -92,7 +92,7 @@ export function MentalRotation() {
 
   if (finished && result) {
     return (
-      <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
+      <GameResultCard code="mental_rotation" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
     );
   }
 

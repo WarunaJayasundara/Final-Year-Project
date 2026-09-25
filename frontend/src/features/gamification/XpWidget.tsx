@@ -14,7 +14,7 @@ export function XpWidget() {
   }
 
   return (
-    <Card className="border-primary/30">
+    <Card>
       <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -27,8 +27,8 @@ export function XpWidget() {
             <span className="flex items-center gap-1.5 text-[color:var(--brand-gold-ink)]">
               <Coins className="h-4 w-4" /> {summary.coins}
             </span>
-            <span className="flex items-center gap-1.5 text-[color:var(--brand-gold-ink)]">
-              <Flame className="flame-flicker h-4 w-4" /> {summary.streak_days}
+            <span className={`flex items-center gap-1.5 ${summary.streak_days > 0 ? 'text-streak' : 'text-muted-foreground'}`}>
+              <Flame className={`h-4 w-4 ${summary.streak_days > 0 ? 'flame-flicker' : ''}`} /> {summary.streak_days}
             </span>
           </div>
         </div>

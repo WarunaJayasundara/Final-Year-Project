@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchAdminFeedback, fetchFeedbackStats, markFeedbackReviewed, submitFeedback } from './api';
 import type { FeedbackInput, FeedbackListParams } from './types';
 
@@ -15,7 +15,11 @@ export function useSubmitFeedback(options?: { onSuccess?: () => void; onError?: 
 }
 
 export function useAdminFeedback(params: FeedbackListParams) {
-  return useQuery({ queryKey: ['admin', 'feedback', params], queryFn: () => fetchAdminFeedback(params) });
+  return useQuery({
+    queryKey: ['admin', 'feedback', params],
+    queryFn: () => fetchAdminFeedback(params),
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function useFeedbackStats(includeDemo: boolean) {

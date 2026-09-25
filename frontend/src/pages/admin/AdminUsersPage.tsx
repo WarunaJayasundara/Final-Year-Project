@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ErrorState } from '@/components/ui/error-state';
+import { useDebouncedValue } from '@/lib/useDebouncedValue';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +32,8 @@ export function AdminUsersPage() {
   const { t } = useTranslation('admin');
   const { data: me } = useCurrentUser();
   const [search, setSearch] = useState('');
-  const { data: users, isLoading } = useAdminUsers(search);
+  const debouncedSearch = useDebouncedValue(search);
+  const { data: users, isLoading, isFetching, isError, refetch } = useAdminUsers(debouncedSearch);
   const updateRole = useUpdateUserRole();
   const deleteUser = useDeleteUser();
   const createAdmin = useCreateAdminUser();
@@ -115,17 +118,24 @@ export function AdminUsersPage() {
         )}
       </div>
 
-      <Input
-        placeholder={t('users.search')}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder={t('users.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-sm"
+        />
+        {isFetching && !isLoading && (
+          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-primary" aria-hidden />
+        )}
+      </div>
 
-      {isLoading || !users ? (
+      {isError ? (
+        <ErrorState onRetry={() => refetch()} />
+      ) : isLoading || !users ? (
         <FullPageSpinner />
       ) : (
-        <div className="rounded-lg border border-border">
+        <div className={`rounded-lg border border-border transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
           <Table>
             <TableHeader>
               <TableRow>

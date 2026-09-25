@@ -42,7 +42,7 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Google OAuth callback failed.', ['error' => $e->getMessage()]);
 
-            return redirect(env('FRONTEND_URL').'/login?error=google_auth_failed');
+            return redirect(config('app.frontend_url').'/login?error=google_auth_failed');
         }
 
         $user = User::where('google_id', $googleUser->getId())
@@ -68,7 +68,7 @@ class AuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return redirect(env('FRONTEND_URL').'/auth/callback');
+        return redirect(config('app.frontend_url').'/auth/callback');
     }
 
     /**

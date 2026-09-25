@@ -48,6 +48,14 @@ export function BalancedGrid<T>({
     rows.push(items.slice(i, i + perRow));
   }
 
+  // Every card - in a full row or a shorter trailing row - targets the exact same width: the width
+  // `perRow` equal columns would take up in the row's own available space. A full row's cards fill it
+  // edge to edge by construction (perRow * share + gaps = 100%); a shorter trailing row's cards come out
+  // the same size as the row above it and simply leave the leftover space as centered margin, instead of
+  // being capped to a smaller, unrelated `itemWidth` and looking like a different card size.
+  const gapRem = parseFloat(/gap-(\d+(?:\.\d+)?)/.exec(gap)?.[1] ?? '4') * 0.25;
+  const share = `calc((100% - ${gapRem * (perRow - 1)}rem) / ${perRow})`;
+
   return (
     <div className={cn('flex flex-col', gap, className)}>
       {rows.map((row, rowIndex) => (
@@ -57,11 +65,10 @@ export function BalancedGrid<T>({
             return (
               <div
                 key={globalIndex}
-                // A single column (phones) fills the width up to a readable cap; multi-column rows use the fixed item width.
                 style={
                   columnCount === 1
                     ? { flexBasis: '100%', flexGrow: 1, maxWidth: '36rem' }
-                    : { flexBasis: itemWidth, flexGrow: 1, maxWidth: itemWidth }
+                    : { flexBasis: share, flexGrow: 1, maxWidth: share, minWidth: `min(${itemWidth}, 100%)` }
                 }
               >
                 {renderItem(item, globalIndex)}

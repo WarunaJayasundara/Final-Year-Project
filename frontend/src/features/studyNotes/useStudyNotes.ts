@@ -33,6 +33,7 @@ export function usePracticeQuestions(studyNoteId: number | undefined) {
 export function useSubmitReview() {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { toastOnError: true },
     mutationFn: ({ studyNoteId, result }: { studyNoteId: number; result: 'again' | 'hard' | 'good' | 'easy' }) =>
       submitReview(studyNoteId, result),
     onSuccess: () => {

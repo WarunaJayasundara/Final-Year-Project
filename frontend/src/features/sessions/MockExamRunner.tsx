@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Timer } from 'lucide-react';
+import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
+import { ErrorState } from '@/components/ui/error-state';
+import { InlineLoader } from '@/components/brand/BrandLoader';
+import { apiErrorMessage } from '@/lib/apiError';
 import { useCompleteSession, useSubmitAnswer } from './useSessions';
 import { useQuestionTimer } from './useQuestionTimer';
 import { QuestionCard, type RevealState } from './QuestionCard';
@@ -35,6 +39,7 @@ export function MockExamRunner({ session }: { session: SessionData }) {
   const [revealed, setRevealed] = useState<RevealState | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(session.time_limit_seconds ?? 0);
   const [expired, setExpired] = useState(false);
+  const [finishFailed, setFinishFailed] = useState(false);
 
   const question = session.questions[index];
   const isLast = index === session.questions.length - 1;
@@ -42,22 +47,31 @@ export function MockExamRunner({ session }: { session: SessionData }) {
   const { elapsedMs } = useQuestionTimer(question?.id);
 
   const finishExam = async () => {
-    await completeSession.mutateAsync();
+    setFinishFailed(false);
+    try {
+      await completeSession.mutateAsync();
+    } catch (error) {
+      // Never leave the student on a dead screen: say what happened and let them retry (completing is idempotent).
+      setFinishFailed(true);
+      toast.error(apiErrorMessage(error, t));
+      return;
+    }
     navigate(`/session/${session.id}/report`);
   };
 
   useEffect(() => {
     if (!session.time_limit_seconds || expired) return;
+    // Count against a wall-clock deadline instead of "one tick = one second": timers stop while a phone is
+    // locked or a tab sleeps, which would silently hand the student extra exam time.
+    const deadline = Date.now() + session.time_limit_seconds * 1000;
     const id = setInterval(() => {
-      setSecondsRemaining((s) => {
-        if (s <= 1) {
-          clearInterval(id);
-          setExpired(true);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setSecondsRemaining(left);
+      if (left <= 0) {
+        clearInterval(id);
+        setExpired(true);
+      }
+    }, 500);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session.time_limit_seconds]);
@@ -69,19 +83,35 @@ export function MockExamRunner({ session }: { session: SessionData }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expired]);
 
-  if (!question || expired) {
+  if (expired) {
+    return finishFailed ? (
+      <ErrorState onRetry={finishExam} />
+    ) : (
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <InlineLoader />
+      </div>
+    );
+  }
+
+  if (!question) {
     return null;
   }
 
   const handleSelect = async (key: string) => {
-    if (revealed) return;
+    if (revealed || submitAnswer.isPending) return;
     setSelected(key);
-    const result = await submitAnswer.mutateAsync({
-      questionId: question.id,
-      selectedOptionKey: key,
-      responseTimeMs: elapsedMs(),
-    });
-    setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
+    try {
+      const result = await submitAnswer.mutateAsync({
+        questionId: question.id,
+        selectedOptionKey: key,
+        responseTimeMs: elapsedMs(),
+      });
+      setRevealed({ isCorrect: result.is_correct, correctKey: result.correct_option_key });
+    } catch (error) {
+      // Not saved: unmark the choice so the student can answer again instead of being stuck.
+      setSelected(null);
+      toast.error(apiErrorMessage(error, t));
+    }
   };
 
   const handleNext = async () => {

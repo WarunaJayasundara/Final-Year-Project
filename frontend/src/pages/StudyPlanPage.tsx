@@ -1,19 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { ErrorState } from '@/components/ui/error-state';
 import { Link } from 'react-router-dom';
-import {
-  AlertTriangle,
-  BookOpenCheck,
-  CalendarRange,
-  Check,
-  Flame,
-  Gamepad2,
-  Gauge,
-  ListChecks,
-  Moon,
-  ShieldCheck,
-  Target,
-  Trophy,
-} from 'lucide-react';
+import { AlertTriangle, CalendarRange, Check, Flame, Gauge, ListChecks, Target, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { StatTile } from '@/components/ui/stat-tile';
@@ -26,32 +14,18 @@ import { useGamificationSummary } from '@/features/gamification/useGamification'
 import { useStudyPlan } from '@/features/examProfile/useExamProfile';
 import { ExamProfileDialog } from '@/features/examProfile/ExamProfileDialog';
 import { PHASE_COLORS, PHASE_ORDER } from '@/features/examProfile/phaseStyles';
+import { ACTIVITY_ICON, ACTIVITY_LINK, DAY_ORDER } from '@/features/examProfile/activityStyles';
 import type { CategoryRef, DailyPlanBlock, ReadinessGap, WeeklyDayFocus } from '@/features/examProfile/types';
-
-const ACTIVITY_LINK: Record<string, string> = {
-  weak_category_practice: '/test/practice',
-  timed_mock_practice: '/test/mock',
-  cognitive_game_warmup: '/games',
-  strong_category_maintenance: '/test/practice',
-  confidence_review: '/test/practice',
-};
-
-const ACTIVITY_ICON: Record<string, typeof Target> = {
-  weak_category_practice: Target,
-  timed_mock_practice: ListChecks,
-  cognitive_game_warmup: Gamepad2,
-  strong_category_maintenance: ShieldCheck,
-  confidence_review: BookOpenCheck,
-  rest: Moon,
-};
-
-const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 export function StudyPlanPage() {
   const { t, i18n } = useTranslation(['studyPlan', 'dashboard']);
   const locale = i18n.language.startsWith('si') ? 'si' : 'en';
-  const { data: plan, isLoading } = useStudyPlan();
+  const { data: plan, isLoading, isError, refetch } = useStudyPlan();
   const { data: gami } = useGamificationSummary();
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading) {
     return (
@@ -120,7 +94,7 @@ export function StudyPlanPage() {
               {gami && (
                 <div className="mt-1 flex flex-wrap gap-3 text-sm">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
-                    <Flame className="h-3.5 w-3.5 text-[color:var(--brand-gold-ink)]" /> {t('streakChip', { count: gami.streak_days })}
+                    <Flame className={`h-3.5 w-3.5 ${gami.streak_days > 0 ? 'text-streak' : 'text-muted-foreground'}`} /> {t('streakChip', { count: gami.streak_days })}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1">
                     <Trophy className="h-3.5 w-3.5 text-[color:var(--brand-gold-ink)]" /> {t('rankChip', { level: gami.level })}

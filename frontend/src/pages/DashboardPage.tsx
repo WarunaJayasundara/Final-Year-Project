@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ErrorState } from '@/components/ui/error-state';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ArrowRight, Flame, Gamepad2, Target, TrendingUp } from 'lucide-react';
@@ -19,8 +20,12 @@ import { categoryColor } from '@/features/categories/categoryStyle';
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation(['dashboard', 'common']);
-  const { data: summary, isLoading } = useDashboardSummary();
+  const { data: summary, isLoading, isError, refetch } = useDashboardSummary();
   const { data: history } = useProgressHistory();
+
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   if (isLoading || !summary) {
     return <DashboardSkeleton />;
@@ -66,13 +71,11 @@ export function DashboardPage() {
           />
         </FadeInItem>
 
-        <FadeInItem>
+        <FadeInItem className={summary.iq_estimate ? 'grid items-stretch gap-4 lg:grid-cols-2' : undefined}>
           <XpWidget />
-        </FadeInItem>
 
-        {summary.iq_estimate && (
-          <FadeInItem>
-            <Card className="border-primary/30">
+          {summary.iq_estimate && (
+            <Card>
               <CardContent className="flex flex-col gap-3 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
@@ -106,10 +109,10 @@ export function DashboardPage() {
                 </details>
               </CardContent>
             </Card>
-          </FadeInItem>
-        )}
+          )}
+        </FadeInItem>
 
-        <FadeInItem className="grid gap-4 lg:grid-cols-2">
+        <FadeInItem className="grid items-stretch gap-4 lg:grid-cols-2">
           <ExamCountdown />
           <ReadinessCard />
         </FadeInItem>
@@ -133,8 +136,8 @@ export function DashboardPage() {
             value={summary.current_level ? (locale === 'si' ? summary.current_level.name_si : summary.current_level.name_en) : '-'}
           />
           <StatTile
-            icon={<Flame className="flame-flicker h-5 w-5" />}
-            accent="var(--chart-4)"
+            icon={<Flame className={`h-5 w-5 ${summary.streak_days > 0 ? 'flame-flicker' : ''}`} />}
+            accent={summary.streak_days > 0 ? 'var(--streak)' : 'var(--muted-foreground)'}
             label={t('practiceStreak')}
             value={t('streakDays', { count: summary.streak_days })}
           />
@@ -146,7 +149,7 @@ export function DashboardPage() {
           />
         </FadeInItem>
 
-        <FadeInItem className="grid gap-4 lg:grid-cols-2">
+        <FadeInItem className="grid items-start gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t('levelHistory')}</CardTitle>
@@ -194,7 +197,7 @@ export function DashboardPage() {
           </Card>
         </FadeInItem>
 
-        <FadeInItem className="grid gap-4 lg:grid-cols-2">
+        <FadeInItem className="grid items-start gap-4 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t('recentSessions')}</CardTitle>

@@ -183,7 +183,7 @@ export function CognitiveCommandCenter() {
   };
 
   if (roundIndex >= TASK_ROTATION.length && result) {
-    return <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
+    return <GameResultCard code="cognitive_command_center" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />;
   }
   if (roundIndex >= TASK_ROTATION.length) {
     return null;

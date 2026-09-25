@@ -63,7 +63,7 @@ export function SelectiveAttention() {
 
   if (finished && result) {
     return (
-      <GameResultCard score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
+      <GameResultCard code="selective_attention" score={result.score} bestScore={result.bestScore} isNewBest={result.isNewBest} onPlayAgain={reset} />
     );
   }
 
